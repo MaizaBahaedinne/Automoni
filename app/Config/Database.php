@@ -29,9 +29,9 @@ class Database extends Config
     public array $default = [
         'DSN'          => '',
         'hostname'     => 'localhost',
-        'username'     => 'root',
-        'password'     => 'root',
-        'database'     => 'automoni',
+        'username'     => 'pers_persomy',
+        'password'     => 'persomy2026!!',
+        'database'     => 'pers_persomy',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
