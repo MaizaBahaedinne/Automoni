@@ -77,17 +77,46 @@
             <div class="card-body">
                 <h5 class="fw-bold"><i class="bi bi-briefcase me-2 text-primary"></i><?= lang('App.section_experience') ?></h5>
                 <?php foreach ($experiences as $exp): ?>
-                <div class="mb-3 pb-2 border-bottom">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-semibold"><?= esc($exp->title ?? '') ?></span>
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-1">
+                        <div>
+                            <span class="fw-semibold fs-6"><?= esc($exp->title ?? '') ?></span>
+                            <?php if (!empty($exp->level)): ?>
+                                <span class="badge bg-primary ms-1 fw-normal"><?= esc($exp->level) ?></span>
+                            <?php endif; ?>
+                            <?php if (!empty($exp->contract)): ?>
+                                <span class="badge bg-secondary ms-1 fw-normal"><?= esc($exp->contract) ?></span>
+                            <?php endif; ?>
+                        </div>
                         <small class="text-muted">
+                            <i class="bi bi-calendar3 me-1"></i>
                             <?= $exp->start_date ? date('M Y', strtotime($exp->start_date)) : '' ?> &ndash;
                             <?= $exp->is_current ? lang('App.present') : ($exp->end_date ? date('M Y', strtotime($exp->end_date)) : lang('App.present')) ?>
                         </small>
                     </div>
-                    <div class="text-muted small"><?= esc($exp->company) ?></div>
+                    <div class="text-muted small mt-1">
+                        <i class="bi bi-building me-1"></i><strong><?= esc($exp->company) ?></strong>
+                        <?php if (!empty($exp->department)): ?>
+                            &bull; <?= esc($exp->department) ?>
+                        <?php endif; ?>
+                        <?php if (!empty($exp->location)): ?>
+                            &bull; <i class="bi bi-geo-alt me-1"></i><?= esc($exp->location) ?>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (!empty($exp->manager_name)): ?>
+                    <div class="text-muted small mt-1">
+                        <i class="bi bi-person-badge me-1"></i><?= lang('App.exp_manager') ?> : <?= esc($exp->manager_name) ?>
+                    </div>
+                    <?php endif; ?>
                     <?php if (!empty($exp->description)): ?>
-                        <p class="small mt-1 mb-0"><?= nl2br(esc($exp->description)) ?></p>
+                        <p class="small mt-2 mb-1"><?= nl2br(esc($exp->description)) ?></p>
+                    <?php endif; ?>
+                    <?php if (!empty($exp->skills_gained)): ?>
+                    <div class="d-flex flex-wrap gap-1 mt-2">
+                        <?php foreach (array_filter(array_map('trim', explode(',', $exp->skills_gained))) as $sg): ?>
+                            <span class="badge bg-info text-dark fw-normal small"><?= esc($sg) ?></span>
+                        <?php endforeach; ?>
+                    </div>
                     <?php endif; ?>
                 </div>
                 <?php endforeach; ?>

@@ -303,50 +303,175 @@
         </div>
 
         <!-- Experiences -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white border-0">
+        <div class="card border-0 shadow-sm mb-4" id="experience">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0"><i class="bi bi-briefcase me-2 text-primary"></i><?= lang('App.section_experience') ?></h5>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#expAddForm" aria-expanded="false">
+                    <i class="bi bi-plus me-1"></i><?= lang('App.add_experience') ?>
+                </button>
             </div>
             <div class="card-body">
+
+                <!-- Existing experiences list -->
                 <?php if (!empty($experiences)): ?>
                     <?php foreach ($experiences as $exp): ?>
-                    <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
-                        <div>
-                            <span class="fw-semibold"><?= esc($exp->title ?? '') ?></span> @ <?= esc($exp->company) ?>
-                            <small class="text-muted d-block">
-                                <?= $exp->start_date ? date('M Y', strtotime($exp->start_date)) : '' ?> –
-                                <?= $exp->is_current ? lang('App.present') : ($exp->end_date ? date('M Y', strtotime($exp->end_date)) : lang('App.present')) ?>
-                            </small>
+                    <div class="border rounded p-3 mb-3 bg-light position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1 me-2">
+                                <div class="fw-semibold fs-6">
+                                    <?= esc($exp->title ?? '') ?>
+                                    <?php if (!empty($exp->level)): ?>
+                                        <span class="badge bg-primary ms-1 fw-normal small"><?= esc($exp->level) ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($exp->contract)): ?>
+                                        <span class="badge bg-secondary ms-1 fw-normal small"><?= esc($exp->contract) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-building me-1"></i><?= esc($exp->company) ?>
+                                    <?php if (!empty($exp->department)): ?>
+                                        &bull; <?= esc($exp->department) ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($exp->location)): ?>
+                                        &bull; <i class="bi bi-geo-alt me-1"></i><?= esc($exp->location) ?>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <?= $exp->start_date ? date('M Y', strtotime($exp->start_date)) : '' ?> –
+                                    <?= $exp->is_current ? lang('App.present') : ($exp->end_date ? date('M Y', strtotime($exp->end_date)) : lang('App.present')) ?>
+                                </div>
+                                <?php if (!empty($exp->manager_name)): ?>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-person-badge me-1"></i><?= lang('App.exp_manager') ?> : <?= esc($exp->manager_name) ?>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($exp->skills_gained)): ?>
+                                <div class="d-flex flex-wrap gap-1 mt-2">
+                                    <?php foreach (array_filter(array_map('trim', explode(',', $exp->skills_gained))) as $sg): ?>
+                                        <span class="badge bg-info text-dark fw-normal small"><?= esc($sg) ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            <form action="<?= base_url('profile/experience/delete/' . $exp->id) ?>" method="post"
+                                  onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                                <?= csrf_field() ?>
+                                <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                            </form>
                         </div>
-                        <form action="<?= base_url('profile/experience/delete/' . $exp->id) ?>" method="post"
-                              onsubmit="return confirm('Delete?')">
-                            <?= csrf_field() ?>
-                            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-                        </form>
                     </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
-                <form action="<?= base_url('profile/experience/add') ?>" method="post" class="row g-2 mt-2">
-                    <?= csrf_field() ?>
-                    <div class="col-md-4">
-                        <input type="text" name="title" class="form-control form-control-sm" placeholder="Job Title" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" name="company" class="form-control form-control-sm" placeholder="Company" required>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="date" name="start_date" class="form-control form-control-sm" required>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="date" name="end_date" class="form-control form-control-sm" placeholder="End date">
-                    </div>
-                    <div class="col-12">
-                        <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="Description (optional)"></textarea>
-                    </div>
-                    <div class="col-auto">
-                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-plus me-1"></i><?= lang('App.add_experience') ?></button>
-                    </div>
-                </form>
+
+                <!-- Add experience form (collapsible) -->
+                <div class="collapse" id="expAddForm">
+                    <hr>
+                    <form action="<?= base_url('profile/experience/add') ?>" method="post" class="row g-3 mt-1">
+                        <?= csrf_field() ?>
+
+                        <!-- Row 1: Title + Company -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_job_title') ?> <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control form-control-sm" placeholder="<?= lang('App.placeholder_job_title') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_company_name') ?> <span class="text-danger">*</span></label>
+                            <input type="text" name="company" class="form-control form-control-sm" placeholder="ex. Google, Total, SNCF…" required>
+                        </div>
+
+                        <!-- Row 2: Contract + Level -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.col_contract') ?></label>
+                            <select name="contract" class="form-select form-select-sm">
+                                <option value=""><?= lang('App.exp_select_contract') ?></option>
+                                <option value="CDI">CDI</option>
+                                <option value="CDD">CDD</option>
+                                <option value="Freelance">Freelance</option>
+                                <option value="Internship">Stage / Internship</option>
+                                <option value="PartTime">Temps partiel</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.exp_level') ?></label>
+                            <select name="level" class="form-select form-select-sm">
+                                <option value=""><?= lang('App.exp_select_level') ?></option>
+                                <option value="<?= lang('App.exp_level_junior') ?>"><?= lang('App.exp_level_junior') ?></option>
+                                <option value="<?= lang('App.exp_level_mid') ?>"><?= lang('App.exp_level_mid') ?></option>
+                                <option value="<?= lang('App.exp_level_senior') ?>"><?= lang('App.exp_level_senior') ?></option>
+                                <option value="<?= lang('App.exp_level_lead') ?>"><?= lang('App.exp_level_lead') ?></option>
+                                <option value="<?= lang('App.exp_level_expert') ?>"><?= lang('App.exp_level_expert') ?></option>
+                                <option value="<?= lang('App.exp_level_manager') ?>"><?= lang('App.exp_level_manager') ?></option>
+                                <option value="<?= lang('App.exp_level_director') ?>"><?= lang('App.exp_level_director') ?></option>
+                                <option value="<?= lang('App.exp_level_executive') ?>"><?= lang('App.exp_level_executive') ?></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_department') ?></label>
+                            <input type="text" name="department" class="form-control form-control-sm" placeholder="<?= lang('App.placeholder_department') ?>">
+                        </div>
+
+                        <!-- Row 3: Location -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_city') ?></label>
+                            <input type="text" name="location" class="form-control form-control-sm" placeholder="<?= lang('App.exp_location_ph') ?>">
+                        </div>
+
+                        <!-- Row 4: Period -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?> <span class="text-danger">*</span></label>
+                            <input type="date" name="start_date" id="exp_start_date" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
+                            <input type="date" name="end_date" id="exp_end_date" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end pb-1">
+                            <div class="form-check">
+                                <input type="checkbox" name="is_current" value="1" id="exp_is_current" class="form-check-input">
+                                <label class="form-check-label small" for="exp_is_current"><?= lang('App.exp_is_current') ?></label>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Manager autocomplete -->
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label fw-semibold small"><?= lang('App.exp_manager') ?></label>
+                            <input type="text" id="exp_manager_search" class="form-control form-control-sm"
+                                   placeholder="<?= lang('App.exp_manager_ph') ?>" autocomplete="off">
+                            <input type="hidden" name="manager_user_id" id="exp_manager_user_id">
+                            <input type="hidden" name="manager_name"    id="exp_manager_name_val">
+                            <ul class="list-group position-absolute w-100 shadow-sm"
+                                id="exp_manager_suggestions"
+                                style="z-index:1050;display:none;max-height:180px;overflow-y:auto;top:100%;left:0;"></ul>
+                        </div>
+
+                        <!-- Row 6: Description -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_description') ?></label>
+                            <textarea name="description" class="form-control form-control-sm" rows="3"
+                                      placeholder="Décrivez vos responsabilités, réalisations…"></textarea>
+                        </div>
+
+                        <!-- Row 7: Skills gained -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small"><?= lang('App.exp_skills_gained') ?></label>
+                            <input type="text" name="skills_gained" class="form-control form-control-sm"
+                                   placeholder="<?= lang('App.exp_skills_gained_ph') ?>">
+                            <div class="form-text"><?= lang('App.skills_hint') ?></div>
+                        </div>
+
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus me-1"></i><?= lang('App.add_experience') ?>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    data-bs-toggle="collapse" data-bs-target="#expAddForm">
+                                <?= lang('App.btn_cancel') ?>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
 
@@ -546,6 +671,61 @@ function loadCitySuggestions(country) {
 countrySelect.addEventListener('change', () => loadCitySuggestions(countrySelect.value));
 // Init on page load for pre-filled country
 loadCitySuggestions(countrySelect.value);
+
+// ── Experience: is_current toggle ─────────────────────────────────────────
+const expIsCurrent = document.getElementById('exp_is_current');
+const expEndDate   = document.getElementById('exp_end_date');
+if (expIsCurrent) {
+    expIsCurrent.addEventListener('change', function () {
+        expEndDate.disabled = this.checked;
+        if (this.checked) expEndDate.value = '';
+    });
+}
+
+// ── Experience: Manager autocomplete ──────────────────────────────────────
+(function () {
+    const input       = document.getElementById('exp_manager_search');
+    const hiddenId    = document.getElementById('exp_manager_user_id');
+    const hiddenName  = document.getElementById('exp_manager_name_val');
+    const suggestions = document.getElementById('exp_manager_suggestions');
+    if (!input) return;
+
+    let timer;
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        hiddenId.value   = '';
+        hiddenName.value = this.value.trim();
+        const q = this.value.trim();
+        if (q.length < 2) { suggestions.style.display = 'none'; return; }
+
+        timer = setTimeout(async () => {
+            try {
+                const res  = await fetch(`<?= base_url('profile/users/search') ?>?q=` + encodeURIComponent(q));
+                const data = await res.json();
+                suggestions.innerHTML = '';
+                if (!data.length) { suggestions.style.display = 'none'; return; }
+                data.forEach(u => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item list-group-item-action py-1 small cursor-pointer';
+                    li.textContent = u.name;
+                    li.addEventListener('mousedown', e => {
+                        e.preventDefault();
+                        input.value      = u.name;
+                        hiddenId.value   = u.id;
+                        hiddenName.value = u.name;
+                        suggestions.style.display = 'none';
+                    });
+                    suggestions.appendChild(li);
+                });
+                suggestions.style.display = 'block';
+            } catch (e) { suggestions.style.display = 'none'; }
+        }, 300);
+    });
+
+    document.addEventListener('click', e => {
+        if (!input.contains(e.target)) suggestions.style.display = 'none';
+    });
+})();
 </script>
 
 <?= $this->endSection() ?>

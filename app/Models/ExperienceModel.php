@@ -11,8 +11,9 @@ class ExperienceModel extends Model
     protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = [
-        'user_id', 'title', 'company', 'location', 'contract',
-        'start_date', 'end_date', 'is_current', 'description', 'sort_order',
+        'user_id', 'title', 'company', 'location', 'contract', 'level', 'department',
+        'start_date', 'end_date', 'is_current', 'description',
+        'manager_user_id', 'manager_name', 'skills_gained', 'sort_order',
     ];
 
     protected $validationRules = [

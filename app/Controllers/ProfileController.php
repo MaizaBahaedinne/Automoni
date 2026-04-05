@@ -214,9 +214,16 @@ class ProfileController extends BaseController
         }
 
         $data = array_merge(
-            $this->request->getPost(['title', 'company', 'location', 'contract', 'start_date', 'end_date', 'description']),
+            $this->request->getPost([
+                'title', 'company', 'location', 'contract', 'level', 'department',
+                'start_date', 'end_date', 'description', 'manager_name', 'skills_gained',
+            ]),
             ['user_id' => $this->userId, 'is_current' => (int) $this->request->getPost('is_current')]
         );
+
+        $managerId = (int) $this->request->getPost('manager_user_id');
+        $data['manager_user_id'] = $managerId > 0 ? $managerId : null;
+
         $expModel->insert($data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#experience')->with('success', 'Experience added.');
@@ -231,6 +238,31 @@ class ProfileController extends BaseController
             $this->profileModel->recalculateCompleteness($this->userId);
         }
         return redirect()->to('/profile/edit#experience')->with('success', 'Experience removed.');
+    }
+
+    public function searchUsers(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $q = trim($this->request->getGet('q') ?? '');
+        if (strlen($q) < 2) {
+            return $this->response->setJSON([]);
+        }
+
+        $userModel = model(\App\Models\UserModel::class);
+        $users = $userModel
+            ->select('id, first_name, last_name')
+            ->groupStart()
+                ->like('first_name', $q)
+                ->orLike('last_name', $q)
+            ->groupEnd()
+            ->limit(10)
+            ->findAll();
+
+        return $this->response->setJSON(
+            array_map(fn($u) => [
+                'id'   => $u->id,
+                'name' => trim($u->first_name . ' ' . $u->last_name),
+            ], $users)
+        );
     }
 
     // ─── Education CRUD ───────────────────────────────────────────────────
