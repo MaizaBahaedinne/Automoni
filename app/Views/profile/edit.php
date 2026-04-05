@@ -56,6 +56,12 @@
                 <form action="<?= base_url('profile/update') ?>" method="post">
                     <?= csrf_field() ?>
                     <div class="row g-3">
+                        <?php
+                        // Safe access for columns that may not yet exist on production DB
+                        $profilePosition   = isset($profile->position)   ? $profile->position   : null;
+                        $profileDepartment = isset($profile->department)  ? $profile->department : null;
+                        $profilePhoneCode  = isset($profile->phone_code)  ? $profile->phone_code : null;
+                        ?>
 
                         <!-- Position (niveau hiérarchique) -->
                         <div class="col-md-4">
@@ -68,7 +74,7 @@
                                     'Chef de projet','Chef d\'équipe','Responsable',
                                     'Collaborateur',
                                 ];
-                                $currentPos = old('position', $profile?->position ?? '');
+                                $currentPos = old('position', $profilePosition ?? '');
                                 foreach ($positions as $pos):
                                 ?>
                                 <option value="<?= esc($pos) ?>" <?= $currentPos === $pos ? 'selected' : '' ?>>
@@ -103,7 +109,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-semibold"><?= lang('App.field_department') ?></label>
                             <input type="text" name="department" class="form-control"
-                                   value="<?= esc(old('department', $profile?->department)) ?>"
+                                   value="<?= esc(old('department', $profileDepartment)) ?>"
                                    placeholder="<?= lang('App.placeholder_department') ?>"
                                    list="departmentSuggestions">
                             <datalist id="departmentSuggestions">
@@ -165,7 +171,7 @@
                                         'CI' => ['+225', '🇨🇮 CI'],
                                         'CM' => ['+237', '🇨🇲 CM'],
                                     ];
-                                    $savedCode = old('phone_code', $profile?->phone_code ?? '+213');
+                                    $savedCode = old('phone_code', $profilePhoneCode ?? '+213');
                                     foreach ($phoneCodes as $iso => [$code, $label]):
                                     ?>
                                     <option value="<?= $code ?>" <?= $savedCode === $code ? 'selected' : '' ?>>
@@ -306,10 +312,10 @@
                     <?php foreach ($experiences as $exp): ?>
                     <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
                         <div>
-                            <span class="fw-semibold"><?= esc($exp->job_title) ?></span> @ <?= esc($exp->company) ?>
+                            <span class="fw-semibold"><?= esc($exp->title ?? '') ?></span> @ <?= esc($exp->company) ?>
                             <small class="text-muted d-block">
-                                <?= date('M Y', strtotime($exp->start_date)) ?> –
-                                <?= $exp->is_current ? lang('App.present') : date('M Y', strtotime($exp->end_date)) ?>
+                                <?= $exp->start_date ? date('M Y', strtotime($exp->start_date)) : '' ?> –
+                                <?= $exp->is_current ? lang('App.present') : ($exp->end_date ? date('M Y', strtotime($exp->end_date)) : lang('App.present')) ?>
                             </small>
                         </div>
                         <form action="<?= base_url('profile/experience/delete/' . $exp->id) ?>" method="post"

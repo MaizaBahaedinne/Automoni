@@ -61,7 +61,8 @@ class ProfileController extends BaseController
         }
 
         $data = $this->request->getPost([
-            'headline', 'summary', 'phone', 'city', 'country',
+            'headline', 'summary', 'phone', 'phone_code', 'city', 'country',
+            'position', 'department',
             'linkedin', 'github', 'portfolio',
             'desired_salary', 'desired_contract', 'desired_location', 'availability',
         ]);
@@ -213,9 +214,12 @@ class ProfileController extends BaseController
         }
 
         $data = array_merge(
-            $this->request->getPost(['title', 'company', 'location', 'contract', 'start_date', 'end_date', 'description']),
+            $this->request->getPost(['job_title', 'company', 'location', 'contract', 'start_date', 'end_date', 'description']),
             ['user_id' => $this->userId, 'is_current' => (int) $this->request->getPost('is_current')]
         );
+        // map form field job_title → DB column title
+        $data['title'] = $data['job_title'] ?? null;
+        unset($data['job_title']);
         $expModel->insert($data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#experience')->with('success', 'Experience added.');

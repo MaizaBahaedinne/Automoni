@@ -15,7 +15,7 @@ class ExperienceModel extends Model
     ];
 
     protected $validationRules = [
-        'title'      => 'required|max_length[200]',
+        'job_title'  => 'required|max_length[200]',
         'company'    => 'required|max_length[200]',
         'start_date' => 'required|valid_date',
     ];
