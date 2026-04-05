@@ -147,8 +147,14 @@ class LinkedInController extends BaseController
                              ->with('error', 'LinkedIn did not return the required profile data.');
         }
 
-        // 1. Find by linkedin_id (returning user)
-        $user = $userModel->where('linkedin_id', $linkedinId)->first();
+        try {
+            // 1. Find by linkedin_id (returning user)
+            $user = $userModel->where('linkedin_id', $linkedinId)->first();
+        } catch (\Exception $e) {
+            // linkedin_id column may not exist yet — fall through to email lookup
+            log_message('error', '[LinkedIn] linkedin_id lookup failed: ' . $e->getMessage());
+            $user = null;
+        }
 
         // 2. Find by email (existing account without linkedin_id linked yet)
         if (!$user) {
