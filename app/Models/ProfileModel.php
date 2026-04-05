@@ -11,10 +11,12 @@ class ProfileModel extends Model
     protected $returnType    = 'object';
     protected $useTimestamps = true;
     protected $allowedFields = [
-        'user_id', 'headline', 'summary', 'phone',
-        'city', 'country', 'linkedin', 'github', 'portfolio',
+        'user_id', 'headline', 'position', 'department', 'summary',
+        'phone', 'phone_code', 'city', 'country',
+        'linkedin', 'github', 'portfolio',
         'cv_file', 'cv_original_name', 'desired_salary',
         'desired_contract', 'desired_location', 'availability', 'completeness',
+        'avatar',
     ];
 
     public function getByUserId(int $userId): ?object

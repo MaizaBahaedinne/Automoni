@@ -56,31 +56,170 @@
                 <form action="<?= base_url('profile/update') ?>" method="post">
                     <?= csrf_field() ?>
                     <div class="row g-3">
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Headline</label>
-                            <input type="text" name="headline" class="form-control"
-                                   value="<?= esc(old('headline', $profile?->headline)) ?>"
-                                   placeholder="e.g. Senior PHP Developer | Open to opportunities">
+
+                        <!-- Position (niveau hiérarchique) -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold"><?= lang('App.field_position') ?></label>
+                            <select name="position" class="form-select">
+                                <option value=""><?= lang('App.select_position') ?></option>
+                                <?php
+                                $positions = [
+                                    'Directeur','Manager','Team Lead','Tech Lead',
+                                    'Chef de projet','Chef d\'équipe','Responsable',
+                                    'Collaborateur',
+                                ];
+                                $currentPos = old('position', $profile?->position ?? '');
+                                foreach ($positions as $pos):
+                                ?>
+                                <option value="<?= esc($pos) ?>" <?= $currentPos === $pos ? 'selected' : '' ?>>
+                                    <?= esc($pos) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
+
+                        <!-- Job Title -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold"><?= lang('App.field_job_title') ?></label>
+                            <input type="text" name="headline" class="form-control"
+                                   id="jobTitleInput"
+                                   value="<?= esc(old('headline', $profile?->headline)) ?>"
+                                   placeholder="<?= lang('App.placeholder_job_title') ?>"
+                                   list="jobTitleSuggestions">
+                            <datalist id="jobTitleSuggestions">
+                                <?php foreach ([
+                                    'Développeur PHP','Développeur Full Stack','Développeur Front-end',
+                                    'Développeur Back-end','DevOps Engineer','Data Scientist',
+                                    'Product Manager','UX Designer','QA Engineer',
+                                    'Architecte logiciel','CTO','DRH','Comptable','Commercial',
+                                    'Ingénieur réseaux','Administrateur système',
+                                ] as $jt): ?>
+                                <option value="<?= esc($jt) ?>">
+                                <?php endforeach; ?>
+                            </datalist>
+                        </div>
+
+                        <!-- Département -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold"><?= lang('App.field_department') ?></label>
+                            <input type="text" name="department" class="form-control"
+                                   value="<?= esc(old('department', $profile?->department)) ?>"
+                                   placeholder="<?= lang('App.placeholder_department') ?>"
+                                   list="departmentSuggestions">
+                            <datalist id="departmentSuggestions">
+                                <?php foreach ([
+                                    'Informatique','Développement','Ingénierie','Finance',
+                                    'Comptabilité','Ressources Humaines','Marketing',
+                                    'Commercial','Juridique','Direction','Logistique',
+                                    'Production','R&D','Support','Communication',
+                                ] as $dept): ?>
+                                <option value="<?= esc($dept) ?>">
+                                <?php endforeach; ?>
+                            </datalist>
+                        </div>
+
+                        <!-- Summary -->
                         <div class="col-md-12">
                             <label class="form-label fw-semibold">Summary</label>
                             <textarea name="summary" class="form-control" rows="4"
                                       placeholder="Tell employers about yourself..."><?= esc(old('summary', $profile?->summary)) ?></textarea>
                         </div>
-                        <div class="col-md-6">
+
+                        <!-- Phone with country code -->
+                        <div class="col-md-5">
                             <label class="form-label fw-semibold"><?= lang('App.field_phone') ?></label>
-                            <input type="text" name="phone" class="form-control"
-                                   value="<?= esc(old('phone', $profile?->phone)) ?>">
+                            <div class="input-group">
+                                <select name="phone_code" id="phoneCodeSelect" class="form-select" style="max-width:140px;">
+                                    <?php
+                                    $phoneCodes = [
+                                        'DZ' => ['+213', '🇩🇿 DZ'],
+                                        'FR' => ['+33',  '🇫🇷 FR'],
+                                        'MA' => ['+212', '🇲🇦 MA'],
+                                        'TN' => ['+216', '🇹🇳 TN'],
+                                        'LY' => ['+218', '🇱🇾 LY'],
+                                        'EG' => ['+20',  '🇪🇬 EG'],
+                                        'SA' => ['+966', '🇸🇦 SA'],
+                                        'AE' => ['+971', '🇦🇪 AE'],
+                                        'QA' => ['+974', '🇶🇦 QA'],
+                                        'KW' => ['+965', '🇰🇼 KW'],
+                                        'BH' => ['+973', '🇧🇭 BH'],
+                                        'OM' => ['+968', '🇴🇲 OM'],
+                                        'JO' => ['+962', '🇯🇴 JO'],
+                                        'LB' => ['+961', '🇱🇧 LB'],
+                                        'SY' => ['+963', '🇸🇾 SY'],
+                                        'IQ' => ['+964', '🇮🇶 IQ'],
+                                        'GB' => ['+44',  '🇬🇧 UK'],
+                                        'DE' => ['+49',  '🇩🇪 DE'],
+                                        'ES' => ['+34',  '🇪🇸 ES'],
+                                        'IT' => ['+39',  '🇮🇹 IT'],
+                                        'US' => ['+1',   '🇺🇸 US'],
+                                        'CA' => ['+1',   '🇨🇦 CA'],
+                                        'BE' => ['+32',  '🇧🇪 BE'],
+                                        'CH' => ['+41',  '🇨🇭 CH'],
+                                        'PT' => ['+351', '🇵🇹 PT'],
+                                        'NL' => ['+31',  '🇳🇱 NL'],
+                                        'SE' => ['+46',  '🇸🇪 SE'],
+                                        'TR' => ['+90',  '🇹🇷 TR'],
+                                        'BR' => ['+55',  '🇧🇷 BR'],
+                                        'SN' => ['+221', '🇸🇳 SN'],
+                                        'CI' => ['+225', '🇨🇮 CI'],
+                                        'CM' => ['+237', '🇨🇲 CM'],
+                                    ];
+                                    $savedCode = old('phone_code', $profile?->phone_code ?? '+213');
+                                    foreach ($phoneCodes as $iso => [$code, $label]):
+                                    ?>
+                                    <option value="<?= $code ?>" <?= $savedCode === $code ? 'selected' : '' ?>>
+                                        <?= $label ?> <?= $code ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <input type="tel" name="phone" id="phoneNumber" class="form-control"
+                                       value="<?= esc(old('phone', $profile?->phone)) ?>"
+                                       placeholder="6 12 34 56 78"
+                                       pattern="[0-9\s\-]{6,15}">
+                            </div>
+                            <div class="form-text text-muted" id="phonePreview"></div>
                         </div>
-                        <div class="col-md-3">
+
+                        <!-- City with datalist -->
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold"><?= lang('App.field_city') ?></label>
-                            <input type="text" name="city" class="form-control"
-                                   value="<?= esc(old('city', $profile?->city)) ?>">
+                            <input type="text" name="city" id="cityInput" class="form-control"
+                                   value="<?= esc(old('city', $profile?->city)) ?>"
+                                   placeholder="<?= lang('App.placeholder_city') ?>"
+                                   list="citySuggestions" autocomplete="off">
+                            <datalist id="citySuggestions"></datalist>
                         </div>
+
+                        <!-- Country select -->
                         <div class="col-md-3">
                             <label class="form-label fw-semibold"><?= lang('App.field_country') ?></label>
-                            <input type="text" name="country" class="form-control"
-                                   value="<?= esc(old('country', $profile?->country)) ?>">
+                            <select name="country" id="countrySelect" class="form-select">
+                                <option value=""><?= lang('App.select_country') ?></option>
+                                <?php
+                                $countries = [
+                                    'Algeria'=>'Algérie','France'=>'France','Morocco'=>'Maroc',
+                                    'Tunisia'=>'Tunisie','Libya'=>'Libye','Egypt'=>'Égypte',
+                                    'Saudi Arabia'=>'Arabie Saoudite','United Arab Emirates'=>'Émirats Arabes Unis',
+                                    'Qatar'=>'Qatar','Kuwait'=>'Koweït','Bahrain'=>'Bahreïn',
+                                    'Oman'=>'Oman','Jordan'=>'Jordanie','Lebanon'=>'Liban',
+                                    'Syria'=>'Syrie','Iraq'=>'Irak','Germany'=>'Allemagne',
+                                    'Belgium'=>'Belgique','Switzerland'=>'Suisse',
+                                    'Canada'=>'Canada','United States'=>'États-Unis',
+                                    'United Kingdom'=>'Royaume-Uni','Spain'=>'Espagne',
+                                    'Italy'=>'Italie','Portugal'=>'Portugal',
+                                    'Netherlands'=>'Pays-Bas','Sweden'=>'Suède','Turkey'=>'Turquie',
+                                    'Senegal'=>'Sénégal','Ivory Coast'=>'Côte d\'Ivoire',
+                                    'Cameroon'=>'Cameroun','Brazil'=>'Brésil',
+                                ];
+                                $savedCountry = old('country', $profile?->country ?? '');
+                                foreach ($countries as $en => $fr):
+                                ?>
+                                <option value="<?= esc($en) ?>" <?= $savedCountry === $en ? 'selected' : '' ?>>
+                                    <?= esc($fr) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold"><?= lang('App.field_linkedin') ?></label>
@@ -251,5 +390,55 @@
         </div>
     </div>
 </div>
+
+<script>
+// Phone preview
+const phoneCode = document.getElementById('phoneCodeSelect');
+const phoneNum  = document.getElementById('phoneNumber');
+const preview   = document.getElementById('phonePreview');
+function updatePhonePreview() {
+    const num = phoneNum.value.trim();
+    preview.textContent = num ? (phoneCode.value + ' ' + num) : '';
+}
+phoneCode.addEventListener('change', updatePhonePreview);
+phoneNum.addEventListener('input', updatePhonePreview);
+updatePhonePreview();
+
+// City suggestions per country
+const citiesByCountry = {
+    'Algeria':         ['Alger','Oran','Constantine','Annaba','Blida','Sétif','Tlemcen','Batna','Béjaïa'],
+    'France':          ['Paris','Lyon','Marseille','Toulouse','Bordeaux','Nantes','Lille','Strasbourg','Nice','Rennes'],
+    'Morocco':         ['Casablanca','Rabat','Fès','Marrakech','Agadir','Tanger','Meknès','Oujda'],
+    'Tunisia':         ['Tunis','Sfax','Sousse','Kairouan','Bizerte','Gabès'],
+    'Egypt':           ['Cairo','Alexandria','Giza','Shubra El-Kheima','Port Said'],
+    'Saudi Arabia':    ['Riyadh','Jeddah','Mecca','Medina','Dammam'],
+    'United Arab Emirates': ['Dubai','Abu Dhabi','Sharjah','Ajman','Ras Al Khaimah'],
+    'Germany':         ['Berlin','Hamburg','Munich','Cologne','Frankfurt','Stuttgart','Düsseldorf'],
+    'Belgium':         ['Brussels','Antwerp','Ghent','Liège','Bruges'],
+    'Switzerland':     ['Zurich','Geneva','Basel','Bern','Lausanne'],
+    'Canada':          ['Toronto','Montreal','Vancouver','Calgary','Ottawa','Quebec City'],
+    'United States':   ['New York','Los Angeles','Chicago','Houston','Phoenix','San Francisco','Seattle'],
+    'United Kingdom':  ['London','Manchester','Birmingham','Leeds','Glasgow','Edinburgh'],
+    'Spain':           ['Madrid','Barcelona','Valencia','Seville','Zaragoza'],
+    'Italy':           ['Rome','Milan','Naples','Turin','Florence'],
+};
+
+const countrySelect = document.getElementById('countrySelect');
+const cityInput     = document.getElementById('cityInput');
+const cityList      = document.getElementById('citySuggestions');
+
+function loadCitySuggestions(country) {
+    cityList.innerHTML = '';
+    (citiesByCountry[country] || []).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        cityList.appendChild(opt);
+    });
+}
+
+countrySelect.addEventListener('change', () => loadCitySuggestions(countrySelect.value));
+// Init on page load for pre-filled country
+loadCitySuggestions(countrySelect.value);
+</script>
 
 <?= $this->endSection() ?>
