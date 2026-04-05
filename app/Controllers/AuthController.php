@@ -115,14 +115,17 @@ class AuthController extends BaseController
 
     public function logout(): RedirectResponse
     {
-        // Clear remember token
+        // Clear remember token from DB before destroying session
         $userId = session()->get('user_id');
         if ($userId) {
             $this->userModel->update($userId, ['remember_token' => null]);
         }
 
+        // Must set flash BEFORE destroying the session
+        session()->setFlashdata('success', 'You have been logged out.');
         session()->destroy();
         delete_cookie('remember_token');
-        return redirect()->to('/login')->with('success', 'You have been logged out.');
+
+        return redirect()->to('/login');
     }
 }
