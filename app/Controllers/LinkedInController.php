@@ -75,14 +75,15 @@ class LinkedInController extends BaseController
     // ──────────────────────────────────────────────────────────────────────────
     public function callback(): RedirectResponse
     {
+        // Capture source BEFORE handleCallback() removes it from session
+        $source  = session()->get('linkedin_oauth_source') ?? 'login';
+        $errDest = ($source === 'import') ? 'profile/edit' : 'login';
         try {
             return $this->handleCallback();
         } catch (\Throwable $e) {
             log_message('error', '[LinkedIn callback] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
-            $source  = session()->get('linkedin_oauth_source') ?? 'login';
-            $errDest = ($source === 'import') ? 'profile/edit' : 'login';
             return redirect()->to($errDest)
-                             ->with('error', 'LinkedIn error: ' . $e->getMessage());
+                             ->with('error', 'Une erreur s\'est produite avec LinkedIn. Veuillez réessayer.');
         }
     }
 
@@ -103,7 +104,7 @@ class LinkedInController extends BaseController
         // Validate CSRF state
         $storedState = session()->get('linkedin_oauth_state');
         if (empty($state) || empty($storedState)) {
-            return redirect()->to('login')
+            return redirect()->to($errDest)
                              ->with('error', 'Your session expired. Please try LinkedIn login again.');
         }
         if ($state !== $storedState) {
@@ -366,7 +367,7 @@ class LinkedInController extends BaseController
         }
 
         // Profile photo — download and store locally
-        if (!empty($li['picture']) && empty($profile?->avatar)) {
+        if (!empty($li['picture']) && empty(isset($profile->avatar) ? $profile->avatar : null)) {
             $avatarFile = $this->downloadAvatar($li['picture'], $userId);
             if ($avatarFile !== null) {
                 $profileData['avatar'] = $avatarFile;

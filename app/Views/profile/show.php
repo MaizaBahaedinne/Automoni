@@ -5,7 +5,7 @@
     <!-- Left: Info -->
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm text-center p-4 mb-3">
-            <?php if (!empty($profile?->avatar)): ?>
+            <?php if (!empty(isset($profile->avatar) ? $profile->avatar : null)): ?>
                 <img src="<?= base_url('writable/uploads/' . esc($profile->avatar)) ?>"
                      class="rounded-circle mx-auto mb-3" style="width:90px;height:90px;object-fit:cover;" alt="avatar">
             <?php else: ?>
