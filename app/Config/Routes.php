@@ -37,7 +37,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get ('dashboard', 'DashboardController::index');
 
     // LinkedIn connect (authenticated — starts the OAuth flow)
-    $routes->get('linkedin/connect', 'LinkedInController::connect');
+    $routes->get ('linkedin/connect',         'LinkedInController::connect');
+    $routes->post('linkedin/import/confirm',  'LinkedInController::confirmImport');
+    $routes->get ('linkedin/import/cancel',   'LinkedInController::cancelImport');
 
     // Profile
     $routes->get ('profile',                    'ProfileController::show');

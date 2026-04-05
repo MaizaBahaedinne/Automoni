@@ -397,6 +397,107 @@
     </div>
 </div>
 
+<?php
+// ── LinkedIn Import Preview Modal ─────────────────────────────────────────────
+$liPreview = session()->get('linkedin_import_preview');
+?>
+<?php if (!empty($liPreview)): ?>
+<div class="modal fade" id="linkedinImportModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="liImportTitle" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <form action="<?= base_url('linkedin/import/confirm') ?>" method="post">
+                <?= csrf_field() ?>
+
+                <!-- Header -->
+                <div class="modal-header text-white py-3" style="background:#0A66C2;border-radius:.375rem .375rem 0 0;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-linkedin fs-5"></i>
+                        </div>
+                        <div>
+                            <h6 class="modal-title fw-bold mb-0" id="liImportTitle">Confirmer l'import LinkedIn</h6>
+                            <small class="opacity-75">Choisissez les données à importer</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body p-0">
+                    <div class="px-4 pt-3 pb-2">
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-info-circle me-1 text-primary"></i>
+                            Les données suivantes ont été trouvées sur votre profil LinkedIn.
+                            Décochez les champs que vous ne souhaitez <em>pas</em> importer.
+                        </p>
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($liPreview as $key => $item): ?>
+                        <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 px-4 py-3" style="cursor:pointer;">
+                            <input class="form-check-input flex-shrink-0 mt-0"
+                                   type="checkbox"
+                                   name="import_fields[]"
+                                   value="<?= esc($key) ?>"
+                                   id="li_field_<?= esc($key) ?>"
+                                   checked>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <span class="badge rounded-pill mb-1" style="background:#e8f0fe;color:#0A66C2;font-size:.7rem;">
+                                    <?= esc($item['label']) ?>
+                                </span>
+                                <?php if (!empty($item['is_image'])): ?>
+                                    <div class="mt-1">
+                                        <img src="<?= esc($item['new']) ?>"
+                                             class="rounded-circle border"
+                                             style="width:56px;height:56px;object-fit:cover;"
+                                             alt="Photo LinkedIn"
+                                             onerror="this.closest('label').style.display='none'">
+                                    </div>
+                                <?php else: ?>
+                                    <div class="fw-semibold text-truncate small mt-1"><?= esc($item['new']) ?></div>
+                                <?php endif; ?>
+                            </div>
+                            <i class="bi bi-check-circle-fill text-success flex-shrink-0" style="font-size:1.1rem;"></i>
+                        </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer border-0 pt-0 pb-3 px-4 gap-2">
+                    <a href="<?= base_url('linkedin/import/cancel') ?>" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-lg me-1"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-sm fw-semibold text-white ms-auto" style="background:#0A66C2;min-width:130px;">
+                        <i class="bi bi-cloud-arrow-down me-1"></i>Importer
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var modal = new bootstrap.Modal(document.getElementById('linkedinImportModal'), { backdrop: 'static' });
+    modal.show();
+
+    // Toggle checkmark icon when checkbox changes
+    document.querySelectorAll('#linkedinImportModal .form-check-input').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            var icon = this.closest('label').querySelector('.bi-check-circle-fill, .bi-circle');
+            if (icon) {
+                icon.classList.toggle('bi-check-circle-fill', this.checked);
+                icon.classList.toggle('bi-circle', !this.checked);
+                icon.classList.toggle('text-success', this.checked);
+                icon.classList.toggle('text-muted', !this.checked);
+            }
+        });
+    });
+});
+</script>
+<?php endif; ?>
+
 <script>
 // Phone preview
 const phoneCode = document.getElementById('phoneCodeSelect');

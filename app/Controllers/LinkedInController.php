@@ -135,14 +135,216 @@ class LinkedInController extends BaseController
 
         // ── Route to correct handler based on source ──────────────────────────
         if ($source === 'import') {
-            $meData   = $this->fetchMe($token);
-            $imported = $this->importProfile($userInfo, $meData);
-            return redirect()->to('profile/edit')
-                             ->with('success', lang('App.linkedin_import_success') . ' ' . implode(', ', $imported) . '.');
+            $meData       = $this->fetchMe($token);
+            $userId       = (int) session()->get('user_id');
+            $userModel    = model(\App\Models\UserModel::class);
+            $profileModel = model(\App\Models\ProfileModel::class);
+            $user         = $userModel->find($userId);
+            $profile      = $profileModel->where('user_id', $userId)->first();
+
+            if ($user === null) {
+                return redirect()->to('profile/edit')
+                                 ->with('error', 'Session expirée, veuillez vous reconnecter.');
+            }
+
+            $preview = $this->buildImportPreview($userInfo, $meData, $user, $profile);
+
+            if (empty($preview)) {
+                return redirect()->to('profile/edit')
+                                 ->with('info', lang('App.linkedin_already_uptodate'));
+            }
+
+            // Store raw data for the confirm step
+            session()->set('linkedin_import_li',      $userInfo);
+            session()->set('linkedin_import_me',      $meData);
+            session()->set('linkedin_import_preview', $preview);
+
+            return redirect()->to('profile/edit');
         }
 
         // ── Login / Signup flow ───────────────────────────────────────────────
         return $this->loginWithLinkedIn($userInfo);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Confirm the LinkedIn import (POST from modal form)
+    // ──────────────────────────────────────────────────────────────────────────
+    public function confirmImport(): RedirectResponse
+    {
+        $li      = session()->get('linkedin_import_li');
+        $me      = session()->get('linkedin_import_me');
+        $preview = session()->get('linkedin_import_preview');
+
+        // Always clear session data
+        session()->remove('linkedin_import_li');
+        session()->remove('linkedin_import_me');
+        session()->remove('linkedin_import_preview');
+
+        if (empty($li) || empty($preview)) {
+            return redirect()->to('profile/edit')
+                             ->with('error', 'Session expirée — veuillez relancer l\'import LinkedIn.');
+        }
+
+        $selected = $this->request->getPost('import_fields') ?? [];
+
+        if (empty($selected)) {
+            return redirect()->to('profile/edit')
+                             ->with('info', 'Aucun champ sélectionné — import annulé.');
+        }
+
+        $imported = $this->applyImport($li, $me, (array) $selected);
+
+        $msg = !empty($imported)
+            ? lang('App.linkedin_import_success') . ' ' . implode(', ', $imported) . '.'
+            : 'Import terminé — profil déjà à jour.';
+
+        return redirect()->to('profile/edit')->with('success', $msg);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Cancel the import — clear session and redirect back
+    // ──────────────────────────────────────────────────────────────────────────
+    public function cancelImport(): RedirectResponse
+    {
+        session()->remove('linkedin_import_li');
+        session()->remove('linkedin_import_me');
+        session()->remove('linkedin_import_preview');
+        return redirect()->to('profile/edit')->with('info', 'Import LinkedIn annulé.');
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Build the preview array: only fields that would actually change
+    // ──────────────────────────────────────────────────────────────────────────
+    private function buildImportPreview(array $li, ?array $me, object $user, ?object $profile): array
+    {
+        $items = [];
+
+        if (!empty($li['given_name']) && empty(trim((string) $user->first_name))) {
+            $items['first_name'] = [
+                'label' => 'Prénom',
+                'new'   => $li['given_name'],
+            ];
+        }
+        if (!empty($li['family_name']) && empty(trim((string) $user->last_name))) {
+            $items['last_name'] = [
+                'label' => 'Nom',
+                'new'   => $li['family_name'],
+            ];
+        }
+
+        $hl = $this->extractHeadline($me);
+        if (!empty($hl) && empty(isset($profile->headline) ? $profile->headline : null)) {
+            $items['headline'] = [
+                'label' => 'Titre professionnel',
+                'new'   => $hl,
+            ];
+        }
+
+        if (!empty($me['vanityName']) && empty(isset($profile->linkedin) ? $profile->linkedin : null)) {
+            $items['linkedin'] = [
+                'label' => 'URL LinkedIn',
+                'new'   => 'https://www.linkedin.com/in/' . $me['vanityName'],
+            ];
+        }
+
+        if (!empty($li['picture']) && empty(isset($profile->avatar) ? $profile->avatar : null)) {
+            $items['avatar'] = [
+                'label'    => 'Photo de profil',
+                'new'      => $li['picture'],
+                'is_image' => true,
+            ];
+        }
+
+        return $items;
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Apply only the user-selected fields
+    // ──────────────────────────────────────────────────────────────────────────
+    private function applyImport(array $li, ?array $me, array $selected): array
+    {
+        $userId       = (int) session()->get('user_id');
+        $imported     = [];
+        $userModel    = model(\App\Models\UserModel::class);
+        $profileModel = model(\App\Models\ProfileModel::class);
+        $profile      = $profileModel->where('user_id', $userId)->first();
+
+        // Users table fields
+        $updateUser = [];
+        if (in_array('first_name', $selected, true) && !empty($li['given_name'])) {
+            $updateUser['first_name'] = $li['given_name'];
+        }
+        if (in_array('last_name', $selected, true) && !empty($li['family_name'])) {
+            $updateUser['last_name'] = $li['family_name'];
+        }
+        if (!empty($updateUser)) {
+            $userModel->update($userId, $updateUser);
+            $user = $userModel->find($userId);
+            session()->set('user_name', trim($user->first_name . ' ' . $user->last_name));
+            $imported[] = 'nom';
+        }
+
+        // Profiles table fields
+        $updateProfile = [];
+        if (in_array('headline', $selected, true)) {
+            $hl = $this->extractHeadline($me);
+            if (!empty($hl)) {
+                $updateProfile['headline'] = $hl;
+                $imported[] = 'titre';
+            }
+        }
+        if (in_array('linkedin', $selected, true) && !empty($me['vanityName'])) {
+            $updateProfile['linkedin'] = 'https://www.linkedin.com/in/' . $me['vanityName'];
+            $imported[] = 'URL LinkedIn';
+        }
+        if (!empty($updateProfile)) {
+            if ($profile) {
+                $profileModel->update($profile->id, $updateProfile);
+            } else {
+                $updateProfile['user_id'] = $userId;
+                $profileModel->insert($updateProfile);
+                $profile = $profileModel->where('user_id', $userId)->first();
+            }
+        }
+
+        // Avatar — isolated to not break if column missing
+        if (in_array('avatar', $selected, true) && !empty($li['picture'])) {
+            try {
+                $avatarFile = $this->downloadAvatar($li['picture'], $userId);
+                if ($avatarFile !== null) {
+                    if ($profile) {
+                        $profileModel->update($profile->id, ['avatar' => $avatarFile]);
+                    } else {
+                        $profileModel->insert(['user_id' => $userId, 'avatar' => $avatarFile]);
+                    }
+                    $imported[] = 'photo';
+                }
+            } catch (\Throwable $e) {
+                log_message('error', '[LinkedIn applyImport] Avatar save failed: ' . $e->getMessage());
+            }
+        }
+
+        return $imported;
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Extract headline string from /v2/me response (handles localized format)
+    // ──────────────────────────────────────────────────────────────────────────
+    private function extractHeadline(?array $me): ?string
+    {
+        if (empty($me['headline'])) {
+            return null;
+        }
+        if (is_string($me['headline'])) {
+            return $me['headline'];
+        }
+        if (is_array($me['headline'])) {
+            $localized = $me['headline']['localized'] ?? $me['headline'];
+            if (is_array($localized)) {
+                return reset($localized) ?: null;
+            }
+        }
+        return null;
     }
 
     // ──────────────────────────────────────────────────────────────────────────
