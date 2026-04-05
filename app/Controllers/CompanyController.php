@@ -16,7 +16,7 @@ class CompanyController extends BaseController
         $this->userId       = (int) session()->get('user_id');
     }
 
-    public function create(): string
+    public function create(): string|RedirectResponse
     {
         $company = $this->companyModel->getByUserId($this->userId);
         if ($company) {
@@ -60,7 +60,7 @@ class CompanyController extends BaseController
         return redirect()->to('/dashboard')->with('success', 'Company profile created!');
     }
 
-    public function edit(): string
+    public function edit(): string|RedirectResponse
     {
         $company = $this->companyModel->getByUserId($this->userId);
         if (!$company) {

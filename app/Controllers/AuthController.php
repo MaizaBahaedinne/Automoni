@@ -57,7 +57,7 @@ class AuthController extends BaseController
 
     // ─── Login ───────────────────────────────────────────────────────────────
 
-    public function loginForm(): string
+    public function loginForm(): string|RedirectResponse
     {
         if (session()->get('user_id')) {
             return redirect()->to('/dashboard');

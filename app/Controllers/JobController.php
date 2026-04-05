@@ -72,7 +72,7 @@ class JobController extends BaseController
 
     // ─── Recruiter: Post a Job ───────────────────────────────────────────
 
-    public function create(): string
+    public function create(): string|RedirectResponse
     {
         $company = model(CompanyModel::class)->getByUserId(session()->get('user_id'));
         if (!$company) {
