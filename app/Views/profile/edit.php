@@ -245,7 +245,7 @@
                         <div class="col-md-12">
                             <label class="form-label fw-semibold"><?= lang('App.field_skills') ?> <span class="text-muted small">(<?= lang('App.skills_hint') ?>)</span></label>
                             <input type="text" name="skills" class="form-control"
-                                   value="<?= esc(implode(', ', array_column((array) $skills, 'name'))) ?>"
+                                   value="<?= esc(implode(', ', array_column((array) $skills, 'skill_name'))) ?>"
                                    placeholder="PHP, JavaScript, MySQL...">
                         </div>
                         <div class="col-md-4">

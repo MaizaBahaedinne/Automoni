@@ -64,7 +64,7 @@
                 <h5 class="fw-bold"><i class="bi bi-tools me-2 text-primary"></i><?= lang('App.section_skills') ?></h5>
                 <div class="d-flex flex-wrap gap-2">
                     <?php foreach ($skills as $skill): ?>
-                        <span class="badge bg-secondary fs-6"><?= esc($skill->name) ?></span>
+                        <span class="badge bg-secondary fs-6"><?= esc($skill->skill_name) ?></span>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -79,10 +79,10 @@
                 <?php foreach ($experiences as $exp): ?>
                 <div class="mb-3 pb-2 border-bottom">
                     <div class="d-flex justify-content-between">
-                        <span class="fw-semibold"><?= esc($exp->job_title) ?></span>
+                        <span class="fw-semibold"><?= esc($exp->title ?? '') ?></span>
                         <small class="text-muted">
-                            <?= date('M Y', strtotime($exp->start_date)) ?> –
-                            <?= $exp->is_current ? lang('App.present') : date('M Y', strtotime($exp->end_date)) ?>
+                            <?= $exp->start_date ? date('M Y', strtotime($exp->start_date)) : '' ?> &ndash;
+                            <?= $exp->is_current ? lang('App.present') : ($exp->end_date ? date('M Y', strtotime($exp->end_date)) : lang('App.present')) ?>
                         </small>
                     </div>
                     <div class="text-muted small"><?= esc($exp->company) ?></div>
