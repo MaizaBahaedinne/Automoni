@@ -103,13 +103,13 @@
                 <?php foreach ($education as $edu): ?>
                 <div class="mb-2 pb-2 border-bottom">
                     <div class="d-flex justify-content-between">
-                        <span class="fw-semibold"><?= esc($edu->degree) ?><?= !empty($edu->field_of_study) ? ' in ' . esc($edu->field_of_study) : '' ?></span>
+                        <span class="fw-semibold"><?= esc($edu->degree) ?><?= !empty($edu->field) ? ' in ' . esc($edu->field) : '' ?></span>
                         <small class="text-muted">
                             <?= !empty($edu->start_year) ? esc($edu->start_year) : '' ?>
                             <?= !empty($edu->end_year) ? ' – ' . esc($edu->end_year) : '' ?>
                         </small>
                     </div>
-                    <div class="text-muted small"><?= esc($edu->school) ?></div>
+                    <div class="text-muted small"><?= esc($edu->institution) ?></div>
                 </div>
                 <?php endforeach; ?>
             </div>

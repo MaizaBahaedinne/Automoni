@@ -8,6 +8,7 @@ class ExperienceModel extends Model
 {
     protected $table         = 'experiences';
     protected $primaryKey    = 'id';
+    protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = [
         'user_id', 'title', 'company', 'location', 'contract',

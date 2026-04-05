@@ -360,8 +360,8 @@
                     <?php foreach ($education as $edu): ?>
                     <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
                         <div>
-                            <span class="fw-semibold"><?= esc($edu->degree) ?></span> — <?= esc($edu->school) ?>
-                            <small class="text-muted d-block"><?= esc($edu->field_of_study ?? '') ?> <?= esc($edu->start_year ?? '') ?> – <?= esc($edu->end_year ?? '') ?></small>
+                            <span class="fw-semibold"><?= esc($edu->degree) ?></span> — <?= esc($edu->institution) ?>
+                            <small class="text-muted d-block"><?= esc($edu->field ?? '') ?> <?= esc($edu->start_year ?? '') ?> – <?= esc($edu->end_year ?? '') ?></small>
                         </div>
                         <form action="<?= base_url('profile/education/delete/' . $edu->id) ?>" method="post"
                               onsubmit="return confirm('Delete?')">
@@ -374,13 +374,13 @@
                 <form action="<?= base_url('profile/education/add') ?>" method="post" class="row g-2 mt-2">
                     <?= csrf_field() ?>
                     <div class="col-md-4">
-                        <input type="text" name="school" class="form-control form-control-sm" placeholder="School / University" required>
+                        <input type="text" name="institution" class="form-control form-control-sm" placeholder="School / University" required>
                     </div>
                     <div class="col-md-4">
                         <input type="text" name="degree" class="form-control form-control-sm" placeholder="Degree" required>
                     </div>
                     <div class="col-md-4">
-                        <input type="text" name="field_of_study" class="form-control form-control-sm" placeholder="Field of Study">
+                        <input type="text" name="field" class="form-control form-control-sm" placeholder="Field of Study">
                     </div>
                     <div class="col-md-3">
                         <input type="number" name="start_year" class="form-control form-control-sm" placeholder="Start Year" min="1950" max="2030">

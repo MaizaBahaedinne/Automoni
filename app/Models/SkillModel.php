@@ -8,6 +8,7 @@ class SkillModel extends Model
 {
     protected $table         = 'user_skills';
     protected $primaryKey    = 'id';
+    protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = ['user_id', 'skill_id', 'skill_name', 'level'];
 

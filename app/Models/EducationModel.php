@@ -8,6 +8,7 @@ class EducationModel extends Model
 {
     protected $table         = 'education';
     protected $primaryKey    = 'id';
+    protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = [
         'user_id', 'degree', 'field', 'institution', 'location',
