@@ -52,7 +52,13 @@ class LinkedInController extends BaseController
         $state = $this->request->getGet('state');
 
         // Validate CSRF state
-        if (empty($state) || $state !== session()->get('linkedin_oauth_state')) {
+        $storedState = session()->get('linkedin_oauth_state');
+        if (empty($state) || empty($storedState)) {
+            // Session likely expired during the LinkedIn redirect — send back to login
+            return redirect()->to('login')
+                             ->with('error', 'Your session expired. Please log in and try LinkedIn import again.');
+        }
+        if ($state !== $storedState) {
             return redirect()->to('profile/edit')
                              ->with('error', 'Invalid OAuth state — please try again.');
         }

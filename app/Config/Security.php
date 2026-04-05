@@ -18,6 +18,16 @@ class Security extends BaseConfig
     public string $csrfProtection = 'cookie';
 
     /**
+     * URIs that are excluded from CSRF protection.
+     * LinkedIn OAuth callback comes from LinkedIn's servers and carries no CSRF cookie.
+     *
+     * @var list<string>
+     */
+    public array $csrfExcludeURIs = [
+        'linkedin/callback',
+    ];
+
+    /**
      * --------------------------------------------------------------------------
      * CSRF Token Randomization
      * --------------------------------------------------------------------------

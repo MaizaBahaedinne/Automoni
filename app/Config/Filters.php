@@ -73,5 +73,9 @@ class Filters extends BaseConfig
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        // LinkedIn OAuth callback comes from LinkedIn's servers — exempt from CSRF.
+        // CI4 CSRF filter is bypassed for this URI by not applying it here;
+        // the global csrf filter checks the exception list in Security config.
+    ];
 }
