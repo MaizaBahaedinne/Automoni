@@ -231,4 +231,10 @@ return [
     'linkedin_note'           => 'L\'expérience et la formation nécessitent l\'accès partenaire LinkedIn.',
     'linkedin_not_configured' => 'L\'intégration LinkedIn n\'est pas configurée. Ajoutez vos identifiants dans .env.',
     'linkedin_import_success' => 'Profil LinkedIn importé ! Mis à jour :',
+    'linkedin_login_btn'       => 'Continuer avec LinkedIn',
+    'linkedin_login_success'   => 'Bienvenue,',
+    'linkedin_signup_seeker'   => 'Rejoindre en tant que candidat',
+    'linkedin_signup_recruiter'=> 'Rejoindre en tant que recruteur',
+    'linkedin_signup_role_hint'=> 'Inscrivez-vous instantanément avec LinkedIn :',
+    'or_with_email'            => 'ou continuer avec un email',
 ];

@@ -25,6 +25,7 @@ class Security extends BaseConfig
      */
     public array $csrfExcludeURIs = [
         'linkedin/callback',
+        'linkedin/login',
     ];
 
     /**

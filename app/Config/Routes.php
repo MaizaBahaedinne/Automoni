@@ -10,6 +10,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('lang/(:segment)', 'LangController::switch/$1');
 
 // ─── LinkedIn OAuth (callback must be public — no session yet when LinkedIn redirects) ──
+$routes->get('linkedin/login',    'LinkedInController::loginConnect');
 $routes->get('linkedin/callback', 'LinkedInController::callback');
 
 // ─── Public ──────────────────────────────────────────────────────────────────

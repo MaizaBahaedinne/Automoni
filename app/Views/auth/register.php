@@ -19,6 +19,23 @@
                 </div>
             <?php endif; ?>
 
+            <!-- LinkedIn Signup -->
+            <p class="text-center small mb-2" style="color:var(--muted)"><?= lang('App.linkedin_signup_role_hint') ?></p>
+            <div class="d-flex gap-2 mb-3">
+                <a href="<?= base_url('linkedin/login?role=job_seeker') ?>" class="btn flex-fill fw-semibold d-flex align-items-center justify-content-center gap-2"
+                   style="background:#0A66C2;color:#fff;border:none;padding:.55rem;border-radius:8px;font-size:.875rem;">
+                    <i class="bi bi-linkedin"></i><?= lang('App.linkedin_signup_seeker') ?>
+                </a>
+                <a href="<?= base_url('linkedin/login?role=recruiter') ?>" class="btn flex-fill fw-semibold d-flex align-items-center justify-content-center gap-2"
+                   style="background:#0A66C2;color:#fff;border:none;padding:.55rem;border-radius:8px;font-size:.875rem;">
+                    <i class="bi bi-linkedin"></i><?= lang('App.linkedin_signup_recruiter') ?>
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <hr class="flex-grow-1 m-0"><span style="color:var(--muted);font-size:.8rem"><?= lang('App.or_with_email') ?></span><hr class="flex-grow-1 m-0">
+            </div>
+
             <form action="<?= base_url('register') ?>" method="post">
                 <?= csrf_field() ?>
                 <div class="row g-3 mb-3">

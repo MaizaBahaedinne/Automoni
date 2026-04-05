@@ -231,4 +231,10 @@ return [
     'linkedin_note'           => 'الخبرات والتعليم تتطلب وصول شريك LinkedIn.',
     'linkedin_not_configured' => 'تكامل LinkedIn غير مُهيَّأ. أضف بيانات الاعتماد في ملف .env.',
     'linkedin_import_success' => 'تم استيراد ملف LinkedIn! تم تحديث:',
+    'linkedin_login_btn'       => 'المتابعة باستخدام LinkedIn',
+    'linkedin_login_success'   => 'مرحباً,',
+    'linkedin_signup_seeker'   => 'انضم كباحث عن عمل',
+    'linkedin_signup_recruiter'=> 'انضم كموظّف',
+    'linkedin_signup_role_hint'=> 'سجّل فورًا باستخدام LinkedIn:',
+    'or_with_email'            => 'أو باستخدام البريد الإلكتروني',
 ];

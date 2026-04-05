@@ -13,7 +13,7 @@ class UserModel extends Model
     protected $useTimestamps    = true;
     protected $allowedFields    = [
         'first_name', 'last_name', 'email', 'password',
-        'role', 'avatar', 'email_verified', 'status', 'remember_token',
+        'role', 'avatar', 'email_verified', 'status', 'remember_token', 'linkedin_id',
     ];
 
     protected $validationRules = [

@@ -25,6 +25,39 @@ class LinkedInController extends BaseController
         // CSRF protection: generate a random state token and store it
         $state = bin2hex(random_bytes(16));
         session()->set('linkedin_oauth_state', $state);
+        session()->set('linkedin_oauth_source', 'import'); // import vs login
+
+        $params = http_build_query([
+            'response_type' => 'code',
+            'client_id'     => $clientId,
+            'redirect_uri'  => base_url('linkedin/callback'),
+            'state'         => $state,
+            'scope'         => 'openid profile email',
+        ]);
+
+        return redirect()->to(self::AUTH_URL . '?' . $params);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Start LinkedIn Login / Signup flow (public — no auth required)
+    // ──────────────────────────────────────────────────────────────────────────
+    public function loginConnect(): RedirectResponse
+    {
+        $clientId = env('LINKEDIN_CLIENT_ID');
+        if (empty($clientId)) {
+            return redirect()->to('login')
+                             ->with('error', lang('App.linkedin_not_configured'));
+        }
+
+        $state = bin2hex(random_bytes(16));
+        session()->set('linkedin_oauth_state', $state);
+        session()->set('linkedin_oauth_source', 'login'); // distinguish from import
+
+        // Store the requested role if provided (for signup flow)
+        $role = $this->request->getGet('role');
+        if (in_array($role, ['job_seeker', 'recruiter'], true)) {
+            session()->set('linkedin_signup_role', $role);
+        }
 
         $params = http_build_query([
             'response_type' => 'code',
@@ -42,9 +75,12 @@ class LinkedInController extends BaseController
     // ──────────────────────────────────────────────────────────────────────────
     public function callback(): RedirectResponse
     {
+        $source = session()->get('linkedin_oauth_source') ?? 'login';
+        $errDest = ($source === 'import') ? 'profile/edit' : 'login';
+
         // User cancelled the authorisation dialog
         if ($this->request->getGet('error')) {
-            return redirect()->to('profile/edit')
+            return redirect()->to($errDest)
                              ->with('error', 'LinkedIn connection was cancelled.');
         }
 
@@ -54,43 +90,129 @@ class LinkedInController extends BaseController
         // Validate CSRF state
         $storedState = session()->get('linkedin_oauth_state');
         if (empty($state) || empty($storedState)) {
-            // Session likely expired during the LinkedIn redirect — send back to login
             return redirect()->to('login')
-                             ->with('error', 'Your session expired. Please log in and try LinkedIn import again.');
+                             ->with('error', 'Your session expired. Please try LinkedIn login again.');
         }
         if ($state !== $storedState) {
-            return redirect()->to('profile/edit')
+            return redirect()->to($errDest)
                              ->with('error', 'Invalid OAuth state — please try again.');
         }
         session()->remove('linkedin_oauth_state');
+        session()->remove('linkedin_oauth_source');
 
         if (empty($code)) {
-            return redirect()->to('profile/edit')
+            return redirect()->to($errDest)
                              ->with('error', 'No authorisation code received from LinkedIn.');
         }
 
-        // Exchange authorisation code for access token
+        // Exchange code for token
         $token = $this->getAccessToken($code);
         if ($token === null) {
-            return redirect()->to('profile/edit')
+            return redirect()->to($errDest)
                              ->with('error', 'Failed to obtain LinkedIn access token — please try again.');
         }
 
-        // Fetch profile via OpenID Connect /v2/userinfo (always available with openid+profile+email scopes)
+        // Fetch user info (name, email, picture, sub)
         $userInfo = $this->fetchUserInfo($token);
         if ($userInfo === null) {
-            return redirect()->to('profile/edit')
+            return redirect()->to($errDest)
                              ->with('error', 'Failed to fetch LinkedIn profile data.');
         }
 
-        // Also attempt to fetch headline & vanityName from /v2/me (may not be available for all apps)
-        $meData = $this->fetchMe($token);
+        // ── Route to correct handler based on source ──────────────────────────
+        if ($source === 'import') {
+            $meData   = $this->fetchMe($token);
+            $imported = $this->importProfile($userInfo, $meData);
+            return redirect()->to('profile/edit')
+                             ->with('success', lang('App.linkedin_import_success') . ' ' . implode(', ', $imported) . '.');
+        }
 
-        // Import data into the database and get a list of imported fields
-        $imported = $this->importProfile($userInfo, $meData);
+        // ── Login / Signup flow ───────────────────────────────────────────────
+        return $this->loginWithLinkedIn($userInfo);
+    }
 
-        return redirect()->to('profile/edit')
-                         ->with('success', lang('App.linkedin_import_success') . ' ' . implode(', ', $imported) . '.');
+    // ──────────────────────────────────────────────────────────────────────────
+    // Find or create a user from LinkedIn data, then log them in
+    // ──────────────────────────────────────────────────────────────────────────
+    private function loginWithLinkedIn(array $li): RedirectResponse
+    {
+        $userModel    = model(\App\Models\UserModel::class);
+        $profileModel = model(\App\Models\ProfileModel::class);
+
+        $linkedinId = $li['sub'] ?? null;
+        $email      = $li['email'] ?? null;
+
+        if (empty($linkedinId) || empty($email)) {
+            return redirect()->to('login')
+                             ->with('error', 'LinkedIn did not return the required profile data.');
+        }
+
+        // 1. Find by linkedin_id (returning user)
+        $user = $userModel->where('linkedin_id', $linkedinId)->first();
+
+        // 2. Find by email (existing account without linkedin_id linked yet)
+        if (!$user) {
+            $user = $userModel->findByEmail($email);
+            if ($user) {
+                // Link the linkedin_id to the existing account
+                $userModel->update($user->id, ['linkedin_id' => $linkedinId]);
+                $user = $userModel->find($user->id);
+            }
+        }
+
+        // 3. Create new account
+        if (!$user) {
+            $role = session()->get('linkedin_signup_role') ?? 'job_seeker';
+            session()->remove('linkedin_signup_role');
+
+            $firstName = $li['given_name']  ?? 'User';
+            $lastName  = $li['family_name'] ?? '';
+
+            // Generate a random secure password (user logs in via LinkedIn, not password)
+            $randomPassword = bin2hex(random_bytes(16));
+
+            $userId = $userModel->insert([
+                'first_name'     => $firstName,
+                'last_name'      => $lastName,
+                'email'          => $email,
+                'password'       => $randomPassword,
+                'role'           => $role,
+                'email_verified' => 1,
+                'linkedin_id'    => $linkedinId,
+            ]);
+
+            // Create profile and download avatar
+            $profileData = ['user_id' => $userId];
+            if (!empty($li['picture'])) {
+                $avatar = $this->downloadAvatar($li['picture'], $userId);
+                if ($avatar) {
+                    $profileData['avatar'] = $avatar;
+                    $userModel->update($userId, ['avatar' => $avatar]);
+                }
+            }
+            $profileModel->insert($profileData);
+
+            $user = $userModel->find($userId);
+        }
+
+        if ($user->status !== 'active') {
+            return redirect()->to('login')
+                             ->with('error', 'Your account has been suspended.');
+        }
+
+        // Start session
+        session()->regenerate(true);
+        session()->set([
+            'user_id'    => $user->id,
+            'user_email' => $user->email,
+            'user_name'  => trim($user->first_name . ' ' . $user->last_name),
+            'user_role'  => $user->role,
+            'logged_in'  => true,
+        ]);
+
+        $redirect = session()->getFlashdata('redirect_url') ?? '/dashboard';
+        return redirect()->to($redirect)
+                         ->with('success', lang('App.linkedin_login_success') . ' ' . $user->first_name . '!');
     }
 
     // ──────────────────────────────────────────────────────────────────────────

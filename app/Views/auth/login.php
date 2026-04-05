@@ -18,6 +18,23 @@
                     <?php foreach ((array) $errors as $e): ?><div><?= esc($e) ?></div><?php endforeach; ?>
                 </div>
             <?php endif; ?>
+            <?php if ($error = session()->getFlashdata('error')): ?>
+                <div class="alert alert-danger"><?= esc($error) ?></div>
+            <?php endif; ?>
+            <?php if ($success = session()->getFlashdata('success')): ?>
+                <div class="alert alert-success"><?= esc($success) ?></div>
+            <?php endif; ?>
+
+            <!-- LinkedIn Login -->
+            <a href="<?= base_url('linkedin/login') ?>" class="btn w-100 fw-semibold mb-3 d-flex align-items-center justify-content-center gap-2"
+               style="background:#0A66C2;color:#fff;border:none;padding:.65rem;border-radius:8px;">
+                <i class="bi bi-linkedin" style="font-size:1.1rem;"></i>
+                <?= lang('App.linkedin_login_btn') ?>
+            </a>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <hr class="flex-grow-1 m-0"><span style="color:var(--muted);font-size:.8rem"><?= lang('App.or_with_email') ?></span><hr class="flex-grow-1 m-0">
+            </div>
 
             <form action="<?= base_url('login') ?>" method="post">
                 <?= csrf_field() ?>
