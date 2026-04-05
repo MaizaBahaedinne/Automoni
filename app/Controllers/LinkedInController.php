@@ -201,16 +201,21 @@ class LinkedInController extends BaseController
                 'linkedin_id'    => $linkedinId,
             ]);
 
-            // Create profile and download avatar
-            $profileData = ['user_id' => $userId];
+            // Create profile (basic row first — no avatar yet to avoid missing-column errors)
+            $profileModel->insert(['user_id' => $userId]);
+
+            // Download and save avatar separately so a missing column is non-fatal
             if (!empty($li['picture'])) {
-                $avatar = $this->downloadAvatar($li['picture'], $userId);
-                if ($avatar) {
-                    $profileData['avatar'] = $avatar;
-                    $userModel->update($userId, ['avatar' => $avatar]);
+                try {
+                    $avatar = $this->downloadAvatar($li['picture'], $userId);
+                    if ($avatar) {
+                        $profileModel->where('user_id', $userId)->set(['avatar' => $avatar])->update();
+                        $userModel->update($userId, ['avatar' => $avatar]);
+                    }
+                } catch (\Throwable $e) {
+                    log_message('error', '[LinkedIn loginWithLinkedIn] Avatar save failed: ' . $e->getMessage());
                 }
             }
-            $profileModel->insert($profileData);
 
             $user = $userModel->find($userId);
         }
@@ -316,16 +321,19 @@ class LinkedInController extends BaseController
         $profileModel = model(\App\Models\ProfileModel::class);
 
         // ── 1. Update users table (name) ──────────────────────────────────────
-        $user       = $userModel->find($userId);
-        $updateUser = [];
+        $user = $userModel->find($userId);
+        if ($user === null) {
+            log_message('error', '[LinkedIn importProfile] User not found for user_id=' . $userId);
+            return ['basic info checked'];
+        }
 
+        $updateUser = [];
         if (!empty($li['given_name']) && empty(trim((string) $user->first_name))) {
             $updateUser['first_name'] = $li['given_name'];
         }
         if (!empty($li['family_name']) && empty(trim((string) $user->last_name))) {
             $updateUser['last_name'] = $li['family_name'];
         }
-
         if (!empty($updateUser)) {
             $userModel->update($userId, $updateUser);
             $first = $updateUser['first_name'] ?? $user->first_name;
@@ -334,7 +342,7 @@ class LinkedInController extends BaseController
             $imported[] = 'name';
         }
 
-        // ── 2. Update profiles table ──────────────────────────────────────────
+        // ── 2. Update profiles table (headline + linkedin URL) ────────────────
         $profile     = $profileModel->where('user_id', $userId)->first();
         $profileData = [];
 
@@ -342,16 +350,14 @@ class LinkedInController extends BaseController
         if (!empty($me['headline'])) {
             $hl = null;
             if (is_array($me['headline'])) {
-                // LinkedIn v2 localized object: {"localized":{"en_US":"..."},...}
                 $localized = $me['headline']['localized'] ?? $me['headline'];
                 if (is_array($localized)) {
-                    $hl = reset($localized); // first locale value
+                    $hl = reset($localized);
                 }
             } elseif (is_string($me['headline'])) {
                 $hl = $me['headline'];
             }
-
-            if (!empty($hl) && empty($profile?->headline)) {
+            if (!empty($hl) && empty(isset($profile->headline) ? $profile->headline : null)) {
                 $profileData['headline'] = $hl;
                 $imported[] = 'headline';
             }
@@ -360,27 +366,38 @@ class LinkedInController extends BaseController
         // LinkedIn profile URL — constructed from vanityName
         if (!empty($me['vanityName'])) {
             $liUrl = 'https://www.linkedin.com/in/' . $me['vanityName'];
-            if (empty($profile?->linkedin)) {
+            if (empty(isset($profile->linkedin) ? $profile->linkedin : null)) {
                 $profileData['linkedin'] = $liUrl;
                 $imported[] = 'LinkedIn URL';
             }
         }
 
-        // Profile photo — download and store locally
-        if (!empty($li['picture']) && empty(isset($profile->avatar) ? $profile->avatar : null)) {
-            $avatarFile = $this->downloadAvatar($li['picture'], $userId);
-            if ($avatarFile !== null) {
-                $profileData['avatar'] = $avatarFile;
-                $imported[] = 'photo';
-            }
-        }
-
+        // Save headline + linkedin (no avatar here — handled separately below)
         if (!empty($profileData)) {
             if ($profile) {
                 $profileModel->update($profile->id, $profileData);
             } else {
                 $profileData['user_id'] = $userId;
                 $profileModel->insert($profileData);
+                $profile = $profileModel->where('user_id', $userId)->first();
+            }
+        }
+
+        // ── 3. Avatar — isolated so a missing column never blocks the import ──
+        if (!empty($li['picture']) && empty(isset($profile->avatar) ? $profile->avatar : null)) {
+            try {
+                $avatarFile = $this->downloadAvatar($li['picture'], $userId);
+                if ($avatarFile !== null) {
+                    if ($profile) {
+                        $profileModel->update($profile->id, ['avatar' => $avatarFile]);
+                    } else {
+                        $profileModel->insert(['user_id' => $userId, 'avatar' => $avatarFile]);
+                    }
+                    $imported[] = 'photo';
+                }
+            } catch (\Throwable $e) {
+                // Avatar column may not exist yet on this server — log and skip
+                log_message('error', '[LinkedIn importProfile] Avatar save failed: ' . $e->getMessage());
             }
         }
 
