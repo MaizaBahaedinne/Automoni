@@ -329,7 +329,7 @@
                 <form action="<?= base_url('profile/experience/add') ?>" method="post" class="row g-2 mt-2">
                     <?= csrf_field() ?>
                     <div class="col-md-4">
-                        <input type="text" name="job_title" class="form-control form-control-sm" placeholder="Job Title" required>
+                        <input type="text" name="title" class="form-control form-control-sm" placeholder="Job Title" required>
                     </div>
                     <div class="col-md-4">
                         <input type="text" name="company" class="form-control form-control-sm" placeholder="Company" required>
