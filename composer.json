@@ -41,6 +41,9 @@
                 "PKSA-mscv-ktn8-2rsz"
             ],
             "abandoned": "report"
+        },
+        "platform": {
+            "php": "8.0.30"
         }
     },
     "scripts": {
