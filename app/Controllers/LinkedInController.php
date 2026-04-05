@@ -75,7 +75,20 @@ class LinkedInController extends BaseController
     // ──────────────────────────────────────────────────────────────────────────
     public function callback(): RedirectResponse
     {
-        $source = session()->get('linkedin_oauth_source') ?? 'login';
+        try {
+            return $this->handleCallback();
+        } catch (\Throwable $e) {
+            log_message('error', '[LinkedIn callback] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            $source  = session()->get('linkedin_oauth_source') ?? 'login';
+            $errDest = ($source === 'import') ? 'profile/edit' : 'login';
+            return redirect()->to($errDest)
+                             ->with('error', 'LinkedIn error: ' . $e->getMessage());
+        }
+    }
+
+    private function handleCallback(): RedirectResponse
+    {
+        $source  = session()->get('linkedin_oauth_source') ?? 'login';
         $errDest = ($source === 'import') ? 'profile/edit' : 'login';
 
         // User cancelled the authorisation dialog
