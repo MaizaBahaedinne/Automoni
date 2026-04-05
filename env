@@ -147,7 +147,7 @@
 # 1. Go to https://www.linkedin.com/developers/apps/new
 # 2. Create an app, add "Sign In with LinkedIn using OpenID Connect" product
 # 3. Under "Auth" tab, set Authorized Redirect URL to:
-#    http://localhost/Automoni/public/linkedin/callback
+#    https://persomy.com/linkedin/callback
 # 4. Copy your Client ID and Client Secret below (in your .env file)
 #--------------------------------------------------------------------
 
