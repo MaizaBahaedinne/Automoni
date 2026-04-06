@@ -203,6 +203,9 @@ class OrganizationController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+        $countryCode = strtoupper($this->request->getPost('country_code'));
+        $countryName = $this->getCountryName($countryCode);
+
         $data = [
             'type_id'              => (int) $this->request->getPost('type_id'),
             'name'                 => $this->request->getPost('name'),
@@ -212,7 +215,8 @@ class OrganizationController extends BaseController
             'street_address'       => $this->request->getPost('street_address'),
             'city'                 => $this->request->getPost('city'),
             'postal_code'          => $this->request->getPost('postal_code'),
-            'country_code'         => strtoupper($this->request->getPost('country_code')),
+            'country_code'         => $countryCode,
+            'country'              => $countryName,
             'email'                => $this->request->getPost('email'),
             'industry'             => $this->request->getPost('industry'),
             'phone_country_code'   => $this->request->getPost('phone_country_code'),
@@ -228,6 +232,12 @@ class OrganizationController extends BaseController
         ];
 
         $orgId = $this->organizationModel->insert($data);
+        if (!$orgId) {
+            log_message('error', 'Organization insert failed. Data: ' . json_encode($data) . '. Errors: ' . json_encode($this->organizationModel->errors()));
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create organization. Please try again.');
+        }
 
         // Add creator as owner
         $this->memberModel->addMember($orgId, $this->userId, 'owner');
@@ -405,6 +415,32 @@ class OrganizationController extends BaseController
         $org->social_links = $socialModel->getLinks($org->id);
 
         return $org;
+    }
+
+    /**
+     * Convert country code to full country name
+     */
+    private function getCountryName(string $code): string
+    {
+        $countries = [
+            'DZ' => 'Algeria',
+            'TN' => 'Tunisia',
+            'MA' => 'Morocco',
+            'FR' => 'France',
+            'US' => 'United States',
+            'GB' => 'United Kingdom',
+            'ES' => 'Spain',
+            'IT' => 'Italy',
+            'CH' => 'Switzerland',
+            'CA' => 'Canada',
+            'BE' => 'Belgium',
+            'DE' => 'Germany',
+            'NL' => 'Netherlands',
+            'SE' => 'Sweden',
+            'NO' => 'Norway',
+        ];
+
+        return $countries[strtoupper($code)] ?? $code;
     }
 
     /**
