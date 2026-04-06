@@ -153,7 +153,7 @@ class OrganizationController extends BaseController
             return redirect()->to('/login');
         }
 
-        return view('organizations/form', [
+        return view('organizations/create_enhanced', [
             'title' => 'Create Organization',
             'organization' => null,
             'types' => $this->typeModel->findAll(),
@@ -174,35 +174,57 @@ class OrganizationController extends BaseController
         $rules = [
             'type_id' => 'required|integer',
             'name' => 'required|min_length[3]|max_length[255]',
-            'industry' => 'max_length[100]',
-            'website' => 'valid_url',
-            'email' => 'valid_email',
-            'phone' => 'regex_match[/^[0-9\s\-\+\(\)\.]*$/]',
-            'logo' => 'max_size[logo,5120]|is_image[logo]|mime_in[logo,image/jpeg,image/png,image/webp]',
+            'legal_name' => 'max_length[255]',
+            'street_address' => 'required|min_length[5]|max_length[255]',
+            'city' => 'required|min_length[2]|max_length[100]',
+            'postal_code' => 'required|min_length[2]|max_length[20]',
+            'country_code' => 'required|regex_match[/^[A-Z]{2}$/]',
+            'email' => 'required|valid_email',
+            'phone_number' => 'required|regex_match[/^[0-9\s\-\(\)]+$/]|min_length[7]|max_length[15]',
+            'phone_country_code' => 'regex_match[/^[\+]?[0-9]{1,5}$/]',
+            'website' => 'required|valid_url_strict',
+            'tax_id' => 'max_length[50]',
+            'latitude' => 'numeric|greater_than_equal_to[-90]|less_than_equal_to[90]',
+            'longitude' => 'numeric|greater_than_equal_to[-180]|less_than_equal_to[180]',
+            'employee_count' => 'integer|greater_than_equal_to[0]',
+            'founded_at' => 'valid_date[Y-m-d]',
         ];
 
         if (!$this->validate($rules)) {
-            return $this->response->setStatusCode(400)->setJSON([
-                'status' => 'error',
-                'errors' => $this->validator->getErrors(),
-            ]);
+            if ($this->wantsJson()) {
+                return $this->response->setStatusCode(400)->setJSON([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $this->validator->getErrors(),
+                ]);
+            }
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
         $data = [
-            'type_id'      => $this->request->getPost('type_id'),
-            'name'         => $this->request->getPost('name'),
-            'description'  => $this->request->getPost('description'),
-            'parent_id'    => $this->request->getPost('parent_id') ?? null,
-            'website'      => $this->request->getPost('website'),
-            'email'        => $this->request->getPost('email'),
-            'phone'        => $this->request->getPost('phone'),
-            'address'      => $this->request->getPost('address'),
-            'latitude'     => $this->request->getPost('latitude'),
-            'longitude'    => $this->request->getPost('longitude'),
-            'industry'     => $this->request->getPost('industry'),
-            'employee_count' => $this->request->getPost('employee_count'),
-            'founded_at'   => $this->request->getPost('founded_at'),
-            'status'       => 'active',
+            'type_id'              => $this->request->getPost('type_id'),
+            'name'                 => $this->request->getPost('name'),
+            'legal_name'           => $this->request->getPost('legal_name'),
+            'description'          => $this->request->getPost('description'),
+            'parent_id'            => $this->request->getPost('parent_id') ?? null,
+            'street_address'       => $this->request->getPost('street_address'),
+            'city'                 => $this->request->getPost('city'),
+            'postal_code'          => $this->request->getPost('postal_code'),
+            'country'              => $this->request->getPost('country'),
+            'country_code'         => strtoupper($this->request->getPost('country_code')),
+            'email'                => $this->request->getPost('email'),
+            'phone_country_code'   => $this->request->getPost('phone_country_code'),
+            'phone_number'         => $this->request->getPost('phone_number'),
+            'phone'                => $this->request->getPost('phone_country_code') . ' ' . $this->request->getPost('phone_number'),
+            'website'              => $this->request->getPost('website'),
+            'tax_id'               => $this->request->getPost('tax_id'),
+            'latitude'             => $this->request->getPost('latitude'),
+            'longitude'            => $this->request->getPost('longitude'),
+            'industry'             => $this->request->getPost('industry'),
+            'sectors'              => json_encode($this->request->getPost('sectors') ?? []),
+            'employee_count'       => $this->request->getPost('employee_count'),
+            'founded_at'           => $this->request->getPost('founded_at'),
+            'status'               => 'active',
         ];
 
         $orgId = $this->organizationModel->insert($data);
@@ -321,6 +343,30 @@ class OrganizationController extends BaseController
         }
 
         return redirect()->to("/organizations/$id")->with('success', 'Organization updated successfully');
+    }
+
+    /**
+     * GET /api/organizations/search
+     * Search organizations (for parent organization selection)
+     */
+    public function search()
+    {
+        $query = $this->request->getVar('q');
+        
+        if (strlen($query) < 2) {
+            return $this->response->setJSON([]);
+        }
+
+        $organizations = $this->organizationModel
+            ->select('organizations.id, organizations.name, organization_types.name as type_name')
+            ->join('organization_types', 'organization_types.id = organizations.type_id', 'left')
+            ->like('organizations.name', $query)
+            ->where('organizations.status', 'active')
+            ->limit(10)
+            ->get()
+            ->getResultArray();
+
+        return $this->response->setJSON($organizations);
     }
 
     /**

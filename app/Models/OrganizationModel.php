@@ -12,25 +12,36 @@ class OrganizationModel extends Model
     protected $useSoftDeletes   = true;
     protected $useTimestamps    = true;
     protected $allowedFields    = [
-        'parent_id', 'type_id', 'name', 'slug', 'description', 'logo', 'website',
-        'phone', 'email', 'address', 'latitude', 'longitude', 'employee_count',
-        'industry', 'founded_at', 'status', 'is_verified',
+        'parent_id', 'type_id', 'name', 'legal_name', 'slug', 'description', 'logo', 'website',
+        'phone', 'phone_country_code', 'phone_number', 'email', 'address', 'street_address', 
+        'city', 'postal_code', 'country', 'country_code', 'latitude', 'longitude', 
+        'map_link', 'employee_count', 'industry', 'sectors', 'founded_at', 'tax_id', 
+        'status', 'is_verified',
     ];
 
     protected $validationRules  = [
-        'type_id'      => 'required|integer|greater_than[0]',
-        'name'         => 'required|min_length[3]|max_length[255]|is_unique[organizations.name,id,{id}]',
-        'slug'         => 'required|min_length[3]|max_length[255]|is_unique[organizations.slug,id,{id}]|regex_match[/^[a-z0-9-]+$/]',
-        'description'  => 'max_length[10000]',
-        'website'      => 'valid_url_strict',
-        'email'        => 'valid_email',
-        'phone'        => 'regex_match[/^[0-9\s\-\+\(\)\.]+$/]',
-        'latitude'     => 'numeric|greater_than_equal_to[-90]|less_than_equal_to[90]',
-        'longitude'    => 'numeric|greater_than_equal_to[-180]|less_than_equal_to[180]',
-        'employee_count' => 'integer|greater_than_equal_to[0]',
-        'founded_at'   => 'valid_date[Y-m-d]',
-        'status'       => 'required|in_list[active,inactive,archived]',
-        'is_verified'  => 'in_list[0,1]',
+        'type_id'              => 'required|integer|greater_than[0]',
+        'name'                 => 'required|min_length[3]|max_length[255]|is_unique[organizations.name,id,{id}]',
+        'legal_name'           => 'max_length[255]',
+        'slug'                 => 'required|min_length[3]|max_length[255]|is_unique[organizations.slug,id,{id}]|regex_match[/^[a-z0-9-]+$/]',
+        'description'          => 'max_length[10000]',
+        'website'              => 'required|valid_url_strict',
+        'email'                => 'required|valid_email',
+        'phone'                => 'required',
+        'phone_country_code'   => 'regex_match[/^[\+]?[0-9]{1,5}$/]',
+        'phone_number'         => 'required|regex_match[/^[0-9\s\-\(\)]+$/]|min_length[7]|max_length[15]',
+        'street_address'       => 'required|min_length[5]|max_length[255]',
+        'city'                 => 'required|min_length[2]|max_length[100]',
+        'postal_code'          => 'required|min_length[2]|max_length[20]',
+        'country'              => 'required|min_length[2]|max_length[100]',
+        'country_code'         => 'required|regex_match[/^[A-Z]{2}$/]',
+        'latitude'             => 'numeric|greater_than_equal_to[-90]|less_than_equal_to[90]',
+        'longitude'            => 'numeric|greater_than_equal_to[-180]|less_than_equal_to[180]',
+        'tax_id'               => 'max_length[50]',
+        'employee_count'       => 'integer|greater_than_equal_to[0]',
+        'founded_at'           => 'valid_date[Y-m-d]',
+        'status'               => 'required|in_list[active,inactive,archived]',
+        'is_verified'          => 'in_list[0,1]',
     ];
 
     protected $beforeInsert = ['generateSlug'];
