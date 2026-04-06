@@ -255,7 +255,7 @@ class ProfileController extends BaseController
         if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
         if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
 
-        $expModel->insert($data);
+        $expModel->skipValidation(true)->insert($data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#experience')->with('success', 'Experience added.');
     }
@@ -290,7 +290,7 @@ class ProfileController extends BaseController
         if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
         if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
 
-        $expModel->update($id, $data);
+        $expModel->skipValidation(true)->update($id, $data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#experience')->with('success', 'Experience updated.');
     }
@@ -347,7 +347,7 @@ class ProfileController extends BaseController
         );
         $orgId = (int) $this->request->getPost('org_id');
         $data['org_id'] = $orgId > 0 ? $orgId : null;
-        $eduModel->insert($data);
+        $eduModel->skipValidation(true)->insert($data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#education')->with('success', 'Education added.');
     }
@@ -359,10 +359,14 @@ class ProfileController extends BaseController
         if (!$record || (int) $record->user_id !== $this->userId) {
             return redirect()->to('/profile/edit#education')->with('error', 'Not found.');
         }
+        $rules = $eduModel->getValidationRules();
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
         $data = $this->request->getPost(['degree', 'niveau', 'field', 'institution', 'location', 'start_year', 'end_year', 'description']);
         $orgId = (int) $this->request->getPost('org_id');
         $data['org_id'] = $orgId > 0 ? $orgId : null;
-        $eduModel->update($id, $data);
+        $eduModel->skipValidation(true)->update($id, $data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#education')->with('success', 'Formation mise à jour.');
     }
