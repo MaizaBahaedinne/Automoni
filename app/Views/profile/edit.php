@@ -860,7 +860,54 @@
                         <?= csrf_field() ?>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small"><?= lang('App.lang_name') ?> <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control form-control-sm" placeholder="<?= lang('App.lang_name_ph') ?>" required>
+                            <select name="name" class="form-select form-select-sm" required>
+                                <option value=""><?= lang('App.lang_select_level') ?></option>
+                                <optgroup label="Maghreb / Moyen-Orient">
+                                    <option value="Arabe">🌍 Arabe</option>
+                                    <option value="Arabe (Algérien)">🇩🇿 Arabe (Algérien)</option>
+                                    <option value="Arabe (Marocain)">🇲🇦 Arabe (Marocain)</option>
+                                    <option value="Arabe (Tunisien)">🇹🇳 Arabe (Tunisien)</option>
+                                    <option value="Tamazight / Berbère">🏔 Tamazight / Berbère</option>
+                                    <option value="Hébreu">🇮🇱 Hébreu</option>
+                                    <option value="Persan / Farsi">🇮🇷 Persan / Farsi</option>
+                                    <option value="Turc">🇹🇷 Turc</option>
+                                </optgroup>
+                                <optgroup label="Europe">
+                                    <option value="Français">🇫🇷 Français</option>
+                                    <option value="Anglais">🇬🇧 Anglais</option>
+                                    <option value="Espagnol">🇪🇸 Espagnol</option>
+                                    <option value="Allemand">🇩🇪 Allemand</option>
+                                    <option value="Italien">🇮🇹 Italien</option>
+                                    <option value="Portugais">🇵🇹 Portugais</option>
+                                    <option value="Néerlandais">🇳🇱 Néerlandais</option>
+                                    <option value="Russe">🇷🇺 Russe</option>
+                                    <option value="Polonais">🇵🇱 Polonais</option>
+                                    <option value="Suédois">🇸🇪 Suédois</option>
+                                    <option value="Danois">🇩🇰 Danois</option>
+                                    <option value="Norvégien">🇳🇴 Norvégien</option>
+                                    <option value="Finnois">🇫🇮 Finnois</option>
+                                    <option value="Grec">🇬🇷 Grec</option>
+                                    <option value="Roumain">🇷🇴 Roumain</option>
+                                    <option value="Hongrois">🇭🇺 Hongrois</option>
+                                    <option value="Tchèque">🇨🇿 Tchèque</option>
+                                    <option value="Ukrainien">🇺🇦 Ukrainien</option>
+                                </optgroup>
+                                <optgroup label="Asie / Afrique">
+                                    <option value="Chinois (Mandarin)">🇨🇳 Chinois (Mandarin)</option>
+                                    <option value="Japonais">🇯🇵 Japonais</option>
+                                    <option value="Coréen">🇰🇷 Coréen</option>
+                                    <option value="Hindi">🇮🇳 Hindi</option>
+                                    <option value="Bengali">🇧🇩 Bengali</option>
+                                    <option value="Indonésien">🇮🇩 Indonésien</option>
+                                    <option value="Swahili">🌍 Swahili</option>
+                                    <option value="Hausa">🌍 Hausa</option>
+                                </optgroup>
+                                <optgroup label="Amérique">
+                                    <option value="Anglais (américain)">🇺🇸 Anglais (américain)</option>
+                                    <option value="Espagnol (latino)">🌎 Espagnol (latino)</option>
+                                    <option value="Portugais (brésilien)">🇧🇷 Portugais (brésilien)</option>
+                                </optgroup>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small"><?= lang('App.lang_level') ?> <span class="text-danger">*</span></label>

@@ -197,6 +197,7 @@ return [
     'cert_logo_hint'          => 'PNG/JPG/SVG, max 2 MB',
 
     // ── Languages ───────────────────────────────────────────────────────────────
+    'contact_info'            => 'Contact info',
     'section_languages'       => 'Languages',
     'add_language'            => 'Add Language',
     'lang_name'               => 'Language',
