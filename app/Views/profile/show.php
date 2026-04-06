@@ -86,7 +86,7 @@
     <!-- â‘  Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div style="display:flex;align-items:flex-start;gap:20px;">
         <?php if (!empty(isset($profile->avatar) ? $profile->avatar : null)): ?>
-            <img src="<?= base_url('writable/uploads/' . esc($profile->avatar)) ?>"
+            <img src="<?= base_url('uploads/' . esc($profile->avatar)) ?>"
                  style="width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="">
         <?php else: ?>
             <div style="width:72px;height:72px;border-radius:50%;background:#1a3c8f;color:#fff;

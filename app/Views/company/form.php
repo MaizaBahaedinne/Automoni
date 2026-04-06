@@ -25,7 +25,7 @@
                             <label class="form-label fw-semibold">Logo</label>
                             <?php if (!empty($company?->logo)): ?>
                                 <div class="mb-2">
-                                    <img src="<?= base_url('writable/uploads/logos/' . esc($company->logo)) ?>"
+                                    <img src="<?= base_url('uploads/logos/' . esc($company->logo)) ?>"
                                          alt="logo" class="rounded" style="height:48px;object-fit:cover;">
                                 </div>
                             <?php endif; ?>

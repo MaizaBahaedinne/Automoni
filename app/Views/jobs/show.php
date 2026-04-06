@@ -8,7 +8,7 @@
             <div class="card-body p-4">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <?php if (!empty($job->company_logo)): ?>
-                        <img src="<?= base_url('writable/uploads/logos/' . esc($job->company_logo)) ?>"
+                        <img src="<?= base_url('uploads/logos/' . esc($job->company_logo)) ?>"
                              alt="logo" class="rounded" style="width:56px;height:56px;object-fit:cover;">
                     <?php else: ?>
                         <div class="rounded bg-secondary d-flex align-items-center justify-content-center text-white fw-bold fs-4"

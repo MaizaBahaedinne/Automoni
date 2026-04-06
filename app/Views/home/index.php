@@ -51,7 +51,7 @@
             <div class="card h-100 p-3" style="transition:transform .2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <?php if (!empty($job->company_logo)): ?>
-                        <img src="<?= base_url('writable/uploads/logos/' . esc($job->company_logo)) ?>"
+                        <img src="<?= base_url('uploads/logos/' . esc($job->company_logo)) ?>"
                              alt="logo" class="rounded-3" style="width:44px;height:44px;object-fit:cover;flex-shrink:0;">
                     <?php else: ?>
                         <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold text-white"

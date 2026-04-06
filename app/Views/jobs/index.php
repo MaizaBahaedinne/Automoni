@@ -75,7 +75,7 @@
             <div class="card mb-3 job-card">
                 <div class="card-body d-flex gap-3 align-items-start p-3">
                     <?php if (!empty($job->company_logo)): ?>
-                        <img src="<?= base_url('writable/uploads/logos/' . esc($job->company_logo)) ?>"
+                        <img src="<?= base_url('uploads/logos/' . esc($job->company_logo)) ?>"
                              alt="logo" class="rounded" style="width:48px;height:48px;object-fit:cover;flex-shrink:0;">
                     <?php else: ?>
                         <div class="rounded d-flex align-items-center justify-content-center text-white fw-bold"

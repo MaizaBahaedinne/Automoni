@@ -5,7 +5,7 @@
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm text-center p-4">
             <?php if (!empty($company->logo)): ?>
-                <img src="<?= base_url('writable/uploads/logos/' . esc($company->logo)) ?>"
+                <img src="<?= base_url('uploads/logos/' . esc($company->logo)) ?>"
                      alt="logo" class="mx-auto mb-3 rounded" style="width:80px;height:80px;object-fit:cover;">
             <?php else: ?>
                 <div class="rounded bg-secondary text-white d-flex align-items-center fw-bold justify-content-center mx-auto mb-3 fs-2"
