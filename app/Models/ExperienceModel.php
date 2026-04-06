@@ -19,7 +19,7 @@ class ExperienceModel extends Model
     protected $validationRules = [
         'title'      => 'required|max_length[200]',
         'company'    => 'required|max_length[200]',
-        'start_date' => 'required|valid_date',
+        'start_date' => 'required|valid_date[Y-m]',
     ];
 
     public function getByUserId(int $userId): array

@@ -240,6 +240,9 @@ class ProfileController extends BaseController
         $managerId = (int) $this->request->getPost('manager_user_id');
         $data['manager_user_id'] = $managerId > 0 ? $managerId : null;
 
+        if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
+        if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
+
         $expModel->insert($data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#experience')->with('success', 'Experience added.');
@@ -268,6 +271,9 @@ class ProfileController extends BaseController
 
         $managerId = (int) $this->request->getPost('manager_user_id');
         $data['manager_user_id'] = $managerId > 0 ? $managerId : null;
+
+        if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
+        if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
 
         $expModel->update($id, $data);
         $this->profileModel->recalculateCompleteness($this->userId);
@@ -350,6 +356,8 @@ class ProfileController extends BaseController
             return redirect()->back()->with('error', 'Certification name is required.');
         }
         $data['user_id'] = $this->userId;
+        if (!empty($data['issue_date']))  { $data['issue_date']  .= '-01'; }
+        if (!empty($data['expiry_date'])) { $data['expiry_date'] .= '-01'; }
         if (!empty($data['credential_url'])) {
             $data['credential_url'] = filter_var($data['credential_url'], FILTER_SANITIZE_URL);
         }
@@ -418,6 +426,8 @@ class ProfileController extends BaseController
         $data['user_id']    = $this->userId;
         $data['is_current'] = !empty($data['is_current']) ? 1 : 0;
         if ($data['is_current']) { $data['end_date'] = null; }
+        if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
+        if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
         $projectId = $model->insert($data, true);
 
         // Sync team members
@@ -451,6 +461,8 @@ class ProfileController extends BaseController
         $data['user_id']    = $this->userId;
         $data['is_current'] = !empty($data['is_current']) ? 1 : 0;
         if ($data['is_current']) { $data['end_date'] = null; }
+        if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
+        if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
         $model->insert($data);
         return redirect()->to('/profile/edit#volunteering')->with('success', 'Volunteering added.');
     }

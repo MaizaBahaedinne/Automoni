@@ -465,11 +465,11 @@
                         <!-- Row 4: Period -->
                         <div class="col-md-3">
                             <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?> <span class="text-danger">*</span></label>
-                            <input type="date" name="start_date" id="exp_start_date" class="form-control form-control-sm" required>
+                            <input type="month" name="start_date" id="exp_start_date" class="form-control form-control-sm" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
-                            <input type="date" name="end_date" id="exp_end_date" class="form-control form-control-sm">
+                            <input type="month" name="end_date" id="exp_end_date" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-2 d-flex align-items-end pb-1">
                             <div class="form-check">
@@ -582,11 +582,11 @@
           <!-- Period -->
           <div class="col-md-3">
             <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?> <span class="text-danger">*</span></label>
-            <input type="date" name="start_date" id="eem_start_date" class="form-control form-control-sm" required>
+            <input type="month" name="start_date" id="eem_start_date" class="form-control form-control-sm" required>
           </div>
           <div class="col-md-3">
             <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
-            <input type="date" name="end_date" id="eem_end_date" class="form-control form-control-sm">
+            <input type="month" name="end_date" id="eem_end_date" class="form-control form-control-sm">
           </div>
           <div class="col-12">
             <div class="form-check">
@@ -802,7 +802,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small"><?= lang('App.cert_issue_date') ?></label>
-                            <input type="date" name="issue_date" class="form-control form-control-sm">
+                            <input type="month" name="issue_date" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-8">
                             <label class="form-label fw-semibold small"><?= lang('App.cert_organization') ?></label>
@@ -810,7 +810,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small"><?= lang('App.cert_expiry_date') ?></label>
-                            <input type="date" name="expiry_date" class="form-control form-control-sm">
+                            <input type="month" name="expiry_date" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-8">
                             <label class="form-label fw-semibold small"><?= lang('App.cert_credential_url') ?></label>
@@ -987,11 +987,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?></label>
-                            <input type="date" name="start_date" class="form-control form-control-sm">
+                            <input type="month" name="start_date" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
-                            <input type="date" name="end_date" class="form-control form-control-sm" id="proj_end_date">
+                            <input type="month" name="end_date" class="form-control form-control-sm" id="proj_end_date">
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <div class="form-check mb-1">
@@ -1074,11 +1074,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?></label>
-                            <input type="date" name="start_date" class="form-control form-control-sm">
+                            <input type="month" name="start_date" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
-                            <input type="date" name="end_date" class="form-control form-control-sm" id="vol_end_date">
+                            <input type="month" name="end_date" class="form-control form-control-sm" id="vol_end_date">
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <div class="form-check mb-1">
@@ -1435,8 +1435,8 @@ if (expIsCurrent) {
             document.getElementById('eem_company').value      = d.expCompany;
             document.getElementById('eem_department').value   = d.expDepartment;
             document.getElementById('eem_location').value     = d.expLocation;
-            document.getElementById('eem_start_date').value   = d.expStart;
-            document.getElementById('eem_end_date').value     = d.expEnd;
+            document.getElementById('eem_start_date').value   = (d.expStart || '').substring(0, 7);
+            document.getElementById('eem_end_date').value     = (d.expEnd   || '').substring(0, 7);
             document.getElementById('eem_description').value  = d.expDescription;
             document.getElementById('eem_skills_gained').value= d.expSkills;
 
