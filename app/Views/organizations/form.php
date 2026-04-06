@@ -61,7 +61,7 @@
                             <select name="parent_id" id="parent_id" class="form-select">
                                 <option value="">-- Aucune (organisation principale) --</option>
                                 <?php foreach ($organizations as $org): ?>
-                                    <?php if (empty($organization->id) || $org->id !== $organization->id): ?>
+                                    <?php if (empty($organization) || empty($organization->id) || $org->id !== $organization->id): ?>
                                         <option value="<?= $org->id ?>"
                                                 <?= ($organization->parent_id ?? null) == $org->id ? 'selected' : '' ?>>
                                             <?= esc($org->name) ?>
