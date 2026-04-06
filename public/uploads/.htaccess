@@ -1,0 +1,8 @@
+# Route every file request in this directory through CI4's UploadsController.
+# This ensures writable/uploads/ files are served correctly even when
+# mod_rewrite cannot follow the public/uploads → writable/uploads symlink.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /uploads/
+    RewriteRule ^(.+)$ /index.php/uploads/$1 [L,NC,QSA]
+</IfModule>
