@@ -35,9 +35,10 @@ $routes->get('jobs/(:segment)', 'JobController::show/$1');
 $routes->get('companies/(:segment)', 'CompanyController::show/$1');
 
 // ─── Organizations (public read) ──────────────────────────────────────────────
-$routes->get('organizations',               'OrganizationController::index');
-$routes->get('organizations/(:segment)',    'OrganizationController::show/$1');
-$routes->get('organizations/(:segment)/hierarchy', 'OrganizationController::hierarchy/$1');
+$routes->get('organizations',                      'OrganizationController::index');
+$routes->get('organizations/create',               'OrganizationController::create'); // must be before (:segment)
+$routes->get('organizations/(:num)',               'OrganizationController::show/$1');
+$routes->get('organizations/(:num)/hierarchy',     'OrganizationController::hierarchy/$1');
 
 // ─── Protected — any role ─────────────────────────────────────────────────────
 $routes->group('', ['filter' => 'auth'], static function ($routes) {

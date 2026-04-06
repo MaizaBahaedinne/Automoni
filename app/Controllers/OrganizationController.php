@@ -19,8 +19,8 @@ class OrganizationController extends BaseController
         $this->organizationModel = model(OrganizationModel::class);
         $this->typeModel = model(OrganizationTypeModel::class);
         $this->memberModel = model(OrganizationMemberModel::class);
-        $this->organizationService = service('OrganizationService');
-        $this->userId = (int) session()->get('user_id') ?? 0;
+        $this->organizationService = new OrganizationService();
+        $this->userId = (int) (session()->get('user_id') ?? 0);
     }
 
     /**
