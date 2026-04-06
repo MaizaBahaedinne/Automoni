@@ -40,7 +40,8 @@ class OrganizationModel extends Model
         'longitude'            => 'numeric|greater_than_equal_to[-180]|less_than_equal_to[180]',
         'tax_id'               => 'max_length[50]',
         'employee_count'       => 'integer|greater_than_equal_to[0]',
-        'founded_at'           => 'valid_date[Y-m-d]',
+        'founded_at'           => 'required|valid_date[Y-m-d]',
+        'industry'             => 'required|max_length[100]',
         'status'               => 'required|in_list[active,inactive,archived]',
         'is_verified'          => 'in_list[0,1]',
     ];

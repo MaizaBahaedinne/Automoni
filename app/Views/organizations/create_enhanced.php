@@ -70,7 +70,7 @@
                     </div>
 
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="parent_id" class="form-label fw-semibold">Organisation parente</label>
                             <select name="parent_id" id="parent_id" class="form-select">
                                 <option value="">-- Aucune (organisation principale) --</option>
@@ -78,11 +78,6 @@
                                     <option value="<?= $org->id ?>" <?= old('parent_id') == $org->id ? 'selected' : '' ?>><?= esc($org->name) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="industry" class="form-label fw-semibold">Secteur d'activité</label>
-                            <input type="text" name="industry" id="industry" class="form-control"
-                                   value="<?= old('industry') ?>" placeholder="ex : Technologies de l'information">
                         </div>
                     </div>
 
@@ -212,9 +207,10 @@
                                    value="<?= old('employee_count') ?>" placeholder="ex : 500">
                         </div>
                         <div class="col-md-4">
-                            <label for="founded_at" class="form-label fw-semibold">Date de fondation</label>
-                            <input type="date" name="founded_at" id="founded_at" class="form-control"
+                            <label for="founded_at" class="form-label fw-semibold">Date de fondation <span class="text-danger">*</span></label>
+                            <input type="date" name="founded_at" id="founded_at" class="form-control" required
                                    value="<?= old('founded_at') ?>">
+                            <div class="invalid-feedback">La date de fondation est requise.</div>
                         </div>
                         <div class="col-md-4">
                             <label for="tax_id" class="form-label fw-semibold">Numéro fiscal</label>
@@ -236,7 +232,7 @@
 
                     <!-- Secteur d'activité (single select avec recherche) -->
                     <div class="mb-3">
-                        <label for="industry" class="form-label fw-semibold">Secteur d'activité <span class="text-danger">*</span></label>
+                        <label for="sector_search" class="form-label fw-semibold">Secteur d'activité <span class="text-danger">*</span></label>
                         <div style="position: relative;">
                             <input type="text" id="sector_search" class="form-control" placeholder="Chercher un secteur..." 
                                    autocomplete="off" required style="margin-bottom: 8px;">
@@ -263,6 +259,7 @@
                             </select>
                             <div id="sectorDropdown" style="position: absolute; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-height: 250px; overflow-y: auto; display: none; z-index: 100; box-shadow: var(--shadow);"></div>
                         </div>
+                        <div class="invalid-feedback d-block">Veuillez sélectionner un secteur d'activité.</div>
                         <div class="invalid-feedback d-block">Veuillez sélectionner un secteur d'activité.</div>
                     </div>
 
@@ -637,6 +634,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const crForm = document.getElementById('crForm');
     if (crForm) {
         crForm.addEventListener('submit', function (e) {
+            // Vérifier que le secteur d'activité a une valeur valide (pas du texte libre)
+            const industrySelect = document.getElementById('industry');
+            const sectorSearch = document.getElementById('sector_search');
+            if (industrySelect && !industrySelect.value) {
+                e.preventDefault();
+                e.stopPropagation();
+                sectorSearch.classList.add('is-invalid');
+                sectorSearch.style.borderColor = '#dc3545';
+            }
+            
             if (!this.checkValidity()) {
                 e.preventDefault();
                 e.stopPropagation();
