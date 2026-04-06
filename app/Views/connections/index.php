@@ -423,10 +423,8 @@
         const btn = e.target.closest('.btn-cn-accept');
         if (!btn) return;
         const id = btn.dataset.id;
-        postAction(BASE + 'connections/accept/' + id, () => {
-            document.getElementById('received-' + id)?.remove();
-            updateBadge('[data-pane="pane-received"]');
-        });
+        btn.disabled = true;
+        postAction(BASE + 'connections/accept/' + id, () => location.reload());
     });
 
     // ── Reject ────────────────────────────────────────────────────────────
