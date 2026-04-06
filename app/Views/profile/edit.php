@@ -315,7 +315,21 @@
                 <!-- Existing experiences list -->
                 <?php if (!empty($experiences)): ?>
                     <?php foreach ($experiences as $exp): ?>
-                    <div class="border rounded p-3 mb-3 bg-light position-relative">
+                    <div class="border rounded p-3 mb-3 bg-light position-relative"
+                         data-exp-id="<?= $exp->id ?>"
+                         data-exp-title="<?= esc($exp->title ?? '') ?>"
+                         data-exp-company="<?= esc($exp->company ?? '') ?>"
+                         data-exp-contract="<?= esc($exp->contract ?? '') ?>"
+                         data-exp-level="<?= esc($exp->level ?? '') ?>"
+                         data-exp-department="<?= esc($exp->department ?? '') ?>"
+                         data-exp-location="<?= esc($exp->location ?? '') ?>"
+                         data-exp-start="<?= esc($exp->start_date ?? '') ?>"
+                         data-exp-end="<?= esc($exp->end_date ?? '') ?>"
+                         data-exp-current="<?= $exp->is_current ? '1' : '0' ?>"
+                         data-exp-manager-id="<?= (int)($exp->manager_user_id ?? 0) ?>"
+                         data-exp-manager-name="<?= esc($exp->manager_name ?? '') ?>"
+                         data-exp-skills="<?= esc($exp->skills_gained ?? '') ?>"
+                         data-exp-description="<?= esc($exp->description ?? '') ?>">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="flex-grow-1 me-2">
                                 <div class="fw-semibold fs-6">
@@ -354,11 +368,17 @@
                                 </div>
                                 <?php endif; ?>
                             </div>
-                            <form action="<?= base_url('profile/experience/delete/' . $exp->id) ?>" method="post"
-                                  onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
-                                <?= csrf_field() ?>
-                                <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-                            </form>
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn btn-outline-primary btn-sm btn-exp-edit"
+                                        data-bs-toggle="modal" data-bs-target="#expEditModal">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form action="<?= base_url('profile/experience/delete/' . $exp->id) ?>" method="post"
+                                      onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                                    <?= csrf_field() ?>
+                                    <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -474,6 +494,117 @@
 
             </div>
         </div>
+
+<!-- ── Experience Edit Modal ───────────────────────────────────────────────── -->
+<div class="modal fade" id="expEditModal" tabindex="-1" aria-labelledby="expEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="expEditModalLabel"><i class="bi bi-pencil me-2 text-primary"></i><?= lang('App.btn_edit') ?> — <?= lang('App.section_experience') ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="expEditForm" method="post" action="">
+        <?= csrf_field() ?>
+        <div class="modal-body row g-3">
+
+          <!-- Title + Company -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.field_job_title') ?> <span class="text-danger">*</span></label>
+            <input type="text" name="title" id="eem_title" class="form-control form-control-sm" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.field_company_name') ?> <span class="text-danger">*</span></label>
+            <input type="text" name="company" id="eem_company" class="form-control form-control-sm" required>
+          </div>
+
+          <!-- Contract + Level + Department -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.col_contract') ?></label>
+            <select name="contract" id="eem_contract" class="form-select form-select-sm">
+              <option value=""><?= lang('App.exp_select_contract') ?></option>
+              <option value="CDI">CDI</option>
+              <option value="CDD">CDD</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Internship">Stage / Internship</option>
+              <option value="PartTime">Temps partiel</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.exp_level') ?></label>
+            <select name="level" id="eem_level" class="form-select form-select-sm">
+              <option value=""><?= lang('App.exp_select_level') ?></option>
+              <option value="<?= lang('App.exp_level_junior') ?>"><?= lang('App.exp_level_junior') ?></option>
+              <option value="<?= lang('App.exp_level_mid') ?>"><?= lang('App.exp_level_mid') ?></option>
+              <option value="<?= lang('App.exp_level_senior') ?>"><?= lang('App.exp_level_senior') ?></option>
+              <option value="<?= lang('App.exp_level_lead') ?>"><?= lang('App.exp_level_lead') ?></option>
+              <option value="<?= lang('App.exp_level_expert') ?>"><?= lang('App.exp_level_expert') ?></option>
+              <option value="<?= lang('App.exp_level_manager') ?>"><?= lang('App.exp_level_manager') ?></option>
+              <option value="<?= lang('App.exp_level_director') ?>"><?= lang('App.exp_level_director') ?></option>
+              <option value="<?= lang('App.exp_level_executive') ?>"><?= lang('App.exp_level_executive') ?></option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.field_department') ?></label>
+            <input type="text" name="department" id="eem_department" class="form-control form-control-sm" placeholder="<?= lang('App.placeholder_department') ?>">
+          </div>
+
+          <!-- Location -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.field_city') ?></label>
+            <input type="text" name="location" id="eem_location" class="form-control form-control-sm" placeholder="<?= lang('App.exp_location_ph') ?>">
+          </div>
+
+          <!-- Period -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?> <span class="text-danger">*</span></label>
+            <input type="date" name="start_date" id="eem_start_date" class="form-control form-control-sm" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
+            <input type="date" name="end_date" id="eem_end_date" class="form-control form-control-sm">
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input type="checkbox" name="is_current" value="1" id="eem_is_current" class="form-check-input">
+              <label class="form-check-label small" for="eem_is_current"><?= lang('App.exp_is_current') ?></label>
+            </div>
+          </div>
+
+          <!-- Manager autocomplete -->
+          <div class="col-md-6 position-relative">
+            <label class="form-label fw-semibold small"><?= lang('App.exp_manager') ?></label>
+            <input type="text" id="eem_manager_search" class="form-control form-control-sm"
+                   placeholder="<?= lang('App.exp_manager_ph') ?>" autocomplete="off">
+            <input type="hidden" name="manager_user_id" id="eem_manager_user_id">
+            <input type="hidden" name="manager_name"    id="eem_manager_name_val">
+            <ul class="list-group position-absolute w-100 shadow-sm" id="eem_manager_suggestions"
+                style="z-index:1060;display:none;max-height:180px;overflow-y:auto;top:100%;left:0;"></ul>
+          </div>
+
+          <!-- Description -->
+          <div class="col-12">
+            <label class="form-label fw-semibold small"><?= lang('App.field_description') ?></label>
+            <textarea name="description" id="eem_description" class="form-control form-control-sm" rows="4"
+                      placeholder="Décrivez vos responsabilités, réalisations…"></textarea>
+          </div>
+
+          <!-- Skills gained -->
+          <div class="col-12">
+            <label class="form-label fw-semibold small"><?= lang('App.exp_skills_gained') ?></label>
+            <input type="text" name="skills_gained" id="eem_skills_gained" class="form-control form-control-sm"
+                   placeholder="<?= lang('App.exp_skills_gained_ph') ?>">
+            <div class="form-text"><?= lang('App.skills_hint') ?></div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><?= lang('App.btn_cancel') ?></button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i><?= lang('App.btn_save') ?></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
         <!-- Education -->
         <div class="card border-0 shadow-sm mb-4">
@@ -725,6 +856,100 @@ if (expIsCurrent) {
     document.addEventListener('click', e => {
         if (!input.contains(e.target)) suggestions.style.display = 'none';
     });
+})();
+
+// ── Experience Edit Modal ──────────────────────────────────────────────────
+(function () {
+    const updateUrl = '<?= base_url('profile/experience/update/') ?>';
+    const searchUrl = '<?= base_url('profile/users/search') ?>';
+
+    // Populate modal when edit button clicked
+    document.querySelectorAll('.btn-exp-edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const card = this.closest('[data-exp-id]');
+            const d    = card.dataset;
+
+            document.getElementById('expEditForm').action = updateUrl + d.expId;
+            document.getElementById('eem_title').value        = d.expTitle;
+            document.getElementById('eem_company').value      = d.expCompany;
+            document.getElementById('eem_department').value   = d.expDepartment;
+            document.getElementById('eem_location').value     = d.expLocation;
+            document.getElementById('eem_start_date').value   = d.expStart;
+            document.getElementById('eem_end_date').value     = d.expEnd;
+            document.getElementById('eem_description').value  = d.expDescription;
+            document.getElementById('eem_skills_gained').value= d.expSkills;
+
+            // Contract select
+            const contractSel = document.getElementById('eem_contract');
+            contractSel.value = d.expContract;
+
+            // Level select
+            const levelSel = document.getElementById('eem_level');
+            levelSel.value = d.expLevel;
+
+            // is_current
+            const isCurrent = document.getElementById('eem_is_current');
+            isCurrent.checked = d.expCurrent === '1';
+            document.getElementById('eem_end_date').disabled = isCurrent.checked;
+
+            // Manager
+            document.getElementById('eem_manager_search').value = d.expManagerName;
+            document.getElementById('eem_manager_user_id').value = d.expManagerId !== '0' ? d.expManagerId : '';
+            document.getElementById('eem_manager_name_val').value = d.expManagerName;
+        });
+    });
+
+    // is_current toggle inside modal
+    document.getElementById('eem_is_current').addEventListener('change', function () {
+        const endDate = document.getElementById('eem_end_date');
+        endDate.disabled = this.checked;
+        if (this.checked) endDate.value = '';
+    });
+
+    // Manager autocomplete inside modal
+    (function () {
+        const input       = document.getElementById('eem_manager_search');
+        const hiddenId    = document.getElementById('eem_manager_user_id');
+        const hiddenName  = document.getElementById('eem_manager_name_val');
+        const suggestions = document.getElementById('eem_manager_suggestions');
+        if (!input) return;
+
+        let timer;
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            hiddenId.value   = '';
+            hiddenName.value = this.value.trim();
+            const q = this.value.trim();
+            if (q.length < 2) { suggestions.style.display = 'none'; return; }
+
+            timer = setTimeout(async () => {
+                try {
+                    const res  = await fetch(searchUrl + '?q=' + encodeURIComponent(q));
+                    const data = await res.json();
+                    suggestions.innerHTML = '';
+                    if (!data.length) { suggestions.style.display = 'none'; return; }
+                    data.forEach(u => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item list-group-item-action py-1 small';
+                        li.textContent = u.name;
+                        li.addEventListener('mousedown', e => {
+                            e.preventDefault();
+                            input.value      = u.name;
+                            hiddenId.value   = u.id;
+                            hiddenName.value = u.name;
+                            suggestions.style.display = 'none';
+                        });
+                        suggestions.appendChild(li);
+                    });
+                    suggestions.style.display = 'block';
+                } catch (e) { suggestions.style.display = 'none'; }
+            }, 300);
+        });
+
+        document.addEventListener('click', e => {
+            if (!input.contains(e.target)) suggestions.style.display = 'none';
+        });
+    })();
 })();
 </script>
 

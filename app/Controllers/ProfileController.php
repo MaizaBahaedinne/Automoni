@@ -229,6 +229,35 @@ class ProfileController extends BaseController
         return redirect()->to('/profile/edit#experience')->with('success', 'Experience added.');
     }
 
+    public function updateExperience(int $id): RedirectResponse
+    {
+        $expModel = model(ExperienceModel::class);
+        $record   = $expModel->find($id);
+        if (!$record || (int) $record->user_id !== $this->userId) {
+            return redirect()->to('/profile/edit#experience')->with('error', 'Not found.');
+        }
+
+        $rules = $expModel->getValidationRules();
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $data = array_merge(
+            $this->request->getPost([
+                'title', 'company', 'location', 'contract', 'level', 'department',
+                'start_date', 'end_date', 'description', 'manager_name', 'skills_gained',
+            ]),
+            ['is_current' => (int) $this->request->getPost('is_current')]
+        );
+
+        $managerId = (int) $this->request->getPost('manager_user_id');
+        $data['manager_user_id'] = $managerId > 0 ? $managerId : null;
+
+        $expModel->update($id, $data);
+        $this->profileModel->recalculateCompleteness($this->userId);
+        return redirect()->to('/profile/edit#experience')->with('success', 'Experience updated.');
+    }
+
     public function deleteExperience(int $id): RedirectResponse
     {
         $expModel = model(ExperienceModel::class);

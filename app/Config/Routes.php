@@ -52,6 +52,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
     // Experiences & Education (via AJAX/form posts)
     $routes->post('profile/experience/add',           'ProfileController::addExperience');
+    $routes->post('profile/experience/update/(:num)', 'ProfileController::updateExperience/$1');
     $routes->post('profile/experience/delete/(:num)', 'ProfileController::deleteExperience/$1');
     $routes->get ('profile/users/search',             'ProfileController::searchUsers');
     $routes->post('profile/education/add',            'ProfileController::addEducation');
