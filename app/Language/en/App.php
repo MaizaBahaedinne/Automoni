@@ -256,7 +256,7 @@ return [
     'linkedin_note'           => 'Work experience & education require LinkedIn Partner API access.',
     'linkedin_not_configured' => 'LinkedIn integration is not configured. Add your credentials to .env.',
     'linkedin_import_success'   => 'LinkedIn profile imported! Updated:',
-    'linkedin_already_uptodate' => 'Your LinkedIn profile is already up to date — nothing to import.',,
+    'linkedin_already_uptodate' => 'Your LinkedIn profile is already up to date — nothing to import.',
     'linkedin_login_btn'       => 'Continue with LinkedIn',
     'linkedin_login_success'   => 'Welcome,',
     'linkedin_signup_seeker'   => 'Join as Job Seeker',
