@@ -8,23 +8,24 @@ class CreatePostsTable extends Migration
 {
     public function up(): void
     {
-        $this->forge->addField([
-            'id'                   => ['type' => 'INT', 'unsigned' => true, 'auto_increment' => true],
-            'user_id'              => ['type' => 'INT', 'unsigned' => true],
-            'type'                 => ['type' => 'VARCHAR', 'constraint' => 20, 'default' => 'text'],
-            'content'              => ['type' => 'TEXT', 'null' => true, 'default' => null],
-            'media_file'           => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => true, 'default' => null],
-            'video_url'            => ['type' => 'VARCHAR', 'constraint' => 500, 'null' => true, 'default' => null],
-            'announcement_subtype' => ['type' => 'VARCHAR', 'constraint' => 30, 'null' => true, 'default' => null],
-            'reactions_count'      => ['type' => 'INT', 'unsigned' => true, 'default' => 0],
-            'comments_count'       => ['type' => 'INT', 'unsigned' => true, 'default' => 0],
-            'created_at'           => ['type' => 'DATETIME', 'null' => true],
-            'updated_at'           => ['type' => 'DATETIME', 'null' => true],
-        ]);
-        $this->forge->addKey('id', true);
-        $this->forge->addKey('user_id');
-        $this->forge->addKey('created_at');
-        $this->forge->createTable('posts');
+        $this->db->query('
+            CREATE TABLE IF NOT EXISTS `posts` (
+                `id`                   INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `user_id`              INT UNSIGNED NOT NULL,
+                `type`                 VARCHAR(20) NOT NULL DEFAULT \'text\',
+                `content`              TEXT,
+                `media_file`           VARCHAR(255) DEFAULT NULL,
+                `video_url`            VARCHAR(500) DEFAULT NULL,
+                `announcement_subtype` VARCHAR(30) DEFAULT NULL,
+                `reactions_count`      INT UNSIGNED NOT NULL DEFAULT 0,
+                `comments_count`       INT UNSIGNED NOT NULL DEFAULT 0,
+                `created_at`           DATETIME DEFAULT NULL,
+                `updated_at`           DATETIME DEFAULT NULL,
+                PRIMARY KEY (`id`),
+                KEY `user_id` (`user_id`),
+                KEY `created_at` (`created_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ');
     }
 
     public function down(): void

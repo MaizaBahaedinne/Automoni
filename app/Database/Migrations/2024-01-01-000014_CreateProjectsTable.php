@@ -20,7 +20,7 @@ class CreateProjectsTable extends Migration
             'created_at'  => ['type' => 'DATETIME', 'null' => true],
             'updated_at'  => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey('user_id');
         $this->forge->createTable('projects');
 
@@ -32,7 +32,7 @@ class CreateProjectsTable extends Migration
             'created_at' => ['type' => 'DATETIME', 'null' => true],
             'updated_at' => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey(['project_id', 'user_id']);
         $this->forge->createTable('project_members');
     }

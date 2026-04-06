@@ -25,7 +25,7 @@ class CreateCompaniesTable extends Migration
             'updated_at'  => ['type' => 'DATETIME', 'null' => true],
             'deleted_at'  => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('companies');
     }

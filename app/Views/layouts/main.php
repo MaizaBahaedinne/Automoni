@@ -104,17 +104,53 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             padding: 0;
         }
         .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 5px;
             color: var(--muted);
             text-decoration: none;
-            font-size: .875rem;
+            font-size: .8rem;
             font-weight: 500;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
             transition: all .15s;
             white-space: nowrap;
         }
+        .nav-links a i { font-size: .95rem; }
         .nav-links a:hover { background: var(--brand-light); color: var(--brand-dark); }
         .nav-links a.active { background: var(--brand-light); color: var(--brand-dark); }
+
+        /* Search bar */
+        .nav-search {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .nav-search-icon {
+            position: absolute;
+            <?= $isRtl ? 'right' : 'left' ?>: 10px;
+            color: var(--muted);
+            font-size: .85rem;
+            pointer-events: none;
+        }
+        .nav-search-input {
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px <?= $isRtl ? '14px' : '32px' ?> 6px <?= $isRtl ? '32px' : '14px' ?>;
+            font-size: .8rem;
+            background: var(--bg);
+            color: var(--text);
+            width: 180px;
+            transition: width .2s, border-color .15s;
+            outline: none;
+        }
+        .nav-search-input:focus {
+            border-color: var(--brand);
+            width: 230px;
+            box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+        }
+        .nav-search-input::placeholder { color: var(--muted); }
+        @media (max-width: 767px) { .nav-search { display: none; } }
 
         .nav-actions {
             display: flex;
@@ -347,20 +383,21 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         </a>
 
         <ul class="nav-links" id="navLinks">
-            <li><a href="<?= base_url('jobs') ?>"><?= lang('App.nav_jobs') ?></a></li>
+            <li><a href="<?= base_url('/') ?>"><i class="bi bi-house-fill"></i><span><?= lang('App.nav_home') ?></span></a></li>
+            <li><a href="<?= base_url('jobs') ?>"><i class="bi bi-briefcase"></i><span><?= lang('App.nav_jobs') ?></span></a></li>
             <?php if (session()->get('logged_in')): ?>
-            <li><a href="<?= base_url('dashboard') ?>"><?= lang('App.nav_dashboard') ?></a></li>
+            <li><a href="<?= base_url('dashboard') ?>"><i class="bi bi-grid"></i><span><?= lang('App.nav_dashboard') ?></span></a></li>
             <?php endif; ?>
-            <li><a href="<?= base_url('coaching') ?>"><?= lang('App.nav_coaching') ?></a></li>
+            <li><a href="<?= base_url('coaching') ?>"><i class="bi bi-lightbulb"></i><span><?= lang('App.nav_coaching') ?></span></a></li>
         </ul>
 
+        <!-- Search bar -->
+        <form action="<?= base_url('jobs') ?>" method="get" class="nav-search" role="search">
+            <i class="bi bi-search nav-search-icon"></i>
+            <input type="search" name="keyword" placeholder="<?= lang('App.nav_search_placeholder') ?>" class="nav-search-input" aria-label="Search">
+        </form>
+
         <div class="nav-actions" id="navActions">
-            <!-- Language Switcher -->
-            <div class="lang-switcher">
-                <a href="<?= base_url('lang/en') ?>" class="lang-btn <?= $locale === 'en' ? 'active' : '' ?>">EN</a>
-                <a href="<?= base_url('lang/fr') ?>" class="lang-btn <?= $locale === 'fr' ? 'active' : '' ?>">FR</a>
-                <a href="<?= base_url('lang/ar') ?>" class="lang-btn <?= $locale === 'ar' ? 'active' : '' ?>">ع</a>
-            </div>
 
             <?php if (session()->get('logged_in')): ?>
                 <div class="dropdown">
@@ -384,10 +421,25 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
                         <li><a class="dropdown-item" href="<?= base_url('company/edit') ?>"><i class="bi bi-building me-2"></i><?= lang('App.nav_company') ?></a></li>
                         <?php endif; ?>
                         <li><hr class="dropdown-divider"></li>
+                        <!-- Language switcher -->
+                        <li>
+                            <div class="px-3 py-1 d-flex align-items-center gap-2">
+                                <small class="text-muted me-1"><i class="bi bi-translate"></i></small>
+                                <a href="<?= base_url('lang/en') ?>" class="lang-btn <?= $locale === 'en' ? 'active' : '' ?>">EN</a>
+                                <a href="<?= base_url('lang/fr') ?>" class="lang-btn <?= $locale === 'fr' ? 'active' : '' ?>">FR</a>
+                                <a href="<?= base_url('lang/ar') ?>" class="lang-btn <?= $locale === 'ar' ? 'active' : '' ?>">ع</a>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="<?= base_url('logout') ?>"><i class="bi bi-box-arrow-right me-2"></i><?= lang('App.nav_logout') ?></a></li>
                     </ul>
                 </div>
             <?php else: ?>
+                <div class="lang-switcher">
+                    <a href="<?= base_url('lang/en') ?>" class="lang-btn <?= $locale === 'en' ? 'active' : '' ?>">EN</a>
+                    <a href="<?= base_url('lang/fr') ?>" class="lang-btn <?= $locale === 'fr' ? 'active' : '' ?>">FR</a>
+                    <a href="<?= base_url('lang/ar') ?>" class="lang-btn <?= $locale === 'ar' ? 'active' : '' ?>">ع</a>
+                </div>
                 <a href="<?= base_url('login') ?>" class="btn btn-sm btn-outline-primary px-3"><?= lang('App.nav_login') ?></a>
                 <a href="<?= base_url('register') ?>" class="btn btn-sm btn-primary px-3"><?= lang('App.nav_signup') ?></a>
             <?php endif; ?>
