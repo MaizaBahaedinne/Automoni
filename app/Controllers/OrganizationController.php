@@ -190,6 +190,9 @@ class OrganizationController extends BaseController
             'longitude' => 'numeric|greater_than_equal_to[-180]|less_than_equal_to[180]',
             'employee_count' => 'integer|greater_than_equal_to[0]',
             'founded_at' => 'valid_date[Y-m-d]',
+            'size' => 'in_list[startup,pme,grande_entreprise]',
+            'markets_targeted.*' => 'in_list[local,international]',
+            'reputation_score' => 'numeric|greater_than_equal_to[0]|less_than_equal_to[5]',
         ];
 
         if (!$this->validate($rules)) {
@@ -224,6 +227,9 @@ class OrganizationController extends BaseController
             'longitude'            => $this->request->getPost('longitude'),
             'industry'             => $this->request->getPost('industry'),
             'sectors'              => json_encode($this->request->getPost('sectors') ?? []),
+            'size'                 => $this->request->getPost('size'),
+            'markets_targeted'     => json_encode($this->request->getPost('markets_targeted') ?? []),
+            'reputation_score'     => $this->request->getPost('reputation_score') ?? 0,
             'employee_count'       => $this->request->getPost('employee_count'),
             'founded_at'           => $this->request->getPost('founded_at'),
             'status'               => 'active',
