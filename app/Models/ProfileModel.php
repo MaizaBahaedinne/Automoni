@@ -21,7 +21,11 @@ class ProfileModel extends Model
 
     public function getByUserId(int $userId): ?object
     {
-        return $this->where('user_id', $userId)->first();
+        $result = $this->asObject()->where('user_id', $userId)->first();
+        if ($result === null || $result === false) {
+            return null;
+        }
+        return is_array($result) ? (object) $result : $result;
     }
 
     /**

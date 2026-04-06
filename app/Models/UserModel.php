@@ -50,7 +50,11 @@ class UserModel extends Model
 
     public function findByEmail(string $email): ?object
     {
-        return $this->where('email', $email)->first();
+        $result = $this->asObject()->where('email', $email)->first();
+        if ($result === null || $result === false) {
+            return null;
+        }
+        return is_array($result) ? (object) $result : $result;
     }
 
     public function getFullName(array|object $user): string
