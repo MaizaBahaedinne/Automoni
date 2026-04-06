@@ -344,6 +344,19 @@ class ProfileController extends BaseController
         return redirect()->to('/profile/edit#education')->with('success', 'Education added.');
     }
 
+    public function updateEducation(int $id): RedirectResponse
+    {
+        $eduModel = model(EducationModel::class);
+        $record   = $eduModel->find($id);
+        if (!$record || (int) $record->user_id !== $this->userId) {
+            return redirect()->to('/profile/edit#education')->with('error', 'Not found.');
+        }
+        $data = $this->request->getPost(['degree', 'niveau', 'field', 'institution', 'location', 'start_year', 'end_year', 'description']);
+        $eduModel->update($id, $data);
+        $this->profileModel->recalculateCompleteness($this->userId);
+        return redirect()->to('/profile/edit#education')->with('success', 'Formation mise à jour.');
+    }
+
     public function deleteEducation(int $id): RedirectResponse
     {
         $eduModel = model(EducationModel::class);
@@ -386,6 +399,26 @@ class ProfileController extends BaseController
         return redirect()->to('/profile/edit#certifications')->with('success', 'Certification added.');
     }
 
+    public function updateCertification(int $id): RedirectResponse
+    {
+        $model  = model(CertificationModel::class);
+        $record = $model->find($id);
+        if (!$record || (int) $record->user_id !== $this->userId) {
+            return redirect()->to('/profile/edit#certifications')->with('error', 'Not found.');
+        }
+        $data = $this->request->getPost(['name', 'organization', 'issue_date', 'expiry_date', 'credential_url']);
+        if (empty(trim($data['name'] ?? ''))) {
+            return redirect()->to('/profile/edit#certifications')->with('error', 'Certification name is required.');
+        }
+        if (!empty($data['issue_date']))  { $data['issue_date']  .= '-01'; }
+        if (!empty($data['expiry_date'])) { $data['expiry_date'] .= '-01'; }
+        if (!empty($data['credential_url'])) {
+            $data['credential_url'] = filter_var($data['credential_url'], FILTER_SANITIZE_URL);
+        }
+        $model->update($id, $data);
+        return redirect()->to('/profile/edit#certifications')->with('success', 'Certification mise à jour.');
+    }
+
     public function deleteCertification(int $id): RedirectResponse
     {
         $model  = model(CertificationModel::class);
@@ -411,6 +444,21 @@ class ProfileController extends BaseController
         $data['user_id'] = $this->userId;
         $model->insert($data);
         return redirect()->to('/profile/edit#languages')->with('success', 'Language added.');
+    }
+
+    public function updateLanguage(int $id): RedirectResponse
+    {
+        $model  = model(LanguageModel::class);
+        $record = $model->find($id);
+        if (!$record || (int) $record->user_id !== $this->userId) {
+            return redirect()->to('/profile/edit#languages')->with('error', 'Not found.');
+        }
+        $data = $this->request->getPost(['name', 'level']);
+        if (empty(trim($data['name'] ?? '')) || empty(trim($data['level'] ?? ''))) {
+            return redirect()->to('/profile/edit#languages')->with('error', 'Name and level are required.');
+        }
+        $model->update($id, $data);
+        return redirect()->to('/profile/edit#languages')->with('success', 'Langue mise à jour.');
     }
 
     public function deleteLanguage(int $id): RedirectResponse
@@ -447,6 +495,26 @@ class ProfileController extends BaseController
         return redirect()->to('/profile/edit#projects')->with('success', 'Project added.');
     }
 
+    public function updateProject(int $id): RedirectResponse
+    {
+        $model  = model(ProjectModel::class);
+        $record = $model->find($id);
+        if (!$record || (int) $record->user_id !== $this->userId) {
+            return redirect()->to('/profile/edit#projects')->with('error', 'Not found.');
+        }
+        $data = $this->request->getPost(['name', 'start_date', 'end_date', 'is_current', 'description']);
+        if (empty(trim($data['name'] ?? ''))) {
+            return redirect()->to('/profile/edit#projects')->with('error', 'Project name is required.');
+        }
+        $data['is_current'] = !empty($data['is_current']) ? 1 : 0;
+        if ($data['is_current']) { $data['end_date'] = null; }
+        if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
+        if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
+        $model->update($id, $data);
+        $this->profileModel->recalculateCompleteness($this->userId);
+        return redirect()->to('/profile/edit#projects')->with('success', 'Projet mis à jour.');
+    }
+
     public function deleteProject(int $id): RedirectResponse
     {
         $model  = model(ProjectModel::class);
@@ -474,6 +542,26 @@ class ProfileController extends BaseController
         if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
         $model->insert($data);
         return redirect()->to('/profile/edit#volunteering')->with('success', 'Volunteering added.');
+    }
+
+    public function updateVolunteering(int $id): RedirectResponse
+    {
+        $model  = model(VolunteeringModel::class);
+        $record = $model->find($id);
+        if (!$record || (int) $record->user_id !== $this->userId) {
+            return redirect()->to('/profile/edit#volunteering')->with('error', 'Not found.');
+        }
+        $data = $this->request->getPost(['organization', 'position', 'start_date', 'end_date', 'is_current', 'description']);
+        if (empty(trim($data['organization'] ?? ''))) {
+            return redirect()->to('/profile/edit#volunteering')->with('error', 'Organization name is required.');
+        }
+        $data['is_current'] = !empty($data['is_current']) ? 1 : 0;
+        if ($data['is_current']) { $data['end_date'] = null; }
+        if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
+        if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
+        $model->update($id, $data);
+        $this->profileModel->recalculateCompleteness($this->userId);
+        return redirect()->to('/profile/edit#volunteering')->with('success', 'Bénévolat mis à jour.');
     }
 
     public function deleteVolunteering(int $id): RedirectResponse

@@ -644,7 +644,15 @@
                 <!-- Existing entries -->
                 <?php if (!empty($education)): ?>
                     <?php foreach ($education as $edu): ?>
-                    <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start">
+                    <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start"
+                         data-edu-id="<?= $edu->id ?>"
+                         data-edu-institution="<?= esc($edu->institution ?? '') ?>"
+                         data-edu-degree="<?= esc($edu->degree ?? '') ?>"
+                         data-edu-niveau="<?= esc($edu->niveau ?? '') ?>"
+                         data-edu-field="<?= esc($edu->field ?? '') ?>"
+                         data-edu-start="<?= esc($edu->start_year ?? '') ?>"
+                         data-edu-end="<?= esc($edu->end_year ?? '') ?>"
+                         data-edu-description="<?= esc($edu->description ?? '') ?>">
                         <div>
                             <div class="fw-semibold">
                                 <?= esc($edu->degree) ?>
@@ -662,11 +670,17 @@
                                 <?= !empty($edu->end_year) ? ' – ' . esc($edu->end_year) : '' ?>
                             </div>
                         </div>
-                        <form action="<?= base_url('profile/education/delete/' . $edu->id) ?>" method="post"
-                              onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
-                            <?= csrf_field() ?>
-                            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-                        </form>
+                        <div class="d-flex gap-1">
+                            <button type="button" class="btn btn-outline-primary btn-sm btn-edu-edit"
+                                    data-bs-toggle="modal" data-bs-target="#eduEditModal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form action="<?= base_url('profile/education/delete/' . $edu->id) ?>" method="post"
+                                  onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                                <?= csrf_field() ?>
+                                <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
                     </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -758,7 +772,13 @@
             <div class="card-body">
                 <?php if (!empty($certifications)): ?>
                 <?php foreach ($certifications as $cert): ?>
-                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start gap-2">
+                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start gap-2"
+                     data-cert-id="<?= $cert->id ?>"
+                     data-cert-name="<?= esc($cert->name ?? '') ?>"
+                     data-cert-organization="<?= esc($cert->organization ?? '') ?>"
+                     data-cert-issue="<?= esc(substr($cert->issue_date ?? '', 0, 7)) ?>"
+                     data-cert-expiry="<?= esc(substr($cert->expiry_date ?? '', 0, 7)) ?>"
+                     data-cert-url="<?= esc($cert->credential_url ?? '') ?>">
                     <div class="d-flex gap-3 align-items-start">
                         <?php if (!empty($cert->logo_file)): ?>
                         <img src="<?= base_url('uploads/cert_logos/' . esc($cert->logo_file)) ?>"
@@ -784,11 +804,17 @@
                             <?php endif; ?>
                         </div>
                     </div>
-                    <form action="<?= base_url('profile/certification/delete/' . $cert->id) ?>" method="post"
-                          onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
-                        <?= csrf_field() ?>
-                        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-                    </form>
+                    <div class="d-flex gap-1 flex-shrink-0">
+                        <button type="button" class="btn btn-outline-primary btn-sm btn-cert-edit"
+                                data-bs-toggle="modal" data-bs-target="#certEditModal">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form action="<?= base_url('profile/certification/delete/' . $cert->id) ?>" method="post"
+                              onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                            <?= csrf_field() ?>
+                            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
                 </div>
                 <?php endforeach; ?>
                 <?php endif; ?>
@@ -842,9 +868,16 @@
                 <?php if (!empty($languages)): ?>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     <?php foreach ($languages as $lang): ?>
-                    <div class="d-flex align-items-center gap-1 border rounded px-3 py-1 bg-light">
+                    <div class="d-flex align-items-center gap-1 border rounded px-3 py-1 bg-light"
+                         data-lang-id="<?= $lang->id ?>"
+                         data-lang-name="<?= esc($lang->name ?? '') ?>"
+                         data-lang-level="<?= esc($lang->level ?? '') ?>">
                         <span class="fw-semibold small"><?= esc($lang->name) ?></span>
                         <span class="badge bg-primary fw-normal ms-1"><?= esc($lang->level) ?></span>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-primary ms-1 btn-lang-edit"
+                                data-bs-toggle="modal" data-bs-target="#langEditModal">
+                            <i class="bi bi-pencil" style="font-size:.75rem;"></i>
+                        </button>
                         <form action="<?= base_url('profile/language/delete/' . $lang->id) ?>" method="post"
                               onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')" class="ms-1">
                             <?= csrf_field() ?>
@@ -950,7 +983,13 @@
                         if ($mu) { $memberNames[] = esc(trim($mu->first_name . ' ' . $mu->last_name)); }
                     }
                 ?>
-                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start">
+                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start"
+                     data-proj-id="<?= $proj->id ?>"
+                     data-proj-name="<?= esc($proj->name ?? '') ?>"
+                     data-proj-start="<?= esc(substr($proj->start_date ?? '', 0, 7)) ?>"
+                     data-proj-end="<?= esc(substr($proj->end_date ?? '', 0, 7)) ?>"
+                     data-proj-current="<?= $proj->is_current ? '1' : '0' ?>"
+                     data-proj-description="<?= esc($proj->description ?? '') ?>">
                     <div>
                         <div class="fw-semibold"><?= esc($proj->name) ?></div>
                         <div class="text-muted small">
@@ -969,11 +1008,17 @@
                         <p class="small mb-0 mt-1"><?= esc($proj->description) ?></p>
                         <?php endif; ?>
                     </div>
-                    <form action="<?= base_url('profile/project/delete/' . $proj->id) ?>" method="post"
-                          onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
-                        <?= csrf_field() ?>
-                        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-                    </form>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-outline-primary btn-sm btn-proj-edit"
+                                data-bs-toggle="modal" data-bs-target="#projEditModal">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form action="<?= base_url('profile/project/delete/' . $proj->id) ?>" method="post"
+                              onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                            <?= csrf_field() ?>
+                            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
                 </div>
                 <?php endforeach; ?>
                 <?php endif; ?>
@@ -1033,7 +1078,14 @@
             <div class="card-body">
                 <?php if (!empty($volunteering)): ?>
                 <?php foreach ($volunteering as $vol): ?>
-                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start">
+                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start"
+                     data-vol-id="<?= $vol->id ?>"
+                     data-vol-organization="<?= esc($vol->organization ?? '') ?>"
+                     data-vol-position="<?= esc($vol->position ?? '') ?>"
+                     data-vol-start="<?= esc(substr($vol->start_date ?? '', 0, 7)) ?>"
+                     data-vol-end="<?= esc(substr($vol->end_date ?? '', 0, 7)) ?>"
+                     data-vol-current="<?= $vol->is_current ? '1' : '0' ?>"
+                     data-vol-description="<?= esc($vol->description ?? '') ?>">
                     <div>
                         <div class="fw-semibold"><?= esc($vol->organization) ?></div>
                         <?php if (!empty($vol->position)): ?>
@@ -1052,11 +1104,17 @@
                         <p class="small mb-0 mt-1"><?= esc($vol->description) ?></p>
                         <?php endif; ?>
                     </div>
-                    <form action="<?= base_url('profile/volunteering/delete/' . $vol->id) ?>" method="post"
-                          onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
-                        <?= csrf_field() ?>
-                        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-                    </form>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-outline-primary btn-sm btn-vol-edit"
+                                data-bs-toggle="modal" data-bs-target="#volEditModal">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form action="<?= base_url('profile/volunteering/delete/' . $vol->id) ?>" method="post"
+                              onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                            <?= csrf_field() ?>
+                            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
                 </div>
                 <?php endforeach; ?>
                 <?php endif; ?>
@@ -1100,6 +1158,296 @@
         </div>
 
 </div><!-- end #forms-col -->
+
+<!-- ══ Education Edit Modal ════════════════════════════════════════════════ -->
+<div class="modal fade" id="eduEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Modifier la formation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="eduEditForm" method="post" action="">
+        <?= csrf_field() ?>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.field_school') ?> <span class="text-danger">*</span></label>
+            <input type="text" name="institution" id="eem_institution" class="form-control form-control-sm" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.edu_titre') ?> <span class="text-danger">*</span></label>
+            <select name="degree" id="eem_degree" class="form-select form-select-sm" required>
+              <option value="">-- Sélectionner --</option>
+              <option value="Doctorat">Doctorat</option>
+              <option value="Ingénieur">Ingénieur</option>
+              <option value="Master 2">Master 2</option>
+              <option value="Master 1">Master 1</option>
+              <option value="Licence Pro">Licence Pro</option>
+              <option value="Licence">Licence</option>
+              <option value="Bachelor">Bachelor</option>
+              <option value="BTS / DUT">BTS / DUT</option>
+              <option value="Technicien Supérieur">Technicien Supérieur</option>
+              <option value="Baccalauréat">Baccalauréat</option>
+              <option value="Certificat">Certificat / Diplôme professionnel</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.edu_niveau') ?></label>
+            <select name="niveau" id="eem_niveau" class="form-select form-select-sm">
+              <option value="">--</option>
+              <option value="BAC">BAC</option>
+              <option value="BAC+1">BAC+1</option>
+              <option value="BAC+2">BAC+2</option>
+              <option value="BAC+3">BAC+3</option>
+              <option value="BAC+4">BAC+4</option>
+              <option value="BAC+5">BAC+5</option>
+              <option value="BAC+6">BAC+6</option>
+              <option value="BAC+7">BAC+7</option>
+              <option value="BAC+8">BAC+8</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label fw-semibold small"><?= lang('App.field_field_of_study') ?></label>
+            <input type="text" name="field" id="eem_field" class="form-control form-control-sm" placeholder="ex. Informatique, Finance…">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold small"><?= lang('App.field_start_year') ?> <span class="text-danger">*</span></label>
+            <input type="number" name="start_year" id="eem_start_year" class="form-control form-control-sm" min="1950" max="2030" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold small"><?= lang('App.field_end_year') ?></label>
+            <input type="number" name="end_year" id="eem_end_year" class="form-control form-control-sm" min="1950" max="2030">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold small"><?= lang('App.field_description') ?></label>
+            <textarea name="description" id="eem_edu_description" class="form-control form-control-sm" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><?= lang('App.btn_cancel') ?></button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i><?= lang('App.btn_save') ?></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Certification Edit Modal ════════════════════════════════════════════ -->
+<div class="modal fade" id="certEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Modifier la certification</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="certEditForm" method="post" action="">
+        <?= csrf_field() ?>
+        <div class="modal-body row g-3">
+          <div class="col-md-8">
+            <label class="form-label fw-semibold small"><?= lang('App.cert_name') ?> <span class="text-danger">*</span></label>
+            <input type="text" name="name" id="cem_name" class="form-control form-control-sm" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.cert_issue_date') ?></label>
+            <input type="month" name="issue_date" id="cem_issue" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-8">
+            <label class="form-label fw-semibold small"><?= lang('App.cert_organization') ?></label>
+            <input type="text" name="organization" id="cem_organization" class="form-control form-control-sm" placeholder="Organisme émetteur">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.cert_expiry_date') ?></label>
+            <input type="month" name="expiry_date" id="cem_expiry" class="form-control form-control-sm">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold small"><?= lang('App.cert_credential_url') ?></label>
+            <input type="url" name="credential_url" id="cem_url" class="form-control form-control-sm" placeholder="https://…">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><?= lang('App.btn_cancel') ?></button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i><?= lang('App.btn_save') ?></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Language Edit Modal ══════════════════════════════════════════════════ -->
+<div class="modal fade" id="langEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Modifier la langue</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="langEditForm" method="post" action="">
+        <?= csrf_field() ?>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.lang_name') ?> <span class="text-danger">*</span></label>
+            <select name="name" id="lem_name" class="form-select form-select-sm" required>
+              <option value="">--</option>
+              <optgroup label="Maghreb / Moyen-Orient">
+                <option value="Arabe">🌍 Arabe</option>
+                <option value="Arabe (Algérien)">🇩🇿 Arabe (Algérien)</option>
+                <option value="Arabe (Marocain)">🇲🇦 Arabe (Marocain)</option>
+                <option value="Arabe (Tunisien)">🇹🇳 Arabe (Tunisien)</option>
+                <option value="Tamazight / Berbère">🏔 Tamazight / Berbère</option>
+                <option value="Hébreu">🇮🇱 Hébreu</option>
+                <option value="Persan / Farsi">🇮🇷 Persan / Farsi</option>
+                <option value="Turc">🇹🇷 Turc</option>
+              </optgroup>
+              <optgroup label="Europe">
+                <option value="Français">🇫🇷 Français</option>
+                <option value="Anglais">🇬🇧 Anglais</option>
+                <option value="Espagnol">🇪🇸 Espagnol</option>
+                <option value="Allemand">🇩🇪 Allemand</option>
+                <option value="Italien">🇮🇹 Italien</option>
+                <option value="Portugais">🇵🇹 Portugais</option>
+                <option value="Néerlandais">🇳🇱 Néerlandais</option>
+                <option value="Russe">🇷🇺 Russe</option>
+                <option value="Polonais">🇵🇱 Polonais</option>
+                <option value="Suédois">🇸🇪 Suédois</option>
+                <option value="Danois">🇩🇰 Danois</option>
+                <option value="Norvégien">🇳🇴 Norvégien</option>
+                <option value="Finnois">🇫🇮 Finnois</option>
+                <option value="Grec">🇬🇷 Grec</option>
+                <option value="Roumain">🇷🇴 Roumain</option>
+                <option value="Hongrois">🇭🇺 Hongrois</option>
+                <option value="Tchèque">🇨🇿 Tchèque</option>
+                <option value="Ukrainien">🇺🇦 Ukrainien</option>
+              </optgroup>
+              <optgroup label="Asie / Afrique">
+                <option value="Chinois (Mandarin)">🇨🇳 Chinois (Mandarin)</option>
+                <option value="Japonais">🇯🇵 Japonais</option>
+                <option value="Coréen">🇰🇷 Coréen</option>
+                <option value="Hindi">🇮🇳 Hindi</option>
+                <option value="Bengali">🇧🇩 Bengali</option>
+                <option value="Indonésien">🇮🇩 Indonésien</option>
+                <option value="Swahili">🌍 Swahili</option>
+                <option value="Hausa">🌍 Hausa</option>
+              </optgroup>
+              <optgroup label="Amérique">
+                <option value="Anglais (américain)">🇺🇸 Anglais (américain)</option>
+                <option value="Espagnol (latino)">🌎 Espagnol (latino)</option>
+                <option value="Portugais (brésilien)">🇧🇷 Portugais (brésilien)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.lang_level') ?> <span class="text-danger">*</span></label>
+            <select name="level" id="lem_level" class="form-select form-select-sm" required>
+              <option value="">--</option>
+              <option value="Natif"><?= lang('App.lang_native') ?></option>
+              <option value="C2"><?= lang('App.lang_c2') ?></option>
+              <option value="C1"><?= lang('App.lang_c1') ?></option>
+              <option value="B2"><?= lang('App.lang_b2') ?></option>
+              <option value="B1"><?= lang('App.lang_b1') ?></option>
+              <option value="A2"><?= lang('App.lang_a2') ?></option>
+              <option value="A1"><?= lang('App.lang_a1') ?></option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><?= lang('App.btn_cancel') ?></button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i><?= lang('App.btn_save') ?></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Project Edit Modal ═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="projEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Modifier le projet</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="projEditForm" method="post" action="">
+        <?= csrf_field() ?>
+        <div class="modal-body row g-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold small"><?= lang('App.project_name') ?> <span class="text-danger">*</span></label>
+            <input type="text" name="name" id="pem_name" class="form-control form-control-sm" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?></label>
+            <input type="month" name="start_date" id="pem_start" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
+            <input type="month" name="end_date" id="pem_end" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="checkbox" name="is_current" value="1" id="pem_current">
+              <label class="form-check-label small" for="pem_current"><?= lang('App.project_is_current') ?></label>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold small"><?= lang('App.field_description') ?></label>
+            <textarea name="description" id="pem_description" class="form-control form-control-sm" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><?= lang('App.btn_cancel') ?></button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i><?= lang('App.btn_save') ?></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Volunteering Edit Modal ══════════════════════════════════════════════ -->
+<div class="modal fade" id="volEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Modifier le bénévolat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="volEditForm" method="post" action="">
+        <?= csrf_field() ?>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.vol_organization') ?> <span class="text-danger">*</span></label>
+            <input type="text" name="organization" id="vem_organization" class="form-control form-control-sm" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small"><?= lang('App.vol_position') ?></label>
+            <input type="text" name="position" id="vem_position" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?></label>
+            <input type="month" name="start_date" id="vem_start" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
+            <input type="month" name="end_date" id="vem_end" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="checkbox" name="is_current" value="1" id="vem_current">
+              <label class="form-check-label small" for="vem_current"><?= lang('App.vol_is_current') ?></label>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold small"><?= lang('App.field_description') ?></label>
+            <textarea name="description" id="vem_description" class="form-control form-control-sm" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><?= lang('App.btn_cancel') ?></button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i><?= lang('App.btn_save') ?></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <!-- ═════════════════ RIGHT : Aperçu CV ATS ═════════════════ -->
 <div class="col-lg-5 d-none d-lg-block" id="cv-col" style="background:#e9ecef;">
@@ -1660,6 +2008,108 @@ if (expIsCurrent) {
             if (this.checked) volEnd.value = '';
         });
     }
+})();
+</script>
+
+
+<script>
+// ── Education Edit Modal ───────────────────────────────────────────────────
+(function () {
+    const updateUrl = '<?= base_url('profile/education/update/') ?>';
+    document.querySelectorAll('.btn-edu-edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const card = this.closest('[data-edu-id]');
+            const d = card.dataset;
+            document.getElementById('eduEditForm').action = updateUrl + d.eduId;
+            document.getElementById('eem_institution').value   = d.eduInstitution;
+            document.getElementById('eem_degree').value        = d.eduDegree;
+            document.getElementById('eem_niveau').value        = d.eduNiveau;
+            document.getElementById('eem_field').value         = d.eduField;
+            document.getElementById('eem_start_year').value    = d.eduStart;
+            document.getElementById('eem_end_year').value      = d.eduEnd;
+            document.getElementById('eem_edu_description').value = d.eduDescription;
+        });
+    });
+})();
+
+// ── Certification Edit Modal ───────────────────────────────────────────────
+(function () {
+    const updateUrl = '<?= base_url('profile/certification/update/') ?>';
+    document.querySelectorAll('.btn-cert-edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const card = this.closest('[data-cert-id]');
+            const d = card.dataset;
+            document.getElementById('certEditForm').action    = updateUrl + d.certId;
+            document.getElementById('cem_name').value         = d.certName;
+            document.getElementById('cem_organization').value = d.certOrganization;
+            document.getElementById('cem_issue').value        = d.certIssue;
+            document.getElementById('cem_expiry').value       = d.certExpiry;
+            document.getElementById('cem_url').value          = d.certUrl;
+        });
+    });
+})();
+
+// ── Language Edit Modal ────────────────────────────────────────────────────
+(function () {
+    const updateUrl = '<?= base_url('profile/language/update/') ?>';
+    document.querySelectorAll('.btn-lang-edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const card = this.closest('[data-lang-id]');
+            const d = card.dataset;
+            document.getElementById('langEditForm').action = updateUrl + d.langId;
+            document.getElementById('lem_name').value  = d.langName;
+            document.getElementById('lem_level').value = d.langLevel;
+        });
+    });
+})();
+
+// ── Project Edit Modal ─────────────────────────────────────────────────────
+(function () {
+    const updateUrl = '<?= base_url('profile/project/update/') ?>';
+    document.querySelectorAll('.btn-proj-edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const card = this.closest('[data-proj-id]');
+            const d = card.dataset;
+            document.getElementById('projEditForm').action = updateUrl + d.projId;
+            document.getElementById('pem_name').value        = d.projName;
+            document.getElementById('pem_start').value       = d.projStart;
+            document.getElementById('pem_end').value         = d.projEnd;
+            document.getElementById('pem_description').value = d.projDescription;
+            const isCurrent = document.getElementById('pem_current');
+            isCurrent.checked = d.projCurrent === '1';
+            document.getElementById('pem_end').disabled = isCurrent.checked;
+        });
+    });
+    document.getElementById('pem_current')?.addEventListener('change', function () {
+        const endEl = document.getElementById('pem_end');
+        endEl.disabled = this.checked;
+        if (this.checked) endEl.value = '';
+    });
+})();
+
+// ── Volunteering Edit Modal ────────────────────────────────────────────────
+(function () {
+    const updateUrl = '<?= base_url('profile/volunteering/update/') ?>';
+    document.querySelectorAll('.btn-vol-edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const card = this.closest('[data-vol-id]');
+            const d = card.dataset;
+            document.getElementById('volEditForm').action    = updateUrl + d.volId;
+            document.getElementById('vem_organization').value = d.volOrganization;
+            document.getElementById('vem_position').value     = d.volPosition;
+            document.getElementById('vem_start').value        = d.volStart;
+            document.getElementById('vem_end').value          = d.volEnd;
+            document.getElementById('vem_description').value  = d.volDescription;
+            const isCurrent = document.getElementById('vem_current');
+            isCurrent.checked = d.volCurrent === '1';
+            document.getElementById('vem_end').disabled = isCurrent.checked;
+        });
+    });
+    document.getElementById('vem_current')?.addEventListener('change', function () {
+        const endEl = document.getElementById('vem_end');
+        endEl.disabled = this.checked;
+        if (this.checked) endEl.value = '';
+    });
 })();
 </script>
 

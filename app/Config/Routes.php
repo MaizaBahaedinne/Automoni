@@ -74,24 +74,29 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('profile/experience/update/(:num)', 'ProfileController::updateExperience/$1');
     $routes->post('profile/experience/delete/(:num)', 'ProfileController::deleteExperience/$1');
     $routes->get ('profile/users/search',             'ProfileController::searchUsers');
-    $routes->post('profile/education/add',            'ProfileController::addEducation');
-    $routes->post('profile/education/delete/(:num)',  'ProfileController::deleteEducation/$1');
+    $routes->post('profile/education/add',              'ProfileController::addEducation');
+    $routes->post('profile/education/update/(:num)',    'ProfileController::updateEducation/$1');
+    $routes->post('profile/education/delete/(:num)',    'ProfileController::deleteEducation/$1');
 
     // Certifications
-    $routes->post('profile/certification/add',           'ProfileController::addCertification');
-    $routes->post('profile/certification/delete/(:num)', 'ProfileController::deleteCertification/$1');
+    $routes->post('profile/certification/add',              'ProfileController::addCertification');
+    $routes->post('profile/certification/update/(:num)',    'ProfileController::updateCertification/$1');
+    $routes->post('profile/certification/delete/(:num)',    'ProfileController::deleteCertification/$1');
 
     // Languages
-    $routes->post('profile/language/add',           'ProfileController::addLanguage');
-    $routes->post('profile/language/delete/(:num)', 'ProfileController::deleteLanguage/$1');
+    $routes->post('profile/language/add',              'ProfileController::addLanguage');
+    $routes->post('profile/language/update/(:num)',    'ProfileController::updateLanguage/$1');
+    $routes->post('profile/language/delete/(:num)',    'ProfileController::deleteLanguage/$1');
 
     // Projects
-    $routes->post('profile/project/add',           'ProfileController::addProject');
-    $routes->post('profile/project/delete/(:num)', 'ProfileController::deleteProject/$1');
+    $routes->post('profile/project/add',              'ProfileController::addProject');
+    $routes->post('profile/project/update/(:num)',    'ProfileController::updateProject/$1');
+    $routes->post('profile/project/delete/(:num)',    'ProfileController::deleteProject/$1');
 
     // Volunteering
-    $routes->post('profile/volunteering/add',           'ProfileController::addVolunteering');
-    $routes->post('profile/volunteering/delete/(:num)', 'ProfileController::deleteVolunteering/$1');
+    $routes->post('profile/volunteering/add',              'ProfileController::addVolunteering');
+    $routes->post('profile/volunteering/update/(:num)',    'ProfileController::updateVolunteering/$1');
+    $routes->post('profile/volunteering/delete/(:num)',    'ProfileController::deleteVolunteering/$1');
 
     // Job alerts (job seekers only)
     $routes->get ('alerts',               'AlertController::index',  ['filter' => 'role:job_seeker']);
