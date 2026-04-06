@@ -167,30 +167,24 @@
 
                     <div class="mb-3">
                         <label for="country_code" class="form-label fw-semibold">Pays <span class="text-danger">*</span></label>
-                        <div style="position: relative;">
-                            <input type="text" id="country_search" class="form-control" placeholder="Chercher un pays..." 
-                                   autocomplete="off" style="margin-bottom: 8px;">
-                            <select name="country_code" id="country_code" class="form-select" required style="display: none;">
-                                <option value="">-- Sélectionner --</option>
-                                <option value="DZ" <?= old('country_code') == 'DZ' ? 'selected' : '' ?>>Algérie</option>
-                                <option value="TN" <?= old('country_code') == 'TN' ? 'selected' : '' ?>>Tunisie</option>
-                                <option value="MA" <?= old('country_code') == 'MA' ? 'selected' : '' ?>>Maroc</option>
-                                <option value="FR" <?= old('country_code') == 'FR' ? 'selected' : '' ?>>France</option>
-                                <option value="US" <?= old('country_code') == 'US' ? 'selected' : '' ?>>États-Unis</option>
-                                <option value="GB" <?= old('country_code') == 'GB' ? 'selected' : '' ?>>Royaume-Uni</option>
-                                <option value="ES" <?= old('country_code') == 'ES' ? 'selected' : '' ?>>Espagne</option>
-                                <option value="IT" <?= old('country_code') == 'IT' ? 'selected' : '' ?>>Italie</option>
-                                <option value="CH" <?= old('country_code') == 'CH' ? 'selected' : '' ?>>Suisse</option>
-                                <option value="CA" <?= old('country_code') == 'CA' ? 'selected' : '' ?>>Canada</option>
-                                <option value="BE" <?= old('country_code') == 'BE' ? 'selected' : '' ?>>Belgique</option>
-                                <option value="DE" <?= old('country_code') == 'DE' ? 'selected' : '' ?>>Allemagne</option>
-                                <option value="NL" <?= old('country_code') == 'NL' ? 'selected' : '' ?>>Pays-Bas</option>
-                                <option value="SE" <?= old('country_code') == 'SE' ? 'selected' : '' ?>>Suède</option>
-                                <option value="NO" <?= old('country_code') == 'NO' ? 'selected' : '' ?>>Norvège</option>
-                            </select>
-                            <div id="countryDropdown" style="position: absolute; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-height: 250px; overflow-y: auto; display: none; z-index: 100; box-shadow: var(--shadow);"></div>
-                        </div>
-                        <div class="invalid-feedback">Veuillez sélectionner un pays.</div>
+                        <select name="country_code" id="country_code" class="form-select" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option value="DZ" <?= old('country_code') == 'DZ' ? 'selected' : '' ?>>Algérie</option>
+                            <option value="TN" <?= old('country_code') == 'TN' ? 'selected' : '' ?>>Tunisie</option>
+                            <option value="MA" <?= old('country_code') == 'MA' ? 'selected' : '' ?>>Maroc</option>
+                            <option value="FR" <?= old('country_code') == 'FR' ? 'selected' : '' ?>>France</option>
+                            <option value="US" <?= old('country_code') == 'US' ? 'selected' : '' ?>>États-Unis</option>
+                            <option value="GB" <?= old('country_code') == 'GB' ? 'selected' : '' ?>>Royaume-Uni</option>
+                            <option value="ES" <?= old('country_code') == 'ES' ? 'selected' : '' ?>>Espagne</option>
+                            <option value="IT" <?= old('country_code') == 'IT' ? 'selected' : '' ?>>Italie</option>
+                            <option value="CH" <?= old('country_code') == 'CH' ? 'selected' : '' ?>>Suisse</option>
+                            <option value="CA" <?= old('country_code') == 'CA' ? 'selected' : '' ?>>Canada</option>
+                            <option value="BE" <?= old('country_code') == 'BE' ? 'selected' : '' ?>>Belgique</option>
+                            <option value="DE" <?= old('country_code') == 'DE' ? 'selected' : '' ?>>Allemagne</option>
+                            <option value="NL" <?= old('country_code') == 'NL' ? 'selected' : '' ?>>Pays-Bas</option>
+                            <option value="SE" <?= old('country_code') == 'SE' ? 'selected' : '' ?>>Suède</option>
+                            <option value="NO" <?= old('country_code') == 'NO' ? 'selected' : '' ?>>Norvège</option>
+                        </select>
                     </div>
 
                 </div>
@@ -230,37 +224,30 @@
                         </select>
                     </div>
 
-                    <!-- Secteur d'activité (single select avec recherche) -->
+                    <!-- Secteur d'activité (select simple) -->
                     <div class="mb-3">
-                        <label for="sector_search" class="form-label fw-semibold">Secteur d'activité <span class="text-danger">*</span></label>
-                        <div style="position: relative;">
-                            <input type="text" id="sector_search" class="form-control" placeholder="Chercher un secteur..." 
-                                   autocomplete="off" required style="margin-bottom: 8px;">
-                            <select name="industry" id="industry" class="form-select" required style="display: none;">
-                                <option value="">-- Sélectionner --</option>
-                                <option value="technology" <?= old('industry') == 'technology' ? 'selected' : '' ?>>Technologie</option>
-                                <option value="finance" <?= old('industry') == 'finance' ? 'selected' : '' ?>>Finance</option>
-                                <option value="healthcare" <?= old('industry') == 'healthcare' ? 'selected' : '' ?>>Santé</option>
-                                <option value="manufacturing" <?= old('industry') == 'manufacturing' ? 'selected' : '' ?>>Industrie</option>
-                                <option value="retail" <?= old('industry') == 'retail' ? 'selected' : '' ?>>Commerce de détail</option>
-                                <option value="real-estate" <?= old('industry') == 'real-estate' ? 'selected' : '' ?>>Immobilier</option>
-                                <option value="energy" <?= old('industry') == 'energy' ? 'selected' : '' ?>>Énergie</option>
-                                <option value="transportation" <?= old('industry') == 'transportation' ? 'selected' : '' ?>>Transport</option>
-                                <option value="education" <?= old('industry') == 'education' ? 'selected' : '' ?>>Éducation</option>
-                                <option value="media" <?= old('industry') == 'media' ? 'selected' : '' ?>>Médias</option>
-                                <option value="hospitality" <?= old('industry') == 'hospitality' ? 'selected' : '' ?>>Hôtellerie</option>
-                                <option value="non-profit" <?= old('industry') == 'non-profit' ? 'selected' : '' ?>>Non-profit</option>
-                                <option value="government" <?= old('industry') == 'government' ? 'selected' : '' ?>>Gouvernement</option>
-                                <option value="professional-services" <?= old('industry') == 'professional-services' ? 'selected' : '' ?>>Services professionnels</option>
-                                <option value="agriculture" <?= old('industry') == 'agriculture' ? 'selected' : '' ?>>Agriculture</option>
-                                <option value="telecommunications" <?= old('industry') == 'telecommunications' ? 'selected' : '' ?>>Télécommunications</option>
-                                <option value="utilities" <?= old('industry') == 'utilities' ? 'selected' : '' ?>>Utilitaires</option>
-                                <option value="consulting" <?= old('industry') == 'consulting' ? 'selected' : '' ?>>Conseil</option>
-                            </select>
-                            <div id="sectorDropdown" style="position: absolute; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-height: 250px; overflow-y: auto; display: none; z-index: 100; box-shadow: var(--shadow);"></div>
-                        </div>
-                        <div class="invalid-feedback d-block">Veuillez sélectionner un secteur d'activité.</div>
-                        <div class="invalid-feedback d-block">Veuillez sélectionner un secteur d'activité.</div>
+                        <label for="industry" class="form-label fw-semibold">Secteur d'activité <span class="text-danger">*</span></label>
+                        <select name="industry" id="industry" class="form-select" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option value="technology" <?= old('industry') == 'technology' ? 'selected' : '' ?>>Technologie</option>
+                            <option value="finance" <?= old('industry') == 'finance' ? 'selected' : '' ?>>Finance</option>
+                            <option value="healthcare" <?= old('industry') == 'healthcare' ? 'selected' : '' ?>>Santé</option>
+                            <option value="manufacturing" <?= old('industry') == 'manufacturing' ? 'selected' : '' ?>>Industrie</option>
+                            <option value="retail" <?= old('industry') == 'retail' ? 'selected' : '' ?>>Commerce de détail</option>
+                            <option value="real-estate" <?= old('industry') == 'real-estate' ? 'selected' : '' ?>>Immobilier</option>
+                            <option value="energy" <?= old('industry') == 'energy' ? 'selected' : '' ?>>Énergie</option>
+                            <option value="transportation" <?= old('industry') == 'transportation' ? 'selected' : '' ?>>Transport</option>
+                            <option value="education" <?= old('industry') == 'education' ? 'selected' : '' ?>>Éducation</option>
+                            <option value="media" <?= old('industry') == 'media' ? 'selected' : '' ?>>Médias</option>
+                            <option value="hospitality" <?= old('industry') == 'hospitality' ? 'selected' : '' ?>>Hôtellerie</option>
+                            <option value="non-profit" <?= old('industry') == 'non-profit' ? 'selected' : '' ?>>Non-profit</option>
+                            <option value="government" <?= old('industry') == 'government' ? 'selected' : '' ?>>Gouvernement</option>
+                            <option value="professional-services" <?= old('industry') == 'professional-services' ? 'selected' : '' ?>>Services professionnels</option>
+                            <option value="agriculture" <?= old('industry') == 'agriculture' ? 'selected' : '' ?>>Agriculture</option>
+                            <option value="telecommunications" <?= old('industry') == 'telecommunications' ? 'selected' : '' ?>>Télécommunications</option>
+                            <option value="utilities" <?= old('industry') == 'utilities' ? 'selected' : '' ?>>Utilitaires</option>
+                            <option value="consulting" <?= old('industry') == 'consulting' ? 'selected' : '' ?>>Conseil</option>
+                        </select>
                     </div>
 
                     <!-- Marchés ciblés -->
@@ -353,165 +340,7 @@
 </div>
 
 <script>
-// ── Données des pays et secteurs ───────────────────────────────────
-const countriesData = {
-    'DZ': 'Algérie',
-    'TN': 'Tunisie',
-    'MA': 'Maroc',
-    'FR': 'France',
-    'US': 'États-Unis',
-    'GB': 'Royaume-Uni',
-    'ES': 'Espagne',
-    'IT': 'Italie',
-    'CH': 'Suisse',
-    'CA': 'Canada',
-    'BE': 'Belgique',
-    'DE': 'Allemagne',
-    'NL': 'Pays-Bas',
-    'SE': 'Suède',
-    'NO': 'Norvège',
-};
-
-const sectorsData = {
-    'technology': 'Technologie',
-    'finance': 'Finance',
-    'healthcare': 'Santé',
-    'manufacturing': 'Industrie',
-    'retail': 'Commerce de détail',
-    'real-estate': 'Immobilier',
-    'energy': 'Énergie',
-    'transportation': 'Transport',
-    'education': 'Éducation',
-    'media': 'Médias',
-    'hospitality': 'Hôtellerie',
-    'non-profit': 'Non-profit',
-    'government': 'Gouvernement',
-    'professional-services': 'Services professionnels',
-    'agriculture': 'Agriculture',
-    'telecommunications': 'Télécommunications',
-    'utilities': 'Utilitaires',
-    'consulting': 'Conseil',
-};
-
 document.addEventListener('DOMContentLoaded', function () {
-    // ── Recherche de Pays ────────────────────────────────────────────
-    const countrySearch = document.getElementById('country_search');
-    const countrySelect = document.getElementById('country_code');
-    const countryDropdown = document.getElementById('countryDropdown');
-
-    if (countrySearch && countrySelect) {
-        countrySearch.addEventListener('input', function (e) {
-            const query = this.value.toLowerCase();
-            countryDropdown.innerHTML = '';
-
-            if (query.length === 0) {
-                countryDropdown.style.display = 'none';
-                return;
-            }
-
-            const filtered = Object.entries(countriesData)
-                .filter(([code, name]) => name.toLowerCase().includes(query) || code.includes(query.toUpperCase()))
-                .slice(0, 10);
-
-            if (filtered.length === 0) {
-                countryDropdown.innerHTML = '<div style="padding: 10px; color: var(--muted);">Aucun résultat</div>';
-            } else {
-                filtered.forEach(([code, name]) => {
-                    const item = document.createElement('div');
-                    item.style.cssText = 'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .2s;';
-                    item.innerHTML = `<strong>${name}</strong> <small style="color: var(--muted);">${code}</small>`;
-                    item.addEventListener('mouseover', () => item.style.background = 'var(--brand-light)');
-                    item.addEventListener('mouseout', () => item.style.background = 'transparent');
-                    item.addEventListener('click', function () {
-                        countrySearch.value = name;
-                        countrySelect.value = code;
-                        countryDropdown.style.display = 'none';
-                        countrySearch.style.borderColor = 'var(--border)';
-                    });
-                    countryDropdown.appendChild(item);
-                });
-            }
-            countryDropdown.style.display = 'block';
-        });
-
-        countrySearch.addEventListener('focus', function () {
-            if (this.value.length > 0) {
-                this.dispatchEvent(new Event('input'));
-            }
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('[id="country_search"], [id="countryDropdown"]')) {
-                countryDropdown.style.display = 'none';
-            }
-        });
-
-        // Initialiser avec la valeur du select si elle existe
-        const selectedCode = countrySelect.value;
-        if (selectedCode && countriesData[selectedCode]) {
-            countrySearch.value = countriesData[selectedCode];
-        }
-    }
-
-    // ── Recherche de Secteurs d'Activité ─────────────────────────────
-    const sectorSearch = document.getElementById('sector_search');
-    const industrySelect = document.getElementById('industry');
-    const sectorDropdown = document.getElementById('sectorDropdown');
-
-    if (sectorSearch && industrySelect) {
-        sectorSearch.addEventListener('input', function (e) {
-            const query = this.value.toLowerCase();
-            sectorDropdown.innerHTML = '';
-
-            if (query.length === 0) {
-                sectorDropdown.style.display = 'none';
-                return;
-            }
-
-            const filtered = Object.entries(sectorsData)
-                .filter(([code, name]) => name.toLowerCase().includes(query) || code.includes(query))
-                .slice(0, 10);
-
-            if (filtered.length === 0) {
-                sectorDropdown.innerHTML = '<div style="padding: 10px; color: var(--muted);">Aucun résultat</div>';
-            } else {
-                filtered.forEach(([code, name]) => {
-                    const item = document.createElement('div');
-                    item.style.cssText = 'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .2s;';
-                    item.innerHTML = `<strong>${name}</strong>`;
-                    item.addEventListener('mouseover', () => item.style.background = 'var(--brand-light)');
-                    item.addEventListener('mouseout', () => item.style.background = 'transparent');
-                    item.addEventListener('click', function () {
-                        sectorSearch.value = name;
-                        industrySelect.value = code;
-                        sectorDropdown.style.display = 'none';
-                        sectorSearch.style.borderColor = 'var(--border)';
-                    });
-                    sectorDropdown.appendChild(item);
-                });
-            }
-            sectorDropdown.style.display = 'block';
-        });
-
-        sectorSearch.addEventListener('focus', function () {
-            if (this.value.length > 0) {
-                this.dispatchEvent(new Event('input'));
-            }
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('[id="sector_search"], [id="sectorDropdown"]')) {
-                sectorDropdown.style.display = 'none';
-            }
-        });
-
-        // Initialiser avec la valeur du select si elle existe
-        const selectedSector = industrySelect.value;
-        if (selectedSector && sectorsData[selectedSector]) {
-            sectorSearch.value = sectorsData[selectedSector];
-        }
-    }
-
     // ── Autocomplete: Recherche d'organisation parente ───────────────────
     let parentOrgTimeout;
     const parentIdSelect = document.getElementById('parent_id');
@@ -634,16 +463,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const crForm = document.getElementById('crForm');
     if (crForm) {
         crForm.addEventListener('submit', function (e) {
-            // Vérifier que le secteur d'activité a une valeur valide (pas du texte libre)
-            const industrySelect = document.getElementById('industry');
-            const sectorSearch = document.getElementById('sector_search');
-            if (industrySelect && !industrySelect.value) {
-                e.preventDefault();
-                e.stopPropagation();
-                sectorSearch.classList.add('is-invalid');
-                sectorSearch.style.borderColor = '#dc3545';
-            }
-            
             if (!this.checkValidity()) {
                 e.preventDefault();
                 e.stopPropagation();
