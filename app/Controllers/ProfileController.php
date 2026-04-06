@@ -40,8 +40,9 @@ class ProfileController extends BaseController
         $skills      = model(SkillModel::class)->getByUserId($this->userId);
         $experiences = model(ExperienceModel::class)->getByUserId($this->userId);
         $education   = model(EducationModel::class)->getByUserId($this->userId);
+        $user        = model(\App\Models\UserModel::class)->find($this->userId);
 
-        return view('profile/edit', compact('profile', 'skills', 'experiences', 'education'));
+        return view('profile/edit', compact('profile', 'skills', 'experiences', 'education', 'user'));
     }
 
     public function update(): RedirectResponse
@@ -305,8 +306,8 @@ class ProfileController extends BaseController
         }
 
         $data = array_merge(
-            $this->request->getPost(['degree', 'field', 'institution', 'location', 'start_year', 'end_year', 'description']),
-            ['user_id' => $this->userId, 'is_current' => (int) $this->request->getPost('is_current')]
+            $this->request->getPost(['degree', 'niveau', 'field', 'institution', 'location', 'start_year', 'end_year', 'description']),
+            ['user_id' => $this->userId]
         );
         $eduModel->insert($data);
         $this->profileModel->recalculateCompleteness($this->userId);

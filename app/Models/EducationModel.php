@@ -11,7 +11,7 @@ class EducationModel extends Model
     protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = [
-        'user_id', 'degree', 'field', 'institution', 'location',
+        'user_id', 'degree', 'niveau', 'field', 'institution', 'location',
         'start_year', 'end_year', 'is_current', 'description', 'sort_order',
     ];
 
