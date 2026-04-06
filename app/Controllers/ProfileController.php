@@ -2,7 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Models\{ProfileModel, SkillModel, ExperienceModel, EducationModel};
+use App\Models\{ProfileModel, SkillModel, ExperienceModel, EducationModel,
+    CertificationModel, LanguageModel, ProjectModel, ProjectMemberModel, VolunteeringModel};
 use App\Libraries\CvParser;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -23,26 +24,40 @@ class ProfileController extends BaseController
     {
         $viewId = $userId ?: $this->userId;
 
-        $profile     = $this->profileModel->getByUserId($viewId);
-        $skills      = model(SkillModel::class)->getByUserId($viewId);
-        $experiences = model(ExperienceModel::class)->getByUserId($viewId);
-        $education   = model(EducationModel::class)->getByUserId($viewId);
-        $user        = model(\App\Models\UserModel::class)->find($viewId);
+        $profile        = $this->profileModel->getByUserId($viewId);
+        $skills         = model(SkillModel::class)->getByUserId($viewId);
+        $experiences    = model(ExperienceModel::class)->getByUserId($viewId);
+        $education      = model(EducationModel::class)->getByUserId($viewId);
+        $certifications = model(CertificationModel::class)->getByUserId($viewId);
+        $languages      = model(LanguageModel::class)->getByUserId($viewId);
+        $projects       = model(ProjectModel::class)->getByUserId($viewId);
+        $volunteering   = model(VolunteeringModel::class)->getByUserId($viewId);
+        $user           = model(\App\Models\UserModel::class)->find($viewId);
 
-        return view('profile/show', compact('profile', 'skills', 'experiences', 'education', 'user'));
+        return view('profile/show', compact(
+            'profile', 'skills', 'experiences', 'education',
+            'certifications', 'languages', 'projects', 'volunteering', 'user'
+        ));
     }
 
     // ─── Edit Basic Info ──────────────────────────────────────────────────
 
     public function edit(): string
     {
-        $profile     = $this->profileModel->getByUserId($this->userId);
-        $skills      = model(SkillModel::class)->getByUserId($this->userId);
-        $experiences = model(ExperienceModel::class)->getByUserId($this->userId);
-        $education   = model(EducationModel::class)->getByUserId($this->userId);
-        $user        = model(\App\Models\UserModel::class)->find($this->userId);
+        $profile        = $this->profileModel->getByUserId($this->userId);
+        $skills         = model(SkillModel::class)->getByUserId($this->userId);
+        $experiences    = model(ExperienceModel::class)->getByUserId($this->userId);
+        $education      = model(EducationModel::class)->getByUserId($this->userId);
+        $certifications = model(CertificationModel::class)->getByUserId($this->userId);
+        $languages      = model(LanguageModel::class)->getByUserId($this->userId);
+        $projects       = model(ProjectModel::class)->getByUserId($this->userId);
+        $volunteering   = model(VolunteeringModel::class)->getByUserId($this->userId);
+        $user           = model(\App\Models\UserModel::class)->find($this->userId);
 
-        return view('profile/edit', compact('profile', 'skills', 'experiences', 'education', 'user'));
+        return view('profile/edit', compact(
+            'profile', 'skills', 'experiences', 'education',
+            'certifications', 'languages', 'projects', 'volunteering', 'user'
+        ));
     }
 
     public function update(): RedirectResponse
@@ -323,5 +338,130 @@ class ProfileController extends BaseController
             $this->profileModel->recalculateCompleteness($this->userId);
         }
         return redirect()->to('/profile/edit#education')->with('success', 'Education removed.');
+    }
+
+    // ─── Certifications CRUD ──────────────────────────────────────────────
+
+    public function addCertification(): RedirectResponse
+    {
+        $model = model(CertificationModel::class);
+        $data  = $this->request->getPost(['name', 'organization', 'issue_date', 'expiry_date', 'credential_url']);
+        if (empty(trim($data['name'] ?? ''))) {
+            return redirect()->back()->with('error', 'Certification name is required.');
+        }
+        $data['user_id'] = $this->userId;
+        if (!empty($data['credential_url'])) {
+            $data['credential_url'] = filter_var($data['credential_url'], FILTER_SANITIZE_URL);
+        }
+        // Handle logo upload
+        $logo = $this->request->getFile('logo_file');
+        if ($logo && $logo->isValid() && !$logo->hasMoved()) {
+            $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+            if (in_array($logo->getMimeType(), $allowed) && $logo->getSize() <= 2 * 1024 * 1024) {
+                $dest = WRITEPATH . 'uploads/cert_logos/';
+                if (!is_dir($dest)) { mkdir($dest, 0755, true); }
+                $fname = 'cert_' . $this->userId . '_' . time() . '.' . $logo->getClientExtension();
+                $logo->move($dest, $fname);
+                $data['logo_file'] = $fname;
+            }
+        }
+        $model->insert($data);
+        return redirect()->to('/profile/edit#certifications')->with('success', 'Certification added.');
+    }
+
+    public function deleteCertification(int $id): RedirectResponse
+    {
+        $model  = model(CertificationModel::class);
+        $record = $model->find($id);
+        if ($record && (int) $record->user_id === $this->userId) {
+            if (!empty($record->logo_file)) {
+                @unlink(WRITEPATH . 'uploads/cert_logos/' . $record->logo_file);
+            }
+            $model->delete($id);
+        }
+        return redirect()->to('/profile/edit#certifications')->with('success', 'Certification removed.');
+    }
+
+    // ─── Languages CRUD ───────────────────────────────────────────────────
+
+    public function addLanguage(): RedirectResponse
+    {
+        $model = model(LanguageModel::class);
+        $data  = $this->request->getPost(['name', 'level']);
+        if (empty(trim($data['name'] ?? '')) || empty(trim($data['level'] ?? ''))) {
+            return redirect()->back()->with('error', 'Language name and level are required.');
+        }
+        $data['user_id'] = $this->userId;
+        $model->insert($data);
+        return redirect()->to('/profile/edit#languages')->with('success', 'Language added.');
+    }
+
+    public function deleteLanguage(int $id): RedirectResponse
+    {
+        $model  = model(LanguageModel::class);
+        $record = $model->find($id);
+        if ($record && (int) $record->user_id === $this->userId) {
+            $model->delete($id);
+        }
+        return redirect()->to('/profile/edit#languages')->with('success', 'Language removed.');
+    }
+
+    // ─── Projects CRUD ────────────────────────────────────────────────────
+
+    public function addProject(): RedirectResponse
+    {
+        $model = model(ProjectModel::class);
+        $data  = $this->request->getPost(['name', 'start_date', 'end_date', 'is_current', 'description']);
+        if (empty(trim($data['name'] ?? ''))) {
+            return redirect()->back()->with('error', 'Project name is required.');
+        }
+        $data['user_id']    = $this->userId;
+        $data['is_current'] = !empty($data['is_current']) ? 1 : 0;
+        if ($data['is_current']) { $data['end_date'] = null; }
+        $projectId = $model->insert($data, true);
+
+        // Sync team members
+        $memberIds = $this->request->getPost('member_ids') ?? [];
+        if (!empty($memberIds)) {
+            model(ProjectMemberModel::class)->syncMembers($projectId, (array) $memberIds);
+        }
+        return redirect()->to('/profile/edit#projects')->with('success', 'Project added.');
+    }
+
+    public function deleteProject(int $id): RedirectResponse
+    {
+        $model  = model(ProjectModel::class);
+        $record = $model->find($id);
+        if ($record && (int) $record->user_id === $this->userId) {
+            model(ProjectMemberModel::class)->where('project_id', $id)->delete();
+            $model->delete($id);
+        }
+        return redirect()->to('/profile/edit#projects')->with('success', 'Project removed.');
+    }
+
+    // ─── Volunteering CRUD ────────────────────────────────────────────────
+
+    public function addVolunteering(): RedirectResponse
+    {
+        $model = model(VolunteeringModel::class);
+        $data  = $this->request->getPost(['organization', 'position', 'start_date', 'end_date', 'is_current', 'description']);
+        if (empty(trim($data['organization'] ?? ''))) {
+            return redirect()->back()->with('error', 'Organization name is required.');
+        }
+        $data['user_id']    = $this->userId;
+        $data['is_current'] = !empty($data['is_current']) ? 1 : 0;
+        if ($data['is_current']) { $data['end_date'] = null; }
+        $model->insert($data);
+        return redirect()->to('/profile/edit#volunteering')->with('success', 'Volunteering added.');
+    }
+
+    public function deleteVolunteering(int $id): RedirectResponse
+    {
+        $model  = model(VolunteeringModel::class);
+        $record = $model->find($id);
+        if ($record && (int) $record->user_id === $this->userId) {
+            $model->delete($id);
+        }
+        return redirect()->to('/profile/edit#volunteering')->with('success', 'Volunteering removed.');
     }
 }

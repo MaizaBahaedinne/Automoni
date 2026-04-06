@@ -225,6 +225,139 @@
     <?php endforeach; ?>
     <?php endif; ?>
 
+    <!-- ⑤ Formations ─────────────────────────────────────────────────────────── -->
+    <?php if (!empty($education)): ?>
+    <div class="cv-sec-head"><?= lang('App.section_education') ?></div>
+    <?php foreach ($education as $edu): ?>
+    <div class="cv-item">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;">
+            <div>
+                <strong style="font-size:14px;"><?= esc($edu->degree) ?></strong>
+                <?php if (!empty($edu->niveau ?? '')): ?>
+                    <span class="badge bg-primary ms-1 fw-normal" style="font-size:11px;vertical-align:middle;"><?= esc($edu->niveau) ?></span>
+                <?php endif; ?>
+                <?php if (!empty($edu->field)): ?>
+                    <span style="font-weight:400;font-size:13px;color:#555;"> &mdash; <?= esc($edu->field) ?></span>
+                <?php endif; ?>
+            </div>
+            <span style="font-size:12px;color:#666;white-space:nowrap;">
+                <?= !empty($edu->start_year) ? esc($edu->start_year) : '' ?>
+                <?= !empty($edu->end_year) ? ' &ndash; ' . esc($edu->end_year) : '' ?>
+            </span>
+        </div>
+        <div style="font-size:13px;color:#444;font-style:italic;"><?= esc($edu->institution) ?></div>
+    </div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+
+    <!-- ⑥ Certifications ────────────────────────────────────────────────────── -->
+    <?php if (!empty($certifications)): ?>
+    <div class="cv-sec-head"><?= lang('App.section_certifications') ?></div>
+    <?php foreach ($certifications as $cert): ?>
+    <div class="cv-item" style="display:flex;gap:14px;align-items:flex-start;">
+        <?php if (!empty($cert->logo_file)): ?>
+        <img src="<?= base_url('uploads/cert_logos/' . esc($cert->logo_file)) ?>"
+             style="width:38px;height:38px;object-fit:contain;border-radius:6px;border:1px solid #dee;padding:2px;background:#fff;flex-shrink:0;" alt="">
+        <?php endif; ?>
+        <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;">
+                <strong style="font-size:14px;"><?= esc($cert->name) ?></strong>
+                <?php if (!empty($cert->issue_date)): ?>
+                <span style="font-size:12px;color:#666;white-space:nowrap;">
+                    <?= date('M Y', strtotime($cert->issue_date)) ?>
+                    <?= !empty($cert->expiry_date) ? ' &rarr; ' . date('M Y', strtotime($cert->expiry_date)) : '' ?>
+                </span>
+                <?php endif; ?>
+            </div>
+            <?php if (!empty($cert->organization)): ?>
+            <div style="font-size:13px;color:#444;font-style:italic;"><?= esc($cert->organization) ?></div>
+            <?php endif; ?>
+            <?php if (!empty($cert->credential_url)): ?>
+            <a href="<?= esc($cert->credential_url) ?>" target="_blank" rel="noopener" style="font-size:12px;color:#0A66C2;">
+                <i class="bi bi-link-45deg me-1"></i>Voir la certification
+            </a>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+
+    <!-- ⑦ Langues ───────────────────────────────────────────────────────────── -->
+    <?php if (!empty($languages)): ?>
+    <div class="cv-sec-head"><?= lang('App.section_languages') ?></div>
+    <div class="cv-item" style="border:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;">
+        <?php foreach ($languages as $lang): ?>
+        <span style="border:1px solid #ccc;border-radius:3px;padding:2px 10px;font-size:12px;background:#f8f9fa;">
+            <?= esc($lang->name) ?>
+            <span style="color:#0d6efd;font-weight:600;margin-left:5px;"><?= esc($lang->level) ?></span>
+        </span>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- ⑧ Projets ───────────────────────────────────────────────────────────── -->
+    <?php if (!empty($projects)): ?>
+    <div class="cv-sec-head"><?= lang('App.section_projects') ?></div>
+    <?php foreach ($projects as $i => $proj):
+        $memberObjs  = model(\App\Models\ProjectMemberModel::class)->getMembersByProject($proj->id);
+        $memberNames = [];
+        foreach ($memberObjs as $m) {
+            $mu = model(\App\Models\UserModel::class)->find($m->user_id);
+            if ($mu) { $memberNames[] = esc(trim($mu->first_name . ' ' . $mu->last_name)); }
+        }
+    ?>
+    <div class="cv-item">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;">
+            <strong style="font-size:14px;"><?= esc($proj->name) ?></strong>
+            <span style="font-size:12px;color:#666;white-space:nowrap;">
+                <?= !empty($proj->start_date) ? date('M Y', strtotime($proj->start_date)) : '' ?>
+                &ndash;
+                <?= $proj->is_current ? lang('App.present') : (!empty($proj->end_date) ? date('M Y', strtotime($proj->end_date)) : lang('App.present')) ?>
+            </span>
+        </div>
+        <?php if (!empty($memberNames)): ?>
+        <div style="font-size:12px;color:#555;margin-top:2px;">
+            <i class="bi bi-people me-1"></i><?= implode(', ', $memberNames) ?>
+        </div>
+        <?php endif; ?>
+        <?php if (!empty($proj->description)): ?>
+        <div class="cv-desc mt-1" id="desc-proj-<?= (int)$i ?>"><?= nl2br(esc($proj->description)) ?></div>
+        <?php if (mb_strlen($proj->description) > 200): ?>
+        <button class="cv-expand-btn" data-target="desc-proj-<?= (int)$i ?>" data-more="Lire plus ↓" data-less="Réduire ↑">Lire plus ↓</button>
+        <?php endif; ?>
+        <?php endif; ?>
+    </div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+
+    <!-- ⑨ Bénévolat ─────────────────────────────────────────────────────────── -->
+    <?php if (!empty($volunteering)): ?>
+    <div class="cv-sec-head"><?= lang('App.section_volunteering') ?></div>
+    <?php foreach ($volunteering as $i => $vol): ?>
+    <div class="cv-item">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;">
+            <div>
+                <strong style="font-size:14px;"><?= esc($vol->organization) ?></strong>
+                <?php if (!empty($vol->position)): ?>
+                <span style="font-weight:400;color:#555;font-size:13px;"> &mdash; <?= esc($vol->position) ?></span>
+                <?php endif; ?>
+            </div>
+            <span style="font-size:12px;color:#666;white-space:nowrap;">
+                <?= !empty($vol->start_date) ? date('M Y', strtotime($vol->start_date)) : '' ?>
+                &ndash;
+                <?= $vol->is_current ? lang('App.present') : (!empty($vol->end_date) ? date('M Y', strtotime($vol->end_date)) : lang('App.present')) ?>
+            </span>
+        </div>
+        <?php if (!empty($vol->description)): ?>
+        <div class="cv-desc mt-1" id="desc-vol-<?= (int)$i ?>"><?= nl2br(esc($vol->description)) ?></div>
+        <?php if (mb_strlen($vol->description) > 200): ?>
+        <button class="cv-expand-btn" data-target="desc-vol-<?= (int)$i ?>" data-more="Lire plus ↓" data-less="Réduire ↑">Lire plus ↓</button>
+        <?php endif; ?>
+        <?php endif; ?>
+    </div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+
 </div><!-- #cv-sheet -->
 
 <script>

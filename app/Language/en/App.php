@@ -181,6 +181,54 @@ return [
     'linkedin_lbl'          => 'LinkedIn',
     'github_lbl'            => 'GitHub',
 
+    // ── Certifications ─────────────────────────────────────────────────────────
+    'section_certifications'  => 'Certifications',
+    'add_certification'       => 'Add Certification',
+    'cert_name'               => 'Certification Name',
+    'cert_name_ph'            => 'e.g. AWS Solutions Architect, PMP, CCNA…',
+    'cert_organization'       => 'Issuing Organization',
+    'cert_organization_ph'    => 'e.g. Amazon, PMI, Cisco…',
+    'cert_issue_date'         => 'Issue Date',
+    'cert_expiry_date'        => 'Expiry Date',
+    'cert_no_expiry'          => 'No expiration',
+    'cert_credential_url'     => 'Credential URL',
+    'cert_credential_url_ph'  => 'https://…',
+    'cert_logo'               => 'Logo / Badge (optional)',
+    'cert_logo_hint'          => 'PNG/JPG/SVG, max 2 MB',
+
+    // ── Languages ───────────────────────────────────────────────────────────────
+    'section_languages'       => 'Languages',
+    'add_language'            => 'Add Language',
+    'lang_name'               => 'Language',
+    'lang_name_ph'            => 'e.g. English, French, Arabic…',
+    'lang_level'              => 'Level',
+    'lang_select_level'       => '— Select level —',
+    'lang_native'             => 'Native / Bilingual',
+    'lang_c2'                 => 'C2 — Mastery',
+    'lang_c1'                 => 'C1 — Advanced',
+    'lang_b2'                 => 'B2 — Upper Intermediate',
+    'lang_b1'                 => 'B1 — Intermediate',
+    'lang_a2'                 => 'A2 — Elementary',
+    'lang_a1'                 => 'A1 — Beginner',
+
+    // ── Projects ─────────────────────────────────────────────────────────────────
+    'section_projects'        => 'Projects',
+    'add_project'             => 'Add Project',
+    'project_name'            => 'Project Name',
+    'project_name_ph'         => 'e.g. E-commerce Platform, CRM System…',
+    'project_team'            => 'Team Members',
+    'project_team_ph'         => 'Search by name…',
+    'project_is_current'      => 'Ongoing project',
+
+    // ── Volunteering ───────────────────────────────────────────────────────────
+    'section_volunteering'    => 'Volunteering',
+    'add_volunteering'        => 'Add Volunteering',
+    'vol_organization'        => 'Organization',
+    'vol_organization_ph'     => 'e.g. Red Cross, Doctors Without Borders…',
+    'vol_position'            => 'Role / Position',
+    'vol_position_ph'         => 'e.g. Project Coordinator, Mentor…',
+    'vol_is_current'          => 'Currently volunteering here',
+
     // ── Company ───────────────────────────────────────────────────────────────
     'company_create_title'  => 'Create Company Profile',
     'company_edit_title'    => 'Edit Company Profile',

@@ -181,6 +181,54 @@ return [
     'linkedin_lbl'          => 'LinkedIn',
     'github_lbl'            => 'GitHub',
 
+    // ── الشهادات ─────────────────────────────────────────────────────────
+    'section_certifications'  => 'الشهادات والدورات',
+    'add_certification'       => 'إضافة شهادة',
+    'cert_name'               => 'اسم الشهادة',
+    'cert_name_ph'            => 'مثال: AWS Solutions Architect، PMP…',
+    'cert_organization'       => 'جهة المنح',
+    'cert_organization_ph'    => 'مثال: Amazon، PMI، Cisco…',
+    'cert_issue_date'         => 'تاريخ الحصول',
+    'cert_expiry_date'        => 'تاريخ انتهاء الصلاحية',
+    'cert_no_expiry'          => 'لا تنتهي صلاحيته',
+    'cert_credential_url'     => 'رابط الشهادة',
+    'cert_credential_url_ph'  => 'https://…',
+    'cert_logo'               => 'شعار / شارة (اختياري)',
+    'cert_logo_hint'          => 'PNG/JPG/SVG, حجم أقصى 2 MB',
+
+    // ── اللغات ──────────────────────────────────────────────────────────────────
+    'section_languages'       => 'اللغات',
+    'add_language'            => 'إضافة لغة',
+    'lang_name'               => 'اللغة',
+    'lang_name_ph'            => 'مثال: العربية، الفرنسية، الإنجليزية…',
+    'lang_level'              => 'المستوى',
+    'lang_select_level'       => '— اختر المستوى —',
+    'lang_native'             => 'لغة أم / ثنائية',
+    'lang_c2'                 => 'C2 — إتقان',
+    'lang_c1'                 => 'C1 — متقدم',
+    'lang_b2'                 => 'B2 — فوق المتوسط',
+    'lang_b1'                 => 'B1 — متوسط',
+    'lang_a2'                 => 'A2 — ابتدائي',
+    'lang_a1'                 => 'A1 — مبتدئ',
+
+    // ── المشاريع ───────────────────────────────────────────────────────────────
+    'section_projects'        => 'المشاريع',
+    'add_project'             => 'إضافة مشروع',
+    'project_name'            => 'اسم المشروع',
+    'project_name_ph'         => 'مثال: منصة تجارة إلكترونية، نظام CRM…',
+    'project_team'            => 'فريق العمل',
+    'project_team_ph'         => 'ابحث بالاسم…',
+    'project_is_current'      => 'مشروع جاري',
+
+    // ── التطوع ───────────────────────────────────────────────────────────
+    'section_volunteering'    => 'التطوع',
+    'add_volunteering'        => 'إضافة تطوع',
+    'vol_organization'        => 'المنظمة',
+    'vol_organization_ph'     => 'مثال: الصليب الأحمر، أطباء بلا حدود…',
+    'vol_position'            => 'المنصب / الدور',
+    'vol_position_ph'         => 'مثال: منسق مشاريع، مرشد…',
+    'vol_is_current'          => 'متطوع حالياً',
+
     // ── Company ───────────────────────────────────────────────────────────────
     'company_create_title'  => 'إنشاء ملف الشركة',
     'company_edit_title'    => 'تعديل ملف الشركة',

@@ -181,6 +181,54 @@ return [
     'linkedin_lbl'          => 'LinkedIn',
     'github_lbl'            => 'GitHub',
 
+    // ── Certifications ─────────────────────────────────────────────────────────
+    'section_certifications'  => 'Certifications',
+    'add_certification'       => 'Ajouter une certification',
+    'cert_name'               => 'Nom de la certification',
+    'cert_name_ph'            => 'ex. AWS Solutions Architect, PMP, CCNA…',
+    'cert_organization'       => 'Organisme d\'attribution',
+    'cert_organization_ph'    => 'ex. Amazon, PMI, Cisco…',
+    'cert_issue_date'         => 'Date d\'obtention',
+    'cert_expiry_date'        => 'Date d\'expiration',
+    'cert_no_expiry'          => 'Pas d\'expiration',
+    'cert_credential_url'     => 'Lien vers la certification',
+    'cert_credential_url_ph'  => 'https://…',
+    'cert_logo'               => 'Logo / Badge (optionnel)',
+    'cert_logo_hint'          => 'PNG/JPG/SVG, max 2 Mo',
+
+    // ── Langues ─────────────────────────────────────────────────────────────────
+    'section_languages'       => 'Langues',
+    'add_language'            => 'Ajouter une langue',
+    'lang_name'               => 'Langue',
+    'lang_name_ph'            => 'ex. Français, Anglais, Arabe…',
+    'lang_level'              => 'Niveau',
+    'lang_select_level'       => '— Sélectionner le niveau —',
+    'lang_native'             => 'Langue maternelle / Bilingue',
+    'lang_c2'                 => 'C2 — Maîtrise',
+    'lang_c1'                 => 'C1 — Avancé',
+    'lang_b2'                 => 'B2 — Intermédiaire supérieur',
+    'lang_b1'                 => 'B1 — Intermédiaire',
+    'lang_a2'                 => 'A2 — Élémentaire',
+    'lang_a1'                 => 'A1 — Débutant',
+
+    // ── Projets ──────────────────────────────────────────────────────────────────
+    'section_projects'        => 'Projets',
+    'add_project'             => 'Ajouter un projet',
+    'project_name'            => 'Nom du projet',
+    'project_name_ph'         => 'ex. Plateforme e-commerce, CRM…',
+    'project_team'            => 'Équipe (membres)',
+    'project_team_ph'         => 'Rechercher par nom…',
+    'project_is_current'      => 'Projet en cours',
+
+    // ── Bénévolat ───────────────────────────────────────────────────────────
+    'section_volunteering'    => 'Bénévolat',
+    'add_volunteering'        => 'Ajouter une expérience de bénévolat',
+    'vol_organization'        => 'Organisme',
+    'vol_organization_ph'     => 'ex. Croix-Rouge, Médecins Sans Frontières…',
+    'vol_position'            => 'Poste / Rôle',
+    'vol_position_ph'         => 'ex. Coordinateur de projet, Mentor…',
+    'vol_is_current'          => 'Je bénévole ici actuellement',
+
     // ── Company ───────────────────────────────────────────────────────────────
     'company_create_title'  => 'Créer le profil entreprise',
     'company_edit_title'    => 'Modifier le profil entreprise',

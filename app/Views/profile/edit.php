@@ -747,6 +747,311 @@
             </div>
         </div>
 
+        <!-- ══ Certifications ═══════════════════════════════════════════════ -->
+        <div class="card border-0 shadow-sm mb-4" id="certifications">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-patch-check me-2 text-primary"></i><?= lang('App.section_certifications') ?></h5>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#certAddForm">
+                    <i class="bi bi-plus me-1"></i><?= lang('App.add_certification') ?>
+                </button>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($certifications)): ?>
+                <?php foreach ($certifications as $cert): ?>
+                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start gap-2">
+                    <div class="d-flex gap-3 align-items-start">
+                        <?php if (!empty($cert->logo_file)): ?>
+                        <img src="<?= base_url('uploads/cert_logos/' . esc($cert->logo_file)) ?>"
+                             style="width:40px;height:40px;object-fit:contain;border-radius:6px;background:#fff;border:1px solid #dee2e6;padding:3px;" alt="">
+                        <?php endif; ?>
+                        <div>
+                            <div class="fw-semibold"><?= esc($cert->name) ?></div>
+                            <?php if (!empty($cert->organization)): ?>
+                            <div class="text-muted small"><i class="bi bi-building me-1"></i><?= esc($cert->organization) ?></div>
+                            <?php endif; ?>
+                            <div class="text-muted small">
+                                <?php if (!empty($cert->issue_date)): ?>
+                                <i class="bi bi-calendar3 me-1"></i><?= date('M Y', strtotime($cert->issue_date)) ?>
+                                <?php endif; ?>
+                                <?php if (!empty($cert->expiry_date)): ?>
+                                &rarr; <?= date('M Y', strtotime($cert->expiry_date)) ?>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (!empty($cert->credential_url)): ?>
+                            <a href="<?= esc($cert->credential_url) ?>" target="_blank" rel="noopener" class="small text-primary">
+                                <i class="bi bi-link-45deg me-1"></i>Voir la certification
+                            </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <form action="<?= base_url('profile/certification/delete/' . $cert->id) ?>" method="post"
+                          onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                        <?= csrf_field() ?>
+                        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+                <?php endforeach; ?>
+                <?php endif; ?>
+                <div class="collapse" id="certAddForm">
+                    <hr>
+                    <form action="<?= base_url('profile/certification/add') ?>" method="post" enctype="multipart/form-data" class="row g-3 mt-1">
+                        <?= csrf_field() ?>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold small"><?= lang('App.cert_name') ?> <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="<?= lang('App.cert_name_ph') ?>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.cert_issue_date') ?></label>
+                            <input type="date" name="issue_date" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold small"><?= lang('App.cert_organization') ?></label>
+                            <input type="text" name="organization" class="form-control form-control-sm" placeholder="<?= lang('App.cert_organization_ph') ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.cert_expiry_date') ?></label>
+                            <input type="date" name="expiry_date" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold small"><?= lang('App.cert_credential_url') ?></label>
+                            <input type="url" name="credential_url" class="form-control form-control-sm" placeholder="<?= lang('App.cert_credential_url_ph') ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.cert_logo') ?></label>
+                            <input type="file" name="logo_file" class="form-control form-control-sm" accept="image/*">
+                            <div class="form-text"><?= lang('App.cert_logo_hint') ?></div>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus me-1"></i><?= lang('App.add_certification') ?></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#certAddForm"><?= lang('App.btn_cancel') ?></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ Langues ══════════════════════════════════════════════════════ -->
+        <div class="card border-0 shadow-sm mb-4" id="languages">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-translate me-2 text-primary"></i><?= lang('App.section_languages') ?></h5>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#langAddForm">
+                    <i class="bi bi-plus me-1"></i><?= lang('App.add_language') ?>
+                </button>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($languages)): ?>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <?php foreach ($languages as $lang): ?>
+                    <div class="d-flex align-items-center gap-1 border rounded px-3 py-1 bg-light">
+                        <span class="fw-semibold small"><?= esc($lang->name) ?></span>
+                        <span class="badge bg-primary fw-normal ms-1"><?= esc($lang->level) ?></span>
+                        <form action="<?= base_url('profile/language/delete/' . $lang->id) ?>" method="post"
+                              onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')" class="ms-1">
+                            <?= csrf_field() ?>
+                            <button class="btn btn-link btn-sm p-0 text-danger"><i class="bi bi-x"></i></button>
+                        </form>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+                <div class="collapse" id="langAddForm">
+                    <hr>
+                    <form action="<?= base_url('profile/language/add') ?>" method="post" class="row g-3 mt-1">
+                        <?= csrf_field() ?>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small"><?= lang('App.lang_name') ?> <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="<?= lang('App.lang_name_ph') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small"><?= lang('App.lang_level') ?> <span class="text-danger">*</span></label>
+                            <select name="level" class="form-select form-select-sm" required>
+                                <option value=""><?= lang('App.lang_select_level') ?></option>
+                                <option value="Natif"><?= lang('App.lang_native') ?></option>
+                                <option value="C2"><?= lang('App.lang_c2') ?></option>
+                                <option value="C1"><?= lang('App.lang_c1') ?></option>
+                                <option value="B2"><?= lang('App.lang_b2') ?></option>
+                                <option value="B1"><?= lang('App.lang_b1') ?></option>
+                                <option value="A2"><?= lang('App.lang_a2') ?></option>
+                                <option value="A1"><?= lang('App.lang_a1') ?></option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus me-1"></i><?= lang('App.add_language') ?></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#langAddForm"><?= lang('App.btn_cancel') ?></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ Projets ══════════════════════════════════════════════════════ -->
+        <div class="card border-0 shadow-sm mb-4" id="projects">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-kanban me-2 text-primary"></i><?= lang('App.section_projects') ?></h5>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#projAddForm">
+                    <i class="bi bi-plus me-1"></i><?= lang('App.add_project') ?>
+                </button>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($projects)): ?>
+                <?php foreach ($projects as $proj): ?>
+                <?php
+                    $memberObjs  = model(\App\Models\ProjectMemberModel::class)->getMembersByProject($proj->id);
+                    $memberNames = [];
+                    foreach ($memberObjs as $m) {
+                        $mu = model(\App\Models\UserModel::class)->find($m->user_id);
+                        if ($mu) { $memberNames[] = esc(trim($mu->first_name . ' ' . $mu->last_name)); }
+                    }
+                ?>
+                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-semibold"><?= esc($proj->name) ?></div>
+                        <div class="text-muted small">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            <?= !empty($proj->start_date) ? date('M Y', strtotime($proj->start_date)) : '' ?>
+                            <?php if ($proj->is_current): ?>
+                                — <?= lang('App.present') ?>
+                            <?php elseif (!empty($proj->end_date)): ?>
+                                — <?= date('M Y', strtotime($proj->end_date)) ?>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (!empty($memberNames)): ?>
+                        <div class="text-muted small"><i class="bi bi-people me-1"></i><?= implode(', ', $memberNames) ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($proj->description)): ?>
+                        <p class="small mb-0 mt-1"><?= esc($proj->description) ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <form action="<?= base_url('profile/project/delete/' . $proj->id) ?>" method="post"
+                          onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                        <?= csrf_field() ?>
+                        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+                <?php endforeach; ?>
+                <?php endif; ?>
+                <div class="collapse" id="projAddForm">
+                    <hr>
+                    <form action="<?= base_url('profile/project/add') ?>" method="post" class="row g-3 mt-1">
+                        <?= csrf_field() ?>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small"><?= lang('App.project_name') ?> <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="<?= lang('App.project_name_ph') ?>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?></label>
+                            <input type="date" name="start_date" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
+                            <input type="date" name="end_date" class="form-control form-control-sm" id="proj_end_date">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="is_current" value="1" id="proj_is_current">
+                                <label class="form-check-label small" for="proj_is_current"><?= lang('App.project_is_current') ?></label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small"><?= lang('App.project_team') ?></label>
+                            <div class="position-relative">
+                                <input type="text" id="proj_member_search" class="form-control form-control-sm"
+                                       placeholder="<?= lang('App.project_team_ph') ?>" autocomplete="off">
+                                <div id="proj_member_suggestions" class="list-group position-absolute w-100 shadow-sm"
+                                     style="z-index:500;display:none;max-height:160px;overflow-y:auto;"></div>
+                            </div>
+                            <div id="proj_members_selected" class="d-flex flex-wrap gap-1 mt-2"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_description') ?></label>
+                            <textarea name="description" class="form-control form-control-sm" rows="3"></textarea>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus me-1"></i><?= lang('App.add_project') ?></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#projAddForm"><?= lang('App.btn_cancel') ?></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ Bénévolat ════════════════════════════════════════════════════ -->
+        <div class="card border-0 shadow-sm mb-4" id="volunteering">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-heart me-2 text-primary"></i><?= lang('App.section_volunteering') ?></h5>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#volAddForm">
+                    <i class="bi bi-plus me-1"></i><?= lang('App.add_volunteering') ?>
+                </button>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($volunteering)): ?>
+                <?php foreach ($volunteering as $vol): ?>
+                <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-semibold"><?= esc($vol->organization) ?></div>
+                        <?php if (!empty($vol->position)): ?>
+                        <div class="text-muted small fw-medium"><?= esc($vol->position) ?></div>
+                        <?php endif; ?>
+                        <div class="text-muted small">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            <?= !empty($vol->start_date) ? date('M Y', strtotime($vol->start_date)) : '' ?>
+                            <?php if ($vol->is_current): ?>
+                                — <?= lang('App.present') ?>
+                            <?php elseif (!empty($vol->end_date)): ?>
+                                — <?= date('M Y', strtotime($vol->end_date)) ?>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (!empty($vol->description)): ?>
+                        <p class="small mb-0 mt-1"><?= esc($vol->description) ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <form action="<?= base_url('profile/volunteering/delete/' . $vol->id) ?>" method="post"
+                          onsubmit="return confirm('<?= lang('App.confirm_delete') ?>')">
+                        <?= csrf_field() ?>
+                        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+                <?php endforeach; ?>
+                <?php endif; ?>
+                <div class="collapse" id="volAddForm">
+                    <hr>
+                    <form action="<?= base_url('profile/volunteering/add') ?>" method="post" class="row g-3 mt-1">
+                        <?= csrf_field() ?>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small"><?= lang('App.vol_organization') ?> <span class="text-danger">*</span></label>
+                            <input type="text" name="organization" class="form-control form-control-sm" placeholder="<?= lang('App.vol_organization_ph') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small"><?= lang('App.vol_position') ?></label>
+                            <input type="text" name="position" class="form-control form-control-sm" placeholder="<?= lang('App.vol_position_ph') ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_start_date') ?></label>
+                            <input type="date" name="start_date" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_end_date') ?></label>
+                            <input type="date" name="end_date" class="form-control form-control-sm" id="vol_end_date">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="is_current" value="1" id="vol_is_current">
+                                <label class="form-check-label small" for="vol_is_current"><?= lang('App.vol_is_current') ?></label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small"><?= lang('App.field_description') ?></label>
+                            <textarea name="description" class="form-control form-control-sm" rows="3"></textarea>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus me-1"></i><?= lang('App.add_volunteering') ?></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#volAddForm"><?= lang('App.btn_cancel') ?></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
 </div><!-- end #forms-col -->
 
 <!-- ═════════════════ RIGHT : Aperçu CV ATS ═════════════════ -->
@@ -1221,6 +1526,93 @@ if (expIsCurrent) {
     });
 
     cvUpdate(); // initial render
+})();
+</script>
+
+<script>
+// ── Project team member autocomplete ──────────────────────────────────────
+(function () {
+    var input       = document.getElementById('proj_member_search');
+    var suggestions = document.getElementById('proj_member_suggestions');
+    var selected    = document.getElementById('proj_members_selected');
+    if (!input) return;
+
+    var members = {};  // id → name
+    var timer;
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        var q = this.value.trim();
+        if (q.length < 2) { suggestions.style.display = 'none'; return; }
+        timer = setTimeout(function () {
+            fetch('<?= base_url('profile/users/search') ?>?q=' + encodeURIComponent(q))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    suggestions.innerHTML = '';
+                    if (!data.length) { suggestions.style.display = 'none'; return; }
+                    data.forEach(function (u) {
+                        var a = document.createElement('button');
+                        a.type = 'button';
+                        a.className = 'list-group-item list-group-item-action py-1 small';
+                        a.textContent = u.name;
+                        a.addEventListener('click', function () {
+                            if (members[u.id]) return;
+                            members[u.id] = u.name;
+                            addChip(u.id, u.name);
+                            suggestions.style.display = 'none';
+                            input.value = '';
+                        });
+                        suggestions.appendChild(a);
+                    });
+                    suggestions.style.display = 'block';
+                });
+        }, 250);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+            suggestions.style.display = 'none';
+        }
+    });
+
+    function addChip(id, name) {
+        var chip = document.createElement('span');
+        chip.className = 'badge bg-primary d-flex align-items-center gap-1';
+        chip.innerHTML = name + ' <button type="button" class="btn-close btn-close-white btn-sm" style="font-size:9px;"></button>';
+        chip.querySelector('button').addEventListener('click', function () {
+            delete members[id];
+            selected.removeChild(chip);
+            selected.querySelectorAll('[name="member_ids[]"]').forEach(function (inp) {
+                if (inp.value == id) selected.removeChild(inp);
+            });
+        });
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'member_ids[]';
+        hidden.value = id;
+        selected.appendChild(chip);
+        selected.appendChild(hidden);
+    }
+
+    // project is_current toggle
+    var projCurrent = document.getElementById('proj_is_current');
+    var projEnd     = document.getElementById('proj_end_date');
+    if (projCurrent && projEnd) {
+        projCurrent.addEventListener('change', function () {
+            projEnd.disabled = this.checked;
+            if (this.checked) projEnd.value = '';
+        });
+    }
+
+    // volunteering is_current toggle
+    var volCurrent = document.getElementById('vol_is_current');
+    var volEnd     = document.getElementById('vol_end_date');
+    if (volCurrent && volEnd) {
+        volCurrent.addEventListener('change', function () {
+            volEnd.disabled = this.checked;
+            if (this.checked) volEnd.value = '';
+        });
+    }
 })();
 </script>
 
