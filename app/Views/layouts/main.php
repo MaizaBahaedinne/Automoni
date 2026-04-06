@@ -105,20 +105,44 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         }
         .nav-links a {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 2px;
             color: var(--muted);
             text-decoration: none;
-            font-size: .8rem;
+            font-size: .68rem;
             font-weight: 500;
-            padding: 6px 10px;
+            padding: 5px 12px;
             border-radius: 8px;
             transition: all .15s;
             white-space: nowrap;
+            line-height: 1.1;
         }
-        .nav-links a i { font-size: .95rem; }
+        .nav-links a i { font-size: 1.15rem; display: block; }
         .nav-links a:hover { background: var(--brand-light); color: var(--brand-dark); }
-        .nav-links a.active { background: var(--brand-light); color: var(--brand-dark); }
+        .nav-links a.active { background: var(--brand-light); color: var(--brand-dark); font-weight: 700; }
+        /* Notification bell */
+        .nav-notif-btn {
+            position: relative;
+            width: 36px; height: 36px;
+            border: none; background: none;
+            color: var(--muted);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem;
+            transition: background .15s, color .15s;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .nav-notif-btn:hover { background: var(--brand-light); color: var(--brand); }
+        .nav-notif-badge {
+            position: absolute;
+            top: 3px; right: 3px;
+            width: 8px; height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+        }
 
         /* Search bar */
         .nav-search {
@@ -401,6 +425,11 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         <div class="nav-actions" id="navActions">
 
             <?php if (session()->get('logged_in')): ?>
+                <!-- Notifications (placeholder — module à venir) -->
+                <button class="nav-notif-btn" title="Notifications" disabled>
+                    <i class="bi bi-bell"></i>
+                    <!-- <span class="nav-notif-badge"></span> -->
+                </button>
                 <div class="dropdown">
                     <a class="user-btn dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="user-avatar"><?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?></span>

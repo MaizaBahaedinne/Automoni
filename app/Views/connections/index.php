@@ -160,8 +160,42 @@
     color: var(--border);
     display: block;
 }
-.cn-pane { display: none; }
-.cn-pane.active { display: block; }
+.cn-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: .75rem;
+    margin-bottom: 1.75rem;
+}
+.cn-stat-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem .75rem;
+    text-align: center;
+    transition: box-shadow .2s, transform .15s;
+}
+.cn-stat-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.cn-stat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto .6rem;
+    font-size: 1.1rem;
+}
+.cn-stat-num {
+    font-size: 1.7rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+}
+.cn-stat-label {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--muted);
+    margin-top: .3rem;
+}
 .cn-received-list {
     display: flex;
     flex-direction: column;
@@ -221,6 +255,7 @@
 .cn-list-actions { display: flex; gap: .4rem; flex-shrink: 0; }
 </style>
 
+<!-- Header -->
 <div class="cn-header">
     <h1 class="cn-title">
         Mes relations
@@ -229,6 +264,44 @@
     <a href="<?= base_url('connections/search') ?>" class="btn btn-outline-primary btn-sm">
         <i class="bi bi-search me-1"></i>Trouver des personnes
     </a>
+</div>
+
+<!-- Stats -->
+<div class="cn-stats">
+    <div class="cn-stat-card">
+        <div class="cn-stat-icon" style="background:var(--brand-light); color:var(--brand);">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div class="cn-stat-num"><?= $connectionsCount ?></div>
+        <div class="cn-stat-label">Relations</div>
+    </div>
+    <div class="cn-stat-card" style="cursor:pointer;" onclick="document.querySelector('[data-pane=pane-received]').click()">
+        <div class="cn-stat-icon" style="background:#eff6ff; color:#3b82f6;">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <div class="cn-stat-num"><?= count($pendingReceived) ?></div>
+        <div class="cn-stat-label">Invitations reçues</div>
+    </div>
+    <div class="cn-stat-card" style="cursor:pointer;" onclick="document.querySelector('[data-pane=pane-sent]').click()">
+        <div class="cn-stat-icon" style="background:#f0fdf4; color:#22c55e;">
+            <i class="bi bi-send-fill"></i>
+        </div>
+        <div class="cn-stat-num"><?= count($sentPending) ?></div>
+        <div class="cn-stat-label">Invitations envoyées</div>
+    </div>
+    <?php if ($connectionsCount > 0): ?>
+    <?php
+    $cities = array_unique(array_filter(array_column((array) $connections, 'city')));
+    $nbCities = count($cities);
+    ?>
+    <div class="cn-stat-card">
+        <div class="cn-stat-icon" style="background:#fdf4ff; color:#a855f7;">
+            <i class="bi bi-geo-alt-fill"></i>
+        </div>
+        <div class="cn-stat-num"><?= $nbCities ?></div>
+        <div class="cn-stat-label">Villes représentées</div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <!-- Tabs -->
