@@ -208,7 +208,6 @@
                 <i class="bi bi-person-dash me-1"></i>Retirer
             </button>
             <?php endif; ?>
-            <?php endif; ?>
             <?php if (!empty($profile?->cv_file)): ?>
             <a href="<?= base_url('profile/cv/download') ?>" class="btn btn-outline-success btn-sm">
                 <i class="bi bi-download me-1"></i><?= lang('App.download_cv') ?>
