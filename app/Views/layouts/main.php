@@ -158,20 +158,21 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             pointer-events: none;
         }
         .nav-search-input {
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
             border-radius: 20px;
-            padding: 6px <?= $isRtl ? '14px' : '32px' ?> 6px <?= $isRtl ? '32px' : '14px' ?>;
-            font-size: .8rem;
-            background: var(--bg);
+            padding: 7px <?= $isRtl ? '16px' : '36px' ?> 7px <?= $isRtl ? '36px' : '16px' ?>;
+            font-size: .82rem;
+            background: #fff;
             color: var(--text);
-            width: 180px;
-            transition: width .2s, border-color .15s;
+            width: 210px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            transition: width .2s, border-color .15s, box-shadow .15s;
             outline: none;
         }
         .nav-search-input:focus {
             border-color: var(--brand);
-            width: 230px;
-            box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+            width: 270px;
+            box-shadow: 0 0 0 3px rgba(99,102,241,.15);
         }
         .nav-search-input::placeholder { color: var(--muted); }
         @media (max-width: 767px) { .nav-search { display: none; } }
@@ -230,7 +231,10 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             font-size: .75rem;
             font-weight: 700;
             display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
         }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 8px; }
 
         /* Hamburger mobile */
         .nav-toggler {
@@ -407,13 +411,13 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         </a>
 
         <ul class="nav-links" id="navLinks">
-            <li><a href="<?= base_url('/') ?>"><i class="bi bi-house-fill"></i><span><?= lang('App.nav_home') ?></span></a></li>
-            <li><a href="<?= base_url('jobs') ?>"><i class="bi bi-briefcase"></i><span><?= lang('App.nav_jobs') ?></span></a></li>
+            <li><a href="<?= base_url('/') ?>"><i class="bi bi-house-fill"></i><span>Accueil</span></a></li>
+            <li><a href="<?= base_url('jobs') ?>"><i class="bi bi-briefcase"></i><span>Emplois</span></a></li>
             <?php if (session()->get('logged_in')): ?>
             <li><a href="<?= base_url('connections') ?>"><i class="bi bi-people"></i><span>Relations</span></a></li>
-            <li><a href="<?= base_url('dashboard') ?>"><i class="bi bi-grid"></i><span><?= lang('App.nav_dashboard') ?></span></a></li>
+            <li><a href="<?= base_url('organizations') ?>"><i class="bi bi-buildings"></i><span>Organisations</span></a></li>
             <?php endif; ?>
-            <li><a href="<?= base_url('coaching') ?>"><i class="bi bi-lightbulb"></i><span><?= lang('App.nav_coaching') ?></span></a></li>
+            <li><a href="<?= base_url('coaching') ?>"><i class="bi bi-lightbulb"></i><span>Coaching</span></a></li>
         </ul>
 
         <!-- Search bar -->
@@ -432,7 +436,13 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
                 </button>
                 <div class="dropdown">
                     <a class="user-btn dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="user-avatar"><?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?></span>
+                        <span class="user-avatar">
+                            <?php if (session()->get('user_avatar')): ?>
+                                <img src="<?= base_url('uploads/' . esc(session()->get('user_avatar'))) ?>" alt="">
+                            <?php else: ?>
+                                <?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?>
+                            <?php endif; ?>
+                        </span>
                         <span class="d-none d-md-inline"><?= esc(explode(' ', session()->get('user_name'))[0]) ?></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
@@ -443,6 +453,7 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
                             </div>
                         </li>
                         <li><a class="dropdown-item" href="<?= base_url('profile') ?>"><i class="bi bi-person me-2"></i><?= lang('App.nav_profile') ?></a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('dashboard') ?>"><i class="bi bi-grid me-2"></i>Tableau de bord</a></li>
                         <?php if (session()->get('user_role') === 'job_seeker'): ?>
                         <li><a class="dropdown-item" href="<?= base_url('alerts') ?>"><i class="bi bi-bell me-2"></i><?= lang('App.nav_alerts') ?></a></li>
                         <?php endif; ?>
@@ -546,6 +557,18 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         document.getElementById('navLinks').classList.toggle('open');
         document.getElementById('navActions').classList.toggle('open');
     });
+    // Active nav link
+    (function () {
+        const curr = window.location.pathname.replace(/\/$/, '') || '/';
+        document.querySelectorAll('.nav-links a').forEach(a => {
+            try {
+                const href = new URL(a.href).pathname.replace(/\/$/, '') || '/';
+                if (curr === href || (href.length > 1 && curr.startsWith(href))) {
+                    a.classList.add('active');
+                }
+            } catch(e) {}
+        });
+    })();
 </script>
 <?= $this->renderSection('scripts') ?>
 </body>

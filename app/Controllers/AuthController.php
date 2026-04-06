@@ -92,11 +92,12 @@ class AuthController extends BaseController
         // Regenerate session ID to prevent session fixation
         session()->regenerate(true);
         session()->set([
-            'user_id'    => $user->id,
-            'user_email' => $user->email,
-            'user_name'  => $user->first_name . ' ' . $user->last_name,
-            'user_role'  => $user->role,
-            'logged_in'  => true,
+            'user_id'     => $user->id,
+            'user_email'  => $user->email,
+            'user_name'   => $user->first_name . ' ' . $user->last_name,
+            'user_role'   => $user->role,
+            'user_avatar' => $user->avatar ?? null,
+            'logged_in'   => true,
         ]);
 
         // Handle "remember me"
