@@ -42,9 +42,10 @@
                             <label for="type_id" class="form-label fw-semibold">Type d'organisation <span class="text-danger">*</span></label>
                             <select name="type_id" id="type_id" class="form-select" required>
                                 <option value="">-- Sélectionner --</option>
-                                <?php foreach ($types as $type): ?>
-                                    <option value="<?= $type->id ?>" <?= old('type_id') == $type->id ? 'selected' : '' ?>><?= esc($type->name) ?></option>
-                                <?php endforeach; ?>
+                                <option value="1" <?= old('type_id') == '1' ? 'selected' : '' ?>>Société</option>
+                                <option value="2" <?= old('type_id') == '2' ? 'selected' : '' ?>>ONG</option>
+                                <option value="3" <?= old('type_id') == '3' ? 'selected' : '' ?>>Association</option>
+                                <option value="4" <?= old('type_id') == '4' ? 'selected' : '' ?>>Organisme gouvernemental</option>
                             </select>
                             <div class="invalid-feedback">Veuillez sélectionner un type.</div>
                         </div>
@@ -117,8 +118,19 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="phone_country_code" class="form-label fw-semibold">Indicatif pays</label>
-                            <input type="text" name="phone_country_code" id="phone_country_code" class="form-control"
-                                   value="<?= old('phone_country_code') ?>" placeholder="+213">
+                            <select name="phone_country_code" id="phone_country_code" class="form-select">
+                                <option value="">-- Sélectionner --</option>
+                                <option value="+213" <?= old('phone_country_code') == '+213' ? 'selected' : '' ?>>🇩🇿 Algérie (+213)</option>
+                                <option value="+216" <?= old('phone_country_code') == '+216' ? 'selected' : '' ?>>🇹🇳 Tunisie (+216)</option>
+                                <option value="+212" <?= old('phone_country_code') == '+212' ? 'selected' : '' ?>>🇲🇦 Maroc (+212)</option>
+                                <option value="+33" <?= old('phone_country_code') == '+33' ? 'selected' : '' ?>>🇫🇷 France (+33)</option>
+                                <option value="+1" <?= old('phone_country_code') == '+1' ? 'selected' : '' ?>>🇺🇸 États-Unis (+1)</option>
+                                <option value="+44" <?= old('phone_country_code') == '+44' ? 'selected' : '' ?>>🇬🇧 Royaume-Uni (+44)</option>
+                                <option value="+34" <?= old('phone_country_code') == '+34' ? 'selected' : '' ?>>🇪🇸 Espagne (+34)</option>
+                                <option value="+39" <?= old('phone_country_code') == '+39' ? 'selected' : '' ?>>🇮🇹 Italie (+39)</option>
+                                <option value="+41" <?= old('phone_country_code') == '+41' ? 'selected' : '' ?>>🇨🇭 Suisse (+41)</option>
+                                <option value="+1" <?= old('phone_country_code') == '+1' ? 'selected' : '' ?>>🇨🇦 Canada (+1)</option>
+                            </select>
                         </div>
                         <div class="col-md-8">
                             <label for="phone_number" class="form-label fw-semibold">Numéro de téléphone <span class="text-danger">*</span></label>
@@ -144,44 +156,46 @@
                     </div>
 
                     <div class="row g-3 mb-3">
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <label for="city" class="form-label fw-semibold">Ville <span class="text-danger">*</span></label>
                             <input type="text" name="city" id="city" class="form-control" required
                                    value="<?= old('city') ?>" placeholder="Alger">
                             <div class="invalid-feedback">La ville est requise.</div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="postal_code" class="form-label fw-semibold">Code postal <span class="text-danger">*</span></label>
                             <input type="text" name="postal_code" id="postal_code" class="form-control" required
                                    value="<?= old('postal_code') ?>" placeholder="16000">
                             <div class="invalid-feedback">Code postal requis.</div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="country_code" class="form-label fw-semibold">Code pays <span class="text-danger">*</span></label>
-                            <input type="text" name="country_code" id="country_code" class="form-control" required
-                                   maxlength="2" style="text-transform:uppercase"
-                                   value="<?= old('country_code') ?>" placeholder="DZ">
-                            <div class="invalid-feedback">Code ISO 2 lettres (ex : DZ).</div>
-                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="country" class="form-label fw-semibold">Pays</label>
-                        <input type="text" name="country" id="country" class="form-control"
-                               value="<?= old('country') ?>" placeholder="Algérie">
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="latitude" class="form-label fw-semibold">Latitude</label>
-                            <input type="number" name="latitude" id="latitude" class="form-control" step="0.000001"
-                                   value="<?= old('latitude') ?>" placeholder="36.7538">
+                        <label for="country_code" class="form-label fw-semibold">Pays <span class="text-danger">*</span></label>
+                        <div style="position: relative;">
+                            <input type="text" id="country_search" class="form-control" placeholder="Chercher un pays..." 
+                                   autocomplete="off" style="margin-bottom: 8px;">
+                            <select name="country_code" id="country_code" class="form-select" required style="display: none;">
+                                <option value="">-- Sélectionner --</option>
+                                <option value="DZ" <?= old('country_code') == 'DZ' ? 'selected' : '' ?>>Algérie</option>
+                                <option value="TN" <?= old('country_code') == 'TN' ? 'selected' : '' ?>>Tunisie</option>
+                                <option value="MA" <?= old('country_code') == 'MA' ? 'selected' : '' ?>>Maroc</option>
+                                <option value="FR" <?= old('country_code') == 'FR' ? 'selected' : '' ?>>France</option>
+                                <option value="US" <?= old('country_code') == 'US' ? 'selected' : '' ?>>États-Unis</option>
+                                <option value="GB" <?= old('country_code') == 'GB' ? 'selected' : '' ?>>Royaume-Uni</option>
+                                <option value="ES" <?= old('country_code') == 'ES' ? 'selected' : '' ?>>Espagne</option>
+                                <option value="IT" <?= old('country_code') == 'IT' ? 'selected' : '' ?>>Italie</option>
+                                <option value="CH" <?= old('country_code') == 'CH' ? 'selected' : '' ?>>Suisse</option>
+                                <option value="CA" <?= old('country_code') == 'CA' ? 'selected' : '' ?>>Canada</option>
+                                <option value="BE" <?= old('country_code') == 'BE' ? 'selected' : '' ?>>Belgique</option>
+                                <option value="DE" <?= old('country_code') == 'DE' ? 'selected' : '' ?>>Allemagne</option>
+                                <option value="NL" <?= old('country_code') == 'NL' ? 'selected' : '' ?>>Pays-Bas</option>
+                                <option value="SE" <?= old('country_code') == 'SE' ? 'selected' : '' ?>>Suède</option>
+                                <option value="NO" <?= old('country_code') == 'NO' ? 'selected' : '' ?>>Norvège</option>
+                            </select>
+                            <div id="countryDropdown" style="position: absolute; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-height: 250px; overflow-y: auto; display: none; z-index: 100; box-shadow: var(--shadow);"></div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="longitude" class="form-label fw-semibold">Longitude</label>
-                            <input type="number" name="longitude" id="longitude" class="form-control" step="0.000001"
-                                   value="<?= old('longitude') ?>" placeholder="3.0588">
-                        </div>
+                        <div class="invalid-feedback">Veuillez sélectionner un pays.</div>
                     </div>
 
                 </div>
@@ -220,24 +234,36 @@
                         </select>
                     </div>
 
-                    <!-- Secteurs d'activité (multi-select) -->
+                    <!-- Secteur d'activité (single select avec recherche) -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Secteurs d'activité</label>
-                        <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: #f9fafb; max-height: 200px; overflow-y: auto;">
-                            <?php 
-                            $sectors = ['technology', 'finance', 'healthcare', 'manufacturing', 'retail', 'real-estate', 'energy', 'transportation', 'education', 'media', 'hospitality', 'non-profit', 'government', 'professional-services', 'agriculture', 'telecommunications', 'utilities', 'consulting'];
-                            $selected_sectors = old('sectors') ? (is_array(old('sectors')) ? old('sectors') : json_decode(old('sectors'), true)) : [];
-                            ?>
-                            <?php foreach ($sectors as $sector): ?>
-                            <div class="form-check" style="margin-bottom: 8px;">
-                                <input type="checkbox" class="form-check-input" name="sectors[]" id="sector_<?= $sector ?>" value="<?= $sector ?>"
-                                       <?= in_array($sector, $selected_sectors) ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="sector_<?= $sector ?>">
-                                    <?= ucfirst(str_replace('-', ' ', $sector)) ?>
-                                </label>
-                            </div>
-                            <?php endforeach; ?>
+                        <label for="industry" class="form-label fw-semibold">Secteur d'activité <span class="text-danger">*</span></label>
+                        <div style="position: relative;">
+                            <input type="text" id="sector_search" class="form-control" placeholder="Chercher un secteur..." 
+                                   autocomplete="off" required style="margin-bottom: 8px;">
+                            <select name="industry" id="industry" class="form-select" required style="display: none;">
+                                <option value="">-- Sélectionner --</option>
+                                <option value="technology" <?= old('industry') == 'technology' ? 'selected' : '' ?>>Technologie</option>
+                                <option value="finance" <?= old('industry') == 'finance' ? 'selected' : '' ?>>Finance</option>
+                                <option value="healthcare" <?= old('industry') == 'healthcare' ? 'selected' : '' ?>>Santé</option>
+                                <option value="manufacturing" <?= old('industry') == 'manufacturing' ? 'selected' : '' ?>>Industrie</option>
+                                <option value="retail" <?= old('industry') == 'retail' ? 'selected' : '' ?>>Commerce de détail</option>
+                                <option value="real-estate" <?= old('industry') == 'real-estate' ? 'selected' : '' ?>>Immobilier</option>
+                                <option value="energy" <?= old('industry') == 'energy' ? 'selected' : '' ?>>Énergie</option>
+                                <option value="transportation" <?= old('industry') == 'transportation' ? 'selected' : '' ?>>Transport</option>
+                                <option value="education" <?= old('industry') == 'education' ? 'selected' : '' ?>>Éducation</option>
+                                <option value="media" <?= old('industry') == 'media' ? 'selected' : '' ?>>Médias</option>
+                                <option value="hospitality" <?= old('industry') == 'hospitality' ? 'selected' : '' ?>>Hôtellerie</option>
+                                <option value="non-profit" <?= old('industry') == 'non-profit' ? 'selected' : '' ?>>Non-profit</option>
+                                <option value="government" <?= old('industry') == 'government' ? 'selected' : '' ?>>Gouvernement</option>
+                                <option value="professional-services" <?= old('industry') == 'professional-services' ? 'selected' : '' ?>>Services professionnels</option>
+                                <option value="agriculture" <?= old('industry') == 'agriculture' ? 'selected' : '' ?>>Agriculture</option>
+                                <option value="telecommunications" <?= old('industry') == 'telecommunications' ? 'selected' : '' ?>>Télécommunications</option>
+                                <option value="utilities" <?= old('industry') == 'utilities' ? 'selected' : '' ?>>Utilitaires</option>
+                                <option value="consulting" <?= old('industry') == 'consulting' ? 'selected' : '' ?>>Conseil</option>
+                            </select>
+                            <div id="sectorDropdown" style="position: absolute; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-height: 250px; overflow-y: auto; display: none; z-index: 100; box-shadow: var(--shadow);"></div>
                         </div>
+                        <div class="invalid-feedback d-block">Veuillez sélectionner un secteur d'activité.</div>
                     </div>
 
                     <!-- Marchés ciblés -->
@@ -261,36 +287,7 @@
                         </div>
                     </div>
 
-                    <!-- Score de réputation -->
-                    <div class="mb-3">
-                        <label for="reputation_score" class="form-label fw-semibold">Score de réputation</label>
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="range" class="form-range" name="reputation_score" id="reputation_score" 
-                                   min="0" max="5" step="0.5" value="<?= old('reputation_score') ?? 3 ?>"
-                                   style="flex: 1; max-width: 200px;">
-                            <span id="reputationValue" class="badge" style="background-color: var(--brand); min-width: 50px; text-align: center;">
-                                <?= old('reputation_score') ?? 3 ?> / 5
-                            </span>
-                        </div>
-                        <small class="form-text" style="color: var(--muted);">1 = Faible, 5 = Excellent</small>
-                    </div>
-                </div>
-            </div>
 
-            <!-- ── Localisation (Carte Interactive) ────────────────────── -->
-            <div class="cr-card">
-                <div class="cr-section-header"><i class="bi bi-map"></i>Localisation interactive</div>
-                <div class="cr-card-body">
-                    <p style="font-size: .9rem; color: var(--muted); margin-bottom: 12px;">
-                        Cliquez sur la carte pour définir la localisation, ou utilisez votre position actuelle.
-                    </p>
-                    <div id="organizationMap" style="width: 100%; height: 300px; border: 1px solid var(--border); border-radius: var(--radius);"></div>
-                    <button type="button" id="useCurrentLocation" class="btn btn-outline-primary btn-sm mt-2">
-                        <i class="bi bi-geo-fill me-1"></i>Utiliser ma position actuelle
-                    </button>
-                    <button type="button" id="centerMap" class="btn btn-outline-secondary btn-sm mt-2">
-                        <i class="bi bi-zoom-in me-1"></i>Centrer la carte
-                    </button>
                 </div>
             </div>
 
@@ -358,203 +355,296 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" rel="stylesheet">
-
 <script>
-// ── Initialisation de la carte ──────────────────────────────────────
-let organizationMap, currentMarker;
-const mapCenter = { lat: 36.7538, lng: 3.0588 }; // Algérie par défaut
+// ── Données des pays et secteurs ───────────────────────────────────
+const countriesData = {
+    'DZ': 'Algérie',
+    'TN': 'Tunisie',
+    'MA': 'Maroc',
+    'FR': 'France',
+    'US': 'États-Unis',
+    'GB': 'Royaume-Uni',
+    'ES': 'Espagne',
+    'IT': 'Italie',
+    'CH': 'Suisse',
+    'CA': 'Canada',
+    'BE': 'Belgique',
+    'DE': 'Allemagne',
+    'NL': 'Pays-Bas',
+    'SE': 'Suède',
+    'NO': 'Norvège',
+};
+
+const sectorsData = {
+    'technology': 'Technologie',
+    'finance': 'Finance',
+    'healthcare': 'Santé',
+    'manufacturing': 'Industrie',
+    'retail': 'Commerce de détail',
+    'real-estate': 'Immobilier',
+    'energy': 'Énergie',
+    'transportation': 'Transport',
+    'education': 'Éducation',
+    'media': 'Médias',
+    'hospitality': 'Hôtellerie',
+    'non-profit': 'Non-profit',
+    'government': 'Gouvernement',
+    'professional-services': 'Services professionnels',
+    'agriculture': 'Agriculture',
+    'telecommunications': 'Télécommunications',
+    'utilities': 'Utilitaires',
+    'consulting': 'Conseil',
+};
 
 document.addEventListener('DOMContentLoaded', function () {
-    // ── Mise à jour dynamique du score de réputation ────────────────
-    const reputationSlider = document.getElementById('reputation_score');
-    const reputationValue = document.getElementById('reputationValue');
+    // ── Recherche de Pays ────────────────────────────────────────────
+    const countrySearch = document.getElementById('country_search');
+    const countrySelect = document.getElementById('country_code');
+    const countryDropdown = document.getElementById('countryDropdown');
+
+    if (countrySearch && countrySelect) {
+        countrySearch.addEventListener('input', function (e) {
+            const query = this.value.toLowerCase();
+            countryDropdown.innerHTML = '';
+
+            if (query.length === 0) {
+                countryDropdown.style.display = 'none';
+                return;
+            }
+
+            const filtered = Object.entries(countriesData)
+                .filter(([code, name]) => name.toLowerCase().includes(query) || code.includes(query.toUpperCase()))
+                .slice(0, 10);
+
+            if (filtered.length === 0) {
+                countryDropdown.innerHTML = '<div style="padding: 10px; color: var(--muted);">Aucun résultat</div>';
+            } else {
+                filtered.forEach(([code, name]) => {
+                    const item = document.createElement('div');
+                    item.style.cssText = 'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .2s;';
+                    item.innerHTML = `<strong>${name}</strong> <small style="color: var(--muted);">${code}</small>`;
+                    item.addEventListener('mouseover', () => item.style.background = 'var(--brand-light)');
+                    item.addEventListener('mouseout', () => item.style.background = 'transparent');
+                    item.addEventListener('click', function () {
+                        countrySearch.value = name;
+                        countrySelect.value = code;
+                        countryDropdown.style.display = 'none';
+                        countrySearch.style.borderColor = 'var(--border)';
+                    });
+                    countryDropdown.appendChild(item);
+                });
+            }
+            countryDropdown.style.display = 'block';
+        });
+
+        countrySearch.addEventListener('focus', function () {
+            if (this.value.length > 0) {
+                this.dispatchEvent(new Event('input'));
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('[id="country_search"], [id="countryDropdown"]')) {
+                countryDropdown.style.display = 'none';
+            }
+        });
+
+        // Initialiser avec la valeur du select si elle existe
+        const selectedCode = countrySelect.value;
+        if (selectedCode && countriesData[selectedCode]) {
+            countrySearch.value = countriesData[selectedCode];
+        }
+    }
+
+    // ── Recherche de Secteurs d'Activité ─────────────────────────────
+    const sectorSearch = document.getElementById('sector_search');
+    const industrySelect = document.getElementById('industry');
+    const sectorDropdown = document.getElementById('sectorDropdown');
+
+    if (sectorSearch && industrySelect) {
+        sectorSearch.addEventListener('input', function (e) {
+            const query = this.value.toLowerCase();
+            sectorDropdown.innerHTML = '';
+
+            if (query.length === 0) {
+                sectorDropdown.style.display = 'none';
+                return;
+            }
+
+            const filtered = Object.entries(sectorsData)
+                .filter(([code, name]) => name.toLowerCase().includes(query) || code.includes(query))
+                .slice(0, 10);
+
+            if (filtered.length === 0) {
+                sectorDropdown.innerHTML = '<div style="padding: 10px; color: var(--muted);">Aucun résultat</div>';
+            } else {
+                filtered.forEach(([code, name]) => {
+                    const item = document.createElement('div');
+                    item.style.cssText = 'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .2s;';
+                    item.innerHTML = `<strong>${name}</strong>`;
+                    item.addEventListener('mouseover', () => item.style.background = 'var(--brand-light)');
+                    item.addEventListener('mouseout', () => item.style.background = 'transparent');
+                    item.addEventListener('click', function () {
+                        sectorSearch.value = name;
+                        industrySelect.value = code;
+                        sectorDropdown.style.display = 'none';
+                        sectorSearch.style.borderColor = 'var(--border)';
+                    });
+                    sectorDropdown.appendChild(item);
+                });
+            }
+            sectorDropdown.style.display = 'block';
+        });
+
+        sectorSearch.addEventListener('focus', function () {
+            if (this.value.length > 0) {
+                this.dispatchEvent(new Event('input'));
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('[id="sector_search"], [id="sectorDropdown"]')) {
+                sectorDropdown.style.display = 'none';
+            }
+        });
+
+        // Initialiser avec la valeur du select si elle existe
+        const selectedSector = industrySelect.value;
+        if (selectedSector && sectorsData[selectedSector]) {
+            sectorSearch.value = sectorsData[selectedSector];
+        }
+    }
+
+    // ── Autocomplete: Recherche d'organisation parente ───────────────────
+    let parentOrgTimeout;
+    const parentIdSelect = document.getElementById('parent_id');
     
-    if (reputationSlider && reputationValue) {
-        reputationSlider.addEventListener('input', function () {
-            reputationValue.textContent = this.value + ' / 5';
+    if (parentIdSelect) {
+        parentIdSelect.addEventListener('focus', function () {
+            // Créer le dropdown si nécessaire
+            if (!document.getElementById('parentOrgDropdown')) {
+                const dropdown = document.createElement('div');
+                dropdown.id = 'parentOrgDropdown';
+                dropdown.style.cssText = `
+                    position: absolute;
+                    background: #fff;
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius);
+                    box-shadow: var(--shadow);
+                    max-height: 250px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                    width: 100%;
+                    display: none;
+                `;
+                this.parentElement.style.position = 'relative';
+                this.parentElement.appendChild(dropdown);
+            }
+        });
+
+        parentIdSelect.addEventListener('keyup', function (e) {
+            clearTimeout(parentOrgTimeout);
+            const query = this.value.toLowerCase();
+            
+            if (query.length < 1) {
+                if (document.getElementById('parentOrgDropdown')) {
+                    document.getElementById('parentOrgDropdown').style.display = 'none';
+                }
+                return;
+            }
+
+            parentOrgTimeout = setTimeout(function () {
+                fetch('<?= base_url('api/organizations/search') ?>?q=' + encodeURIComponent(query))
+                    .then(r => r.json())
+                    .then(data => {
+                        const dropdown = document.getElementById('parentOrgDropdown');
+                        if (!dropdown) return;
+                        
+                        dropdown.innerHTML = '';
+                        
+                        if (!data.length) {
+                            dropdown.innerHTML = '<div style="padding: 8px; color: var(--muted);">Aucun résultat</div>';
+                        } else {
+                            data.forEach(org => {
+                                const item = document.createElement('div');
+                                item.style.cssText = 'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .2s;';
+                                item.innerHTML = `<strong>${org.name}</strong><br><small style="color: var(--muted);">${org.type_name}</small>`;
+                                item.addEventListener('mouseover', () => item.style.background = 'var(--brand-light)');
+                                item.addEventListener('mouseout', () => item.style.background = 'transparent');
+                                item.addEventListener('click', function () {
+                                    parentIdSelect.value = org.id;
+                                    document.getElementById('parentOrgDropdown').style.display = 'none';
+                                    // Mettre à jour le texte affiché
+                                    parentIdSelect.innerHTML += `<option selected value="${org.id}">${org.name}</option>`;
+                                    parentIdSelect.value = org.id;
+                                });
+                                dropdown.appendChild(item);
+                            });
+                        }
+                        dropdown.style.display = 'block';
+                    })
+                    .catch(() => {
+                        const dropdown = document.getElementById('parentOrgDropdown');
+                        if (dropdown) dropdown.style.display = 'none';
+                    });
+            }, 300);
         });
     }
 
-    // ── Initialiser la carte
-    organizationMap = L.map('organizationMap').setView([mapCenter.lat, mapCenter.lng], 5);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-    }).addTo(organizationMap);
-
-    // Charger les coordonnées existantes si disponibles
-    const existingLat = document.getElementById('latitude').value;
-    const existingLng = document.getElementById('longitude').value;
-    if (existingLat && existingLng) {
-        updateCoordinates(parseFloat(existingLat), parseFloat(existingLng));
+    // ── Logo Preview ────────────────────────────────────────────────────
+    const logoInput = document.getElementById('logo');
+    if (logoInput) {
+        logoInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    document.getElementById('logoPreview').classList.remove('d-none');
+                    document.getElementById('logoImg').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
 
-    // Clic sur la carte pour placer le marqueur
-    organizationMap.on('click', function (e) {
-        updateCoordinates(e.latlng.lat, e.latlng.lng);
-    });
-
-    // Bouton: Position actuelle
-    document.getElementById('useCurrentLocation').addEventListener('click', function (e) {
-        e.preventDefault();
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                updateCoordinates(lat, lng);
-                organizationMap.setView([lat, lng], 13);
-            });
-        } else {
-            alert('Géolocalisation non disponible');
-        }
-    });
-
-    // Bouton: Centrer la carte
-    document.getElementById('centerMap').addEventListener('click', function (e) {
-        e.preventDefault();
-        const lat = document.getElementById('latitude').value;
-        const lng = document.getElementById('longitude').value;
-        if (lat && lng) {
-            organizationMap.setView([parseFloat(lat), parseFloat(lng)], 13);
-        }
-    });
-});
-
-function updateCoordinates(lat, lng) {
-    document.getElementById('latitude').value = lat.toFixed(6);
-    document.getElementById('longitude').value = lng.toFixed(6);
-    
-    // Placer le marqueur
-    if (currentMarker) {
-        organizationMap.removeLayer(currentMarker);
-    }
-    currentMarker = L.marker([lat, lng]).addTo(organizationMap);
-    currentMarker.bindPopup(`<strong>Position</strong><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
-}
-
-// ── Autocomplete: Recherche d'organisation parente ───────────────────
-let parentOrgTimeout;
-document.getElementById('parent_id').addEventListener('focus', function () {
-    // Créer le dropdown à côté du select
-    if (!document.getElementById('parentOrgDropdown')) {
-        const dropdown = document.createElement('div');
-        dropdown.id = 'parentOrgDropdown';
-        dropdown.style.cssText = `
-            position: absolute;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 1000;
-            width: 100%;
-            display: none;
-        `;
-        this.parentElement.style.position = 'relative';
-        this.parentElement.appendChild(dropdown);
-    }
-});
-
-document.getElementById('parent_id').addEventListener('keyup', function (e) {
-    clearTimeout(parentOrgTimeout);
-    const query = this.value.toLowerCase();
-    
-    if (query.length < 2) {
-        document.getElementById('parentOrgDropdown').style.display = 'none';
-        return;
+    // ── Ajouter liens sociaux ──────────────────────────────────────────
+    let socialLinkCount = 0;
+    const addSocialLinkButton = document.getElementById('addSocialLinkButton');
+    if (addSocialLinkButton) {
+        addSocialLinkButton.addEventListener('click', function () {
+            const template = document.getElementById('socialLinkTemplate');
+            const clone = template.cloneNode(true);
+            clone.id = '';
+            clone.classList.remove('d-none');
+            clone.querySelector('.platformSelect').name = `social_platform_${socialLinkCount}`;
+            clone.querySelector('.urlInput').name = `social_url_${socialLinkCount}`;
+            document.getElementById('socialLinksContainer').appendChild(clone);
+            socialLinkCount++;
+        });
     }
 
-    parentOrgTimeout = setTimeout(function () {
-        fetch('<?= base_url('api/organizations/search') ?>?q=' + encodeURIComponent(query))
-            .then(r => r.json())
-            .then(data => {
-                const dropdown = document.getElementById('parentOrgDropdown');
-                dropdown.innerHTML = '';
-                
-                if (!data.length) {
-                    dropdown.innerHTML = '<div style="padding: 8px; color: var(--muted);">Aucun résultat</div>';
-                } else {
-                    data.forEach(org => {
-                        const item = document.createElement('div');
-                        item.style.cssText = 'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .2s;';
-                        item.innerHTML = `<strong>${org.name}</strong><br><small style="color: var(--muted);">${org.type_name}</small>`;
-                        item.addEventListener('mouseover', () => item.style.background = 'var(--brand-light)');
-                        item.addEventListener('mouseout', () => item.style.background = 'transparent');
-                        item.addEventListener('click', function () {
-                            document.getElementById('parent_id').value = org.id;
-                            document.getElementById('parentOrgDropdown').style.display = 'none';
-                            // Mettre à jour le texte affiché
-                            const select = document.getElementById('parent_id');
-                            select.innerHTML += `<option selected value="${org.id}">${org.name}</option>`;
-                            select.value = org.id;
-                        });
-                        dropdown.appendChild(item);
-                    });
-                }
-                dropdown.style.display = 'block';
-            });
-    }, 300);
-});
+    // ── Supprimer liens sociaux ────────────────────────────────────────
+    const socialLinksContainer = document.getElementById('socialLinksContainer');
+    if (socialLinksContainer) {
+        socialLinksContainer.addEventListener('click', function (e) {
+            if (e.target.closest('.removeSocialLink')) {
+                e.target.closest('.socialLink').remove();
+            }
+        });
+    }
 
-// Fermer le dropdown au clic externe
-document.addEventListener('click', function (e) {
-    if (!e.target.closest('#parent_id')) {
-        const dropdown = document.getElementById('parentOrgDropdown');
-        if (dropdown) dropdown.style.display = 'none';
+    // ── Validation Bootstrap ───────────────────────────────────────────
+    const crForm = document.getElementById('crForm');
+    if (crForm) {
+        crForm.addEventListener('submit', function (e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
     }
 });
-
-// ── Logo Preview ────────────────────────────────────────────────────
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            document.getElementById('logoPreview').classList.remove('d-none');
-            document.getElementById('logoImg').src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-let socialLinkCount = 0;
-
-document.getElementById('addSocialLinkButton')?.addEventListener('click', function () {
-    const template = document.getElementById('socialLinkTemplate');
-    const clone = template.cloneNode(true);
-    clone.id = '';
-    clone.classList.remove('d-none');
-    clone.querySelector('.platformSelect').name = `social_platform_${socialLinkCount}`;
-    clone.querySelector('.urlInput').name = `social_url_${socialLinkCount}`;
-    document.getElementById('socialLinksContainer').appendChild(clone);
-    socialLinkCount++;
-});
-
-document.getElementById('socialLinksContainer')?.addEventListener('click', function (e) {
-    if (e.target.closest('.removeSocialLink')) {
-        e.target.closest('.socialLink').remove();
-    }
-});
-
-// Force country_code to uppercase
-document.getElementById('country_code')?.addEventListener('input', function () {
-    this.value = this.value.toUpperCase();
-});
-
-// Bootstrap validation
-(function () {
-    'use strict';
-    document.getElementById('crForm')?.addEventListener('submit', function (e) {
-        if (!this.checkValidity()) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        this.classList.add('was-validated');
-    });
-})();
 </script>
 
 <?= $this->endSection() ?>

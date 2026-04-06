@@ -158,7 +158,6 @@ class OrganizationController extends BaseController
             'organization' => null,
             'logo_url' => null,
             'social_links' => [],
-            'types' => $this->typeModel->findAll(),
             'organizations' => $this->organizationModel->where('status', 'active')->findAll(),
         ]);
     }
@@ -174,7 +173,7 @@ class OrganizationController extends BaseController
         }
 
         $rules = [
-            'type_id' => 'required|integer',
+            'type_id' => 'required|in_list[1,2,3,4]',
             'name' => 'required|min_length[3]|max_length[255]',
             'legal_name' => 'max_length[255]',
             'street_address' => 'required|min_length[5]|max_length[255]',
@@ -186,13 +185,10 @@ class OrganizationController extends BaseController
             'phone_country_code' => 'regex_match[/^[\+]?[0-9]{1,5}$/]',
             'website' => 'required|valid_url_strict',
             'tax_id' => 'max_length[50]',
-            'latitude' => 'numeric|greater_than_equal_to[-90]|less_than_equal_to[90]',
-            'longitude' => 'numeric|greater_than_equal_to[-180]|less_than_equal_to[180]',
             'employee_count' => 'integer|greater_than_equal_to[0]',
             'founded_at' => 'valid_date[Y-m-d]',
             'size' => 'in_list[startup,pme,grande_entreprise]',
             'markets_targeted.*' => 'in_list[local,international]',
-            'reputation_score' => 'numeric|greater_than_equal_to[0]|less_than_equal_to[5]',
         ];
 
         if (!$this->validate($rules)) {
@@ -207,7 +203,7 @@ class OrganizationController extends BaseController
         }
 
         $data = [
-            'type_id'              => $this->request->getPost('type_id'),
+            'type_id'              => (int) $this->request->getPost('type_id'),
             'name'                 => $this->request->getPost('name'),
             'legal_name'           => $this->request->getPost('legal_name'),
             'description'          => $this->request->getPost('description'),
@@ -215,7 +211,6 @@ class OrganizationController extends BaseController
             'street_address'       => $this->request->getPost('street_address'),
             'city'                 => $this->request->getPost('city'),
             'postal_code'          => $this->request->getPost('postal_code'),
-            'country'              => $this->request->getPost('country'),
             'country_code'         => strtoupper($this->request->getPost('country_code')),
             'email'                => $this->request->getPost('email'),
             'phone_country_code'   => $this->request->getPost('phone_country_code'),
@@ -223,13 +218,9 @@ class OrganizationController extends BaseController
             'phone'                => $this->request->getPost('phone_country_code') . ' ' . $this->request->getPost('phone_number'),
             'website'              => $this->request->getPost('website'),
             'tax_id'               => $this->request->getPost('tax_id'),
-            'latitude'             => $this->request->getPost('latitude'),
-            'longitude'            => $this->request->getPost('longitude'),
             'industry'             => $this->request->getPost('industry'),
-            'sectors'              => json_encode($this->request->getPost('sectors') ?? []),
             'size'                 => $this->request->getPost('size'),
             'markets_targeted'     => json_encode($this->request->getPost('markets_targeted') ?? []),
-            'reputation_score'     => $this->request->getPost('reputation_score') ?? 0,
             'employee_count'       => $this->request->getPost('employee_count'),
             'founded_at'           => $this->request->getPost('founded_at'),
             'status'               => 'active',

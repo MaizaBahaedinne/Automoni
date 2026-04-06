@@ -16,7 +16,8 @@ class OrganizationModel extends Model
         'phone', 'phone_country_code', 'phone_number', 'email', 'address', 'street_address', 
         'city', 'postal_code', 'country', 'country_code', 'latitude', 'longitude', 
         'map_link', 'employee_count', 'industry', 'sectors', 'founded_at', 'tax_id', 
-        'status', 'is_verified',
+        'status', 'is_verified', 'size', 'markets_targeted', 'budget_annual', 'revenue_annual', 
+        'reputation_score',
     ];
 
     protected $validationRules  = [
