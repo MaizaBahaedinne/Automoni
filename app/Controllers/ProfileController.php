@@ -3,7 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\{ProfileModel, SkillModel, ExperienceModel, EducationModel,
-    CertificationModel, LanguageModel, ProjectModel, ProjectMemberModel, VolunteeringModel};
+    CertificationModel, LanguageModel, ProjectModel, ProjectMemberModel, VolunteeringModel,
+    ConnectionModel};
 use App\Libraries\CvParser;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -34,9 +35,17 @@ class ProfileController extends BaseController
         $volunteering   = model(VolunteeringModel::class)->getByUserId($viewId);
         $user           = model(\App\Models\UserModel::class)->find($viewId);
 
+        $connectionModel    = model(ConnectionModel::class);
+        $connectionStatus   = $connectionModel->getStatus($this->userId, $viewId);
+        $connectionsCount   = $connectionModel->countAccepted($viewId);
+        $mutualCount        = ($connectionStatus !== 'self')
+                              ? $connectionModel->getMutualCount($this->userId, $viewId)
+                              : 0;
+
         return view('profile/show', compact(
             'profile', 'skills', 'experiences', 'education',
-            'certifications', 'languages', 'projects', 'volunteering', 'user'
+            'certifications', 'languages', 'projects', 'volunteering', 'user',
+            'connectionStatus', 'connectionsCount', 'mutualCount'
         ));
     }
 

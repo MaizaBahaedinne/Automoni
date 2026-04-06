@@ -166,14 +166,48 @@
                         <i class="bi bi-globe me-1"></i>Portfolio
                     </a>
                     <?php endif; ?>
+                    <?php if (!empty($connectionsCount)): ?>
+                    <span>
+                        <i class="bi bi-people me-1"></i>
+                        <a href="<?= base_url('connections') ?>" class="text-decoration-none text-muted">
+                            <?= $connectionsCount ?> relation<?= $connectionsCount > 1 ? 's' : '' ?>
+                        </a>
+                    </span>
+                    <?php endif; ?>
+                    <?php if (!empty($mutualCount) && $connectionStatus !== 'self'): ?>
+                    <span><i class="bi bi-person-check me-1"></i><?= $mutualCount ?> relation<?= $mutualCount > 1 ? 's' : '' ?> en commun</span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-        <div class="lp-actions">
+        <div class="lp-actions" id="lp-conn-actions" data-profile-id="<?= $user?->id ?>">
             <?php if (session()->get('user_id') == $user?->id): ?>
             <a href="<?= base_url('profile/edit') ?>" class="btn btn-primary btn-sm">
                 <i class="bi bi-pencil me-1"></i><?= lang('App.edit_profile') ?>
             </a>
+            <?php elseif ($connectionStatus === 'none' || $connectionStatus === null): ?>
+            <button class="btn btn-primary btn-sm btn-lp-send" data-id="<?= $user?->id ?>">
+                <i class="bi bi-person-plus me-1"></i>Se connecter
+            </button>
+            <?php elseif ($connectionStatus === 'pending_sent'): ?>
+            <button class="btn btn-outline-secondary btn-sm btn-lp-withdraw" data-id="<?= $user?->id ?>">
+                <i class="bi bi-clock me-1"></i>En attente…
+            </button>
+            <?php elseif ($connectionStatus === 'pending_received'): ?>
+            <button class="btn btn-primary btn-sm btn-lp-accept" data-id="<?= $user?->id ?>">
+                <i class="bi bi-check-lg me-1"></i>Accepter
+            </button>
+            <button class="btn btn-outline-secondary btn-sm btn-lp-reject" data-id="<?= $user?->id ?>">
+                Ignorer
+            </button>
+            <?php elseif ($connectionStatus === 'accepted'): ?>
+            <span class="badge bg-success-subtle text-success px-3 py-2" style="font-size:.82rem;">
+                <i class="bi bi-check2 me-1"></i>Connecté
+            </span>
+            <button class="btn btn-outline-danger btn-sm btn-lp-remove" data-id="<?= $user?->id ?>">
+                <i class="bi bi-person-dash me-1"></i>Retirer
+            </button>
+            <?php endif; ?>
             <?php endif; ?>
             <?php if (!empty($profile?->cv_file)): ?>
             <a href="<?= base_url('profile/cv/download') ?>" class="btn btn-outline-success btn-sm">
@@ -475,6 +509,69 @@ document.querySelectorAll('.lp-expand-btn').forEach(function (btn) {
         this.textContent = expanded ? (this.dataset.less || 'R\u00e9duire \u2191') : (this.dataset.more || 'Voir plus \u2192');
     });
 });
+
+// ── Connection actions (AJAX) ────────────────────────────────────────────────
+(function () {
+    const BASE      = '<?= base_url() ?>';
+    const CSRF_NAME = '<?= csrf_token() ?>';
+    const CSRF_HASH = '<?= csrf_hash() ?>';
+    const wrap      = document.getElementById('lp-conn-actions');
+
+    if (!wrap) return;
+
+    function post(url, cb) {
+        const body = new URLSearchParams({ [CSRF_NAME]: CSRF_HASH });
+        fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body })
+            .then(r => r.json())
+            .then(data => { if (data.success) cb(data); })
+            .catch(() => {});
+    }
+
+    const profileId = wrap.dataset.profileId;
+
+    function renderBtn(status) {
+        // Remove all connection-related buttons/badges (keep edit/cv/pdf if present)
+        wrap.querySelectorAll('.btn-lp-send,.btn-lp-withdraw,.btn-lp-accept,.btn-lp-reject,.btn-lp-remove,.lp-conn-badge')
+            .forEach(el => el.remove());
+
+        if (status === 'none') {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-primary btn-sm btn-lp-send';
+            btn.dataset.id = profileId;
+            btn.innerHTML = '<i class="bi bi-person-plus me-1"></i>Se connecter';
+            wrap.prepend(btn);
+        } else if (status === 'pending_sent') {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-outline-secondary btn-sm btn-lp-withdraw';
+            btn.dataset.id = profileId;
+            btn.innerHTML = '<i class="bi bi-clock me-1"></i>En attente\u2026';
+            wrap.prepend(btn);
+        } else if (status === 'accepted') {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-success-subtle text-success px-3 py-2 lp-conn-badge';
+            badge.style.fontSize = '.82rem';
+            badge.innerHTML = '<i class="bi bi-check2 me-1"></i>Connect\u00e9';
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-outline-danger btn-sm btn-lp-remove';
+            removeBtn.dataset.id = profileId;
+            removeBtn.innerHTML = '<i class="bi bi-person-dash me-1"></i>Retirer';
+            wrap.prepend(removeBtn);
+            wrap.prepend(badge);
+        }
+    }
+
+    wrap.addEventListener('click', e => {
+        const btn = e.target.closest('.btn-lp-send,.btn-lp-withdraw,.btn-lp-accept,.btn-lp-reject,.btn-lp-remove');
+        if (!btn) return;
+        const id = btn.dataset.id;
+
+        if (btn.classList.contains('btn-lp-send'))     post(BASE + 'connections/send/'     + id, () => renderBtn('pending_sent'));
+        if (btn.classList.contains('btn-lp-withdraw')) post(BASE + 'connections/withdraw/' + id, () => renderBtn('none'));
+        if (btn.classList.contains('btn-lp-accept'))   post(BASE + 'connections/accept/'   + id, () => renderBtn('accepted'));
+        if (btn.classList.contains('btn-lp-reject'))   post(BASE + 'connections/reject/'   + id, () => renderBtn('none'));
+        if (btn.classList.contains('btn-lp-remove'))   post(BASE + 'connections/remove/'   + id, () => renderBtn('none'));
+    });
+})();
 </script>
 
 <?= $this->endSection() ?>

@@ -386,6 +386,7 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             <li><a href="<?= base_url('/') ?>"><i class="bi bi-house-fill"></i><span><?= lang('App.nav_home') ?></span></a></li>
             <li><a href="<?= base_url('jobs') ?>"><i class="bi bi-briefcase"></i><span><?= lang('App.nav_jobs') ?></span></a></li>
             <?php if (session()->get('logged_in')): ?>
+            <li><a href="<?= base_url('connections') ?>"><i class="bi bi-people"></i><span>Relations</span></a></li>
             <li><a href="<?= base_url('dashboard') ?>"><i class="bi bi-grid"></i><span><?= lang('App.nav_dashboard') ?></span></a></li>
             <?php endif; ?>
             <li><a href="<?= base_url('coaching') ?>"><i class="bi bi-lightbulb"></i><span><?= lang('App.nav_coaching') ?></span></a></li>
