@@ -344,6 +344,7 @@
                          data-exp-id="<?= $exp->id ?>"
                          data-exp-title="<?= esc($exp->title ?? '') ?>"
                          data-exp-company="<?= esc($exp->company ?? '') ?>"
+                         data-exp-org-id="<?= (int)($exp->org_id ?? 0) ?>"
                          data-exp-contract="<?= esc($exp->contract ?? '') ?>"
                          data-exp-level="<?= esc($exp->level ?? '') ?>"
                          data-exp-department="<?= esc($exp->department ?? '') ?>"
@@ -356,7 +357,12 @@
                          data-exp-skills="<?= esc($exp->skills_gained ?? '') ?>"
                          data-exp-description="<?= esc($exp->description ?? '') ?>">
                         <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1 me-2">
+                            <div class="d-flex gap-3 align-items-start flex-grow-1 me-2">
+                                <?php if (!empty($exp->org_logo)): ?>
+                                <img src="<?= base_url('uploads/organizations/' . esc($exp->org_logo)) ?>"
+                                     style="width:40px;height:40px;object-fit:contain;border-radius:6px;background:#fff;border:1px solid #dee2e6;padding:3px;flex-shrink:0;" alt="">
+                                <?php endif; ?>
+                                <div class="flex-grow-1">
                                 <div class="fw-semibold fs-6">
                                     <?= esc($exp->title ?? '') ?>
                                     <?php if (!empty($exp->level)): ?>
@@ -392,7 +398,8 @@
                                     <?php endforeach; ?>
                                 </div>
                                 <?php endif; ?>
-                            </div>
+                                </div><!-- /inner content -->
+                            </div><!-- /d-flex logo+content -->
                             <div class="d-flex gap-1">
                                 <button type="button" class="btn btn-outline-primary btn-sm btn-exp-edit"
                                         data-bs-toggle="modal" data-bs-target="#expEditModal">
@@ -420,9 +427,15 @@
                             <label class="form-label fw-semibold small"><?= lang('App.field_job_title') ?> <span class="text-danger">*</span></label>
                             <input type="text" name="title" class="form-control form-control-sm" placeholder="<?= lang('App.placeholder_job_title') ?>" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 position-relative">
                             <label class="form-label fw-semibold small"><?= lang('App.field_company_name') ?> <span class="text-danger">*</span></label>
-                            <input type="text" name="company" class="form-control form-control-sm" placeholder="ex. Google, Total, SNCF…" required>
+                            <input type="text" name="company" id="exp_add_company"
+                                   class="form-control form-control-sm org-ac"
+                                   data-hidden-id="exp_add_org_id"
+                                   placeholder="ex. Google, Total, SNCF…" required autocomplete="off">
+                            <input type="hidden" name="org_id" id="exp_add_org_id">
+                            <ul class="org-sug list-group position-absolute w-100 shadow-sm"
+                                style="z-index:1050;display:none;max-height:180px;overflow-y:auto;top:100%;left:0;"></ul>
                         </div>
 
                         <!-- Row 2: Contract + Level -->
@@ -537,9 +550,15 @@
             <label class="form-label fw-semibold small"><?= lang('App.field_job_title') ?> <span class="text-danger">*</span></label>
             <input type="text" name="title" id="eem_title" class="form-control form-control-sm" required>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6 position-relative">
             <label class="form-label fw-semibold small"><?= lang('App.field_company_name') ?> <span class="text-danger">*</span></label>
-            <input type="text" name="company" id="eem_company" class="form-control form-control-sm" required>
+            <input type="text" name="company" id="eem_company"
+                   class="form-control form-control-sm org-ac"
+                   data-hidden-id="eem_org_id"
+                   required autocomplete="off">
+            <input type="hidden" name="org_id" id="eem_org_id">
+            <ul class="org-sug list-group position-absolute w-100 shadow-sm"
+                style="z-index:1060;display:none;max-height:180px;overflow-y:auto;top:100%;left:0;"></ul>
           </div>
 
           <!-- Contract + Level + Department -->
@@ -647,13 +666,19 @@
                     <div class="border rounded p-3 mb-2 bg-light d-flex justify-content-between align-items-start"
                          data-edu-id="<?= $edu->id ?>"
                          data-edu-institution="<?= esc($edu->institution ?? '') ?>"
+                         data-edu-org-id="<?= (int)($edu->org_id ?? 0) ?>"
                          data-edu-degree="<?= esc($edu->degree ?? '') ?>"
                          data-edu-niveau="<?= esc($edu->niveau ?? '') ?>"
                          data-edu-field="<?= esc($edu->field ?? '') ?>"
                          data-edu-start="<?= esc($edu->start_year ?? '') ?>"
                          data-edu-end="<?= esc($edu->end_year ?? '') ?>"
                          data-edu-description="<?= esc($edu->description ?? '') ?>">
-                        <div>
+                        <div class="d-flex gap-3 align-items-start flex-grow-1 me-2">
+                            <?php if (!empty($edu->org_logo)): ?>
+                            <img src="<?= base_url('uploads/organizations/' . esc($edu->org_logo)) ?>"
+                                 style="width:40px;height:40px;object-fit:contain;border-radius:6px;background:#fff;border:1px solid #dee2e6;padding:3px;flex-shrink:0;" alt="">
+                            <?php endif; ?>
+                            <div>
                             <div class="fw-semibold">
                                 <?= esc($edu->degree) ?>
                                 <?php if (isset($edu->niveau) && !empty($edu->niveau)): ?>
@@ -669,7 +694,8 @@
                                 <?= !empty($edu->start_year) ? esc($edu->start_year) : '' ?>
                                 <?= !empty($edu->end_year) ? ' – ' . esc($edu->end_year) : '' ?>
                             </div>
-                        </div>
+                            </div><!-- /inner -->
+                        </div><!-- /d-flex -->
                         <div class="d-flex gap-1">
                             <button type="button" class="btn btn-outline-primary btn-sm btn-edu-edit"
                                     data-bs-toggle="modal" data-bs-target="#eduEditModal">
@@ -692,9 +718,15 @@
                         <?= csrf_field() ?>
 
                         <!-- Institution + Titre -->
-                        <div class="col-md-6">
+                        <div class="col-md-6 position-relative">
                             <label class="form-label fw-semibold small"><?= lang('App.field_school') ?> <span class="text-danger">*</span></label>
-                            <input type="text" name="institution" class="form-control form-control-sm" placeholder="Université, École, Institut…" required>
+                            <input type="text" name="institution" id="edu_add_institution"
+                                   class="form-control form-control-sm org-ac"
+                                   data-hidden-id="edu_add_org_id"
+                                   placeholder="Université, École, Institut…" required autocomplete="off">
+                            <input type="hidden" name="org_id" id="edu_add_org_id">
+                            <ul class="org-sug list-group position-absolute w-100 shadow-sm"
+                                style="z-index:1050;display:none;max-height:180px;overflow-y:auto;top:100%;left:0;"></ul>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small"><?= lang('App.edu_titre') ?> <span class="text-danger">*</span></label>
@@ -1170,9 +1202,15 @@
       <form id="eduEditForm" method="post" action="">
         <?= csrf_field() ?>
         <div class="modal-body row g-3">
-          <div class="col-md-6">
+          <div class="col-md-6 position-relative">
             <label class="form-label fw-semibold small"><?= lang('App.field_school') ?> <span class="text-danger">*</span></label>
-            <input type="text" name="institution" id="eem_institution" class="form-control form-control-sm" required>
+            <input type="text" name="institution" id="eem_institution"
+                   class="form-control form-control-sm org-ac"
+                   data-hidden-id="eem_edu_org_id"
+                   required autocomplete="off">
+            <input type="hidden" name="org_id" id="eem_edu_org_id">
+            <ul class="org-sug list-group position-absolute w-100 shadow-sm"
+                style="z-index:1060;display:none;max-height:180px;overflow-y:auto;top:100%;left:0;"></ul>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small"><?= lang('App.edu_titre') ?> <span class="text-danger">*</span></label>
@@ -1781,6 +1819,7 @@ if (expIsCurrent) {
             document.getElementById('expEditForm').action = updateUrl + d.expId;
             document.getElementById('eem_title').value        = d.expTitle;
             document.getElementById('eem_company').value      = d.expCompany;
+            document.getElementById('eem_org_id').value       = d.expOrgId && d.expOrgId !== '0' ? d.expOrgId : '';
             document.getElementById('eem_department').value   = d.expDepartment;
             document.getElementById('eem_location').value     = d.expLocation;
             document.getElementById('eem_start_date').value   = (d.expStart || '').substring(0, 7);
@@ -2022,6 +2061,7 @@ if (expIsCurrent) {
             const d = card.dataset;
             document.getElementById('eduEditForm').action = updateUrl + d.eduId;
             document.getElementById('eem_institution').value   = d.eduInstitution;
+            document.getElementById('eem_edu_org_id').value    = d.eduOrgId && d.eduOrgId !== '0' ? d.eduOrgId : '';
             document.getElementById('eem_degree').value        = d.eduDegree;
             document.getElementById('eem_niveau').value        = d.eduNiveau;
             document.getElementById('eem_field').value         = d.eduField;
@@ -2110,6 +2150,73 @@ if (expIsCurrent) {
         endEl.disabled = this.checked;
         if (this.checked) endEl.value = '';
     });
+})();
+
+// ── Organisation Autocomplete ──────────────────────────────────────────────
+(function () {
+    const ORG_SEARCH = '<?= base_url('api/organizations/search') ?>';
+    const BASE_UPLOAD = '<?= base_url('uploads/organizations/') ?>';
+
+    function initOrgAc(input) {
+        const hiddenId  = document.getElementById(input.dataset.hiddenId);
+        const sug       = input.nextElementSibling?.tagName === 'INPUT'
+                          ? input.nextElementSibling.nextElementSibling
+                          : input.nextElementSibling;
+        if (!hiddenId || !sug) return;
+
+        let timer;
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            hiddenId.value = '';
+            const q = this.value.trim();
+            if (q.length < 2) { sug.style.display = 'none'; return; }
+            timer = setTimeout(async () => {
+                try {
+                    const res  = await fetch(ORG_SEARCH + '?q=' + encodeURIComponent(q));
+                    const data = await res.json();
+                    sug.innerHTML = '';
+                    if (!data.length) { sug.style.display = 'none'; return; }
+                    data.forEach(org => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item list-group-item-action py-1 d-flex align-items-center gap-2';
+                        li.style.cursor = 'pointer';
+
+                        if (org.logo) {
+                            const img = document.createElement('img');
+                            img.src = BASE_UPLOAD + org.logo;
+                            img.style.cssText = 'width:24px;height:24px;object-fit:contain;border-radius:4px;background:#f8f9fa;border:1px solid #dee2e6;padding:2px;flex-shrink:0;';
+                            li.appendChild(img);
+                        } else {
+                            const ic = document.createElement('span');
+                            ic.innerHTML = '<i class="bi bi-buildings" style="font-size:1rem;color:var(--brand);flex-shrink:0;"></i>';
+                            li.appendChild(ic);
+                        }
+
+                        const txt = document.createElement('span');
+                        txt.className = 'small';
+                        txt.innerHTML = '<strong>' + org.name + '</strong>'
+                            + (org.type_name ? ' <span class="text-muted">\u00b7 ' + org.type_name + '</span>' : '');
+                        li.appendChild(txt);
+
+                        li.addEventListener('mousedown', e => {
+                            e.preventDefault();
+                            input.value    = org.name;
+                            hiddenId.value = org.id;
+                            sug.style.display = 'none';
+                        });
+                        sug.appendChild(li);
+                    });
+                    sug.style.display = 'block';
+                } catch(e) { sug.style.display = 'none'; }
+            }, 300);
+        });
+
+        document.addEventListener('click', e => {
+            if (!input.contains(e.target) && !sug.contains(e.target)) sug.style.display = 'none';
+        });
+    }
+
+    document.querySelectorAll('.org-ac').forEach(initOrgAc);
 })();
 </script>
 

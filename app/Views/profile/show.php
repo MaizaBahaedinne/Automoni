@@ -63,6 +63,12 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 20px; color: #666; flex-shrink: 0;
 }
+.lp-tl-org-logo {
+    width: 44px; height: 44px; min-width: 44px;
+    border-radius: 4px; object-fit: contain;
+    background: #fff; border: 1px solid #e2e8f0;
+    padding: 4px; flex-shrink: 0;
+}
 .lp-tl-content { flex: 1; min-width: 0; }
 .lp-tl-title { font-size: 15px; font-weight: 600; color: #000; }
 .lp-tl-sub { font-size: 13px; color: #444; margin-top: 2px; }
@@ -252,7 +258,12 @@
                 <?php foreach ($experiences as $i => $exp): ?>
                 <div class="lp-item">
                     <div class="lp-tl">
+                        <?php if (!empty($exp->org_logo)): ?>
+                        <img src="<?= base_url('uploads/organizations/' . esc($exp->org_logo)) ?>"
+                             class="lp-tl-org-logo" alt="<?= esc($exp->company) ?>">
+                        <?php else: ?>
                         <div class="lp-tl-icon"><i class="bi bi-briefcase"></i></div>
+                        <?php endif; ?>
                         <div class="lp-tl-content">
                             <div class="lp-tl-title">
                                 <?= esc($exp->title ?? '') ?>
@@ -303,7 +314,12 @@
                 <?php foreach ($education as $edu): ?>
                 <div class="lp-item">
                     <div class="lp-tl">
+                        <?php if (!empty($edu->org_logo)): ?>
+                        <img src="<?= base_url('uploads/organizations/' . esc($edu->org_logo)) ?>"
+                             class="lp-tl-org-logo" alt="<?= esc($edu->institution) ?>">
+                        <?php else: ?>
                         <div class="lp-tl-icon"><i class="bi bi-mortarboard"></i></div>
+                        <?php endif; ?>
                         <div class="lp-tl-content">
                             <div class="lp-tl-title"><?= esc($edu->institution) ?></div>
                             <div class="lp-tl-sub">

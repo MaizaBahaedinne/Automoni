@@ -11,7 +11,7 @@ class ExperienceModel extends Model
     protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = [
-        'user_id', 'title', 'company', 'location', 'contract', 'level', 'department',
+        'user_id', 'org_id', 'title', 'company', 'location', 'contract', 'level', 'department',
         'start_date', 'end_date', 'is_current', 'description',
         'manager_user_id', 'manager_name', 'skills_gained', 'sort_order',
     ];
@@ -24,9 +24,11 @@ class ExperienceModel extends Model
 
     public function getByUserId(int $userId): array
     {
-        return $this->where('user_id', $userId)
-                    ->orderBy('is_current', 'DESC')
-                    ->orderBy('start_date', 'DESC')
+        return $this->select('experiences.*, organizations.logo as org_logo, organizations.name as org_name')
+                    ->join('organizations', 'organizations.id = experiences.org_id', 'left')
+                    ->where('experiences.user_id', $userId)
+                    ->orderBy('experiences.is_current', 'DESC')
+                    ->orderBy('experiences.start_date', 'DESC')
                     ->findAll();
     }
 }

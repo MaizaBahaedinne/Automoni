@@ -11,7 +11,7 @@ class EducationModel extends Model
     protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = [
-        'user_id', 'degree', 'niveau', 'field', 'institution', 'location',
+        'user_id', 'org_id', 'degree', 'niveau', 'field', 'institution', 'location',
         'start_year', 'end_year', 'is_current', 'description', 'sort_order',
     ];
 
@@ -23,9 +23,11 @@ class EducationModel extends Model
 
     public function getByUserId(int $userId): array
     {
-        return $this->where('user_id', $userId)
-                    ->orderBy('is_current', 'DESC')
-                    ->orderBy('start_year', 'DESC')
+        return $this->select('education.*, organizations.logo as org_logo, organizations.name as org_name')
+                    ->join('organizations', 'organizations.id = education.org_id', 'left')
+                    ->where('education.user_id', $userId)
+                    ->orderBy('education.is_current', 'DESC')
+                    ->orderBy('education.start_year', 'DESC')
                     ->findAll();
     }
 }

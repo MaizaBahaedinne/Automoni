@@ -249,6 +249,9 @@ class ProfileController extends BaseController
         $managerId = (int) $this->request->getPost('manager_user_id');
         $data['manager_user_id'] = $managerId > 0 ? $managerId : null;
 
+        $orgId = (int) $this->request->getPost('org_id');
+        $data['org_id'] = $orgId > 0 ? $orgId : null;
+
         if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
         if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
 
@@ -280,6 +283,9 @@ class ProfileController extends BaseController
 
         $managerId = (int) $this->request->getPost('manager_user_id');
         $data['manager_user_id'] = $managerId > 0 ? $managerId : null;
+
+        $orgId = (int) $this->request->getPost('org_id');
+        $data['org_id'] = $orgId > 0 ? $orgId : null;
 
         if (!empty($data['start_date'])) { $data['start_date'] .= '-01'; }
         if (!empty($data['end_date']))   { $data['end_date']   .= '-01'; }
@@ -339,6 +345,8 @@ class ProfileController extends BaseController
             $this->request->getPost(['degree', 'niveau', 'field', 'institution', 'location', 'start_year', 'end_year', 'description']),
             ['user_id' => $this->userId]
         );
+        $orgId = (int) $this->request->getPost('org_id');
+        $data['org_id'] = $orgId > 0 ? $orgId : null;
         $eduModel->insert($data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#education')->with('success', 'Education added.');
@@ -352,6 +360,8 @@ class ProfileController extends BaseController
             return redirect()->to('/profile/edit#education')->with('error', 'Not found.');
         }
         $data = $this->request->getPost(['degree', 'niveau', 'field', 'institution', 'location', 'start_year', 'end_year', 'description']);
+        $orgId = (int) $this->request->getPost('org_id');
+        $data['org_id'] = $orgId > 0 ? $orgId : null;
         $eduModel->update($id, $data);
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit#education')->with('success', 'Formation mise à jour.');

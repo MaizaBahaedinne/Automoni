@@ -244,7 +244,8 @@ class OrganizationController extends BaseController
         $this->memberModel->addMember($orgId, $this->userId, 'owner');
 
         // Handle logo upload
-        if ($logoFile = $this->request->getFile('logo')) {
+        $logoFile = $this->request->getFile('logo');
+        if ($logoFile && $logoFile->isValid() && !$logoFile->hasMoved()) {
             try {
                 $this->organizationService->uploadLogo($orgId, $logoFile);
             } catch (\Exception $e) {
@@ -319,32 +320,44 @@ class OrganizationController extends BaseController
         }
 
         $data = [
-            'name'          => $this->request->getPost('name') ?? $organization->name,
-            'description'   => $this->request->getPost('description'),
-            'parent_id'     => $this->request->getPost('parent_id'),
-            'type_id'       => $this->request->getPost('type_id') ?? $organization->type_id,
-            'website'       => $this->request->getPost('website'),
-            'email'         => $this->request->getPost('email'),
-            'phone'         => $this->request->getPost('phone'),
-            'address'       => $this->request->getPost('address'),
-            'latitude'      => $this->request->getPost('latitude'),
-            'longitude'     => $this->request->getPost('longitude'),
-            'industry'      => $this->request->getPost('industry'),
-            'employee_count' => $this->request->getPost('employee_count'),
-            'founded_at'    => $this->request->getPost('founded_at'),
-            'status'        => $this->request->getPost('status') ?? $organization->status,
+            'name'           => $this->request->getPost('name') ?: $organization->name,
+            'legal_name'     => $this->request->getPost('legal_name') ?: null,
+            'description'    => $this->request->getPost('description') ?: null,
+            'parent_id'      => $this->request->getPost('parent_id') ?: null,
+            'type_id'        => (int) ($this->request->getPost('type_id') ?: $organization->type_id),
+            'website'        => $this->request->getPost('website') ?: null,
+            'email'          => $this->request->getPost('email') ?: null,
+            'phone'          => $this->request->getPost('phone') ?: null,
+            'address'        => $this->request->getPost('address') ?: null,
+            'latitude'       => $this->request->getPost('latitude') !== '' ? $this->request->getPost('latitude') : null,
+            'longitude'      => $this->request->getPost('longitude') !== '' ? $this->request->getPost('longitude') : null,
+            'industry'       => $this->request->getPost('industry') ?: null,
+            'employee_count' => $this->request->getPost('employee_count') !== '' ? (int) $this->request->getPost('employee_count') : null,
+            'founded_at'     => $this->request->getPost('founded_at') ?: null,
+            'tax_id'         => $this->request->getPost('tax_id') ?: null,
+            'status'         => $this->request->getPost('status') ?: $organization->status,
         ];
 
-        $this->organizationModel->update($id, $data);
+        $this->organizationModel->skipValidation(true)->update($id, $data);
 
         // Handle logo upload if provided
-        if ($logoFile = $this->request->getFile('logo')) {
-            if ($logoFile->isValid()) {
-                try {
-                    $this->organizationService->uploadLogo($id, $logoFile);
-                } catch (\Exception $e) {
-                    log_message('error', 'Logo upload failed: ' . $e->getMessage());
-                }
+        $logoFile = $this->request->getFile('logo');
+        if ($logoFile && $logoFile->isValid() && !$logoFile->hasMoved()) {
+            try {
+                $this->organizationService->uploadLogo($id, $logoFile);
+            } catch (\Exception $e) {
+                log_message('error', 'Logo upload failed: ' . $e->getMessage());
+            }
+        }
+
+        // Handle social links
+        $socialModel = model('OrganizationSocialLinkModel');
+        $socialModel->where('organization_id', $id)->delete();
+        for ($i = 0; $i < 20; $i++) {
+            $platform = $this->request->getPost("social_platform_$i");
+            $url      = $this->request->getPost("social_url_$i");
+            if ($platform && $url) {
+                $socialModel->addLink($id, $platform, $url);
             }
         }
 
@@ -355,7 +368,7 @@ class OrganizationController extends BaseController
             ]);
         }
 
-        return redirect()->to("/organizations/$id")->with('success', 'Organization updated successfully');
+        return redirect()->to("/organizations/$id")->with('success', 'Organisation mise à jour avec succès.');
     }
 
     /**
@@ -371,7 +384,7 @@ class OrganizationController extends BaseController
         }
 
         $organizations = $this->organizationModel
-            ->select('organizations.id, organizations.name, organization_types.name as type_name')
+            ->select('organizations.id, organizations.name, organizations.logo, organization_types.name as type_name')
             ->join('organization_types', 'organization_types.id = organizations.type_id', 'left')
             ->like('organizations.name', $query)
             ->where('organizations.status', 'active')
