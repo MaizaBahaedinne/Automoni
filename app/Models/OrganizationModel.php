@@ -20,31 +20,8 @@ class OrganizationModel extends Model
         'reputation_score',
     ];
 
-    protected $validationRules  = [
-        'type_id'              => 'required|integer|greater_than[0]',
-        'name'                 => 'required|min_length[3]|max_length[255]|is_unique[organizations.name,id,{id}]',
-        'legal_name'           => 'max_length[255]',
-        'slug'                 => 'required|min_length[3]|max_length[255]|is_unique[organizations.slug,id,{id}]|regex_match[/^[a-z0-9-]+$/]',
-        'description'          => 'max_length[10000]',
-        'website'              => 'required|valid_url_strict',
-        'email'                => 'required|valid_email',
-        'phone'                => 'required',
-        'phone_country_code'   => 'regex_match[/^[\+]?[0-9]{1,5}$/]',
-        'phone_number'         => 'required|regex_match[/^[0-9\s\-\(\)]+$/]|min_length[7]|max_length[15]',
-        'street_address'       => 'required|min_length[5]|max_length[255]',
-        'city'                 => 'required|min_length[2]|max_length[100]',
-        'postal_code'          => 'required|min_length[2]|max_length[20]',
-        'country'              => 'required|min_length[2]|max_length[100]',
-        'country_code'         => 'required|regex_match[/^[A-Z]{2}$/]',
-        'latitude'             => 'numeric|greater_than_equal_to[-90]|less_than_equal_to[90]',
-        'longitude'            => 'numeric|greater_than_equal_to[-180]|less_than_equal_to[180]',
-        'tax_id'               => 'max_length[50]',
-        'employee_count'       => 'integer|greater_than_equal_to[0]',
-        'founded_at'           => 'required|valid_date[Y-m-d]',
-        'industry'             => 'required|max_length[100]',
-        'status'               => 'required|in_list[active,inactive,archived]',
-        'is_verified'          => 'in_list[0,1]',
-    ];
+    // Validation is handled by the controller — no model-level rules needed.
+    protected $validationRules  = [];
 
     protected $beforeInsert = ['generateSlug'];
     protected $beforeUpdate = ['generateSlug'];
