@@ -31,6 +31,11 @@ $routes->get('jobs/(:segment)', 'JobController::show/$1');
 // ─── Company (public) ─────────────────────────────────────────────────────────
 $routes->get('companies/(:segment)', 'CompanyController::show/$1');
 
+// ─── Organizations (public read) ──────────────────────────────────────────────
+$routes->get('organizations',               'OrganizationController::index');
+$routes->get('organizations/(:segment)',    'OrganizationController::show/$1');
+$routes->get('organizations/(:segment)/hierarchy', 'OrganizationController::hierarchy/$1');
+
 // ─── Protected — any role ─────────────────────────────────────────────────────
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
@@ -82,6 +87,20 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
     // Apply to job (job seekers only)
     $routes->post('jobs/(:num)/apply', 'JobController::apply/$1', ['filter' => 'role:job_seeker']);
+
+    // ─── Organizations (authenticated users) ──────────────────────────────────
+    $routes->get ('organizations/create',           'OrganizationController::create');
+    $routes->post('organizations',                  'OrganizationController::store');
+    $routes->get ('organizations/(:num)/edit',      'OrganizationController::edit/$1');
+    $routes->post('organizations/(:num)',           'OrganizationController::update/$1');
+    $routes->post('organizations/(:num)/update',    'OrganizationController::update/$1');
+    $routes->delete('organizations/(:num)',         'OrganizationController::delete/$1');
+
+    // ─── Organization Members (owner/manager only, handled in controller)  ────
+    $routes->get ('organizations/(:num)/members',              'OrganizationMemberController::index/$1');
+    $routes->post('organizations/(:num)/members',              'OrganizationMemberController::add/$1');
+    $routes->post('organizations/(:num)/members/(:num)/role',  'OrganizationMemberController::updateRole/$1/$2');
+    $routes->delete('organizations/(:num)/members/(:num)',     'OrganizationMemberController::remove/$1/$2');
 });
 
 // ─── Protected — recruiters only ──────────────────────────────────────────────
