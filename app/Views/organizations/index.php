@@ -1,132 +1,156 @@
-<?php
-// app/Views/organizations/index.php
-?>
+<?= $this->extend('layouts/main') ?>
+<?= $this->section('content') ?>
 
-<div class="container-fluid py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><?= $title ?></h1>
-        <?php if (session()->get('user_id')): ?>
-            <a href="/organizations/create" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create Organization
-            </a>
-        <?php endif; ?>
+<style>
+.org-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #fff;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform .15s, box-shadow .15s;
+}
+.org-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+.org-logo-wrap {
+    height: 90px;
+    background: linear-gradient(135deg, var(--brand-light) 0%, #e0e7ff 100%);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.org-logo-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 12px; }
+.org-logo-init {
+    width: 56px; height: 56px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--brand-dark), #7c3aed);
+    color: #fff; font-size: 22px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+}
+.org-card-body  { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; }
+.org-card-footer { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--bg); }
+.org-badge-type     { background: var(--brand-light); color: var(--brand-dark); font-size: .7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.org-badge-verified { background: #d1fae5; color: #065f46; font-size: .7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.org-meta { font-size: .8rem; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+.filter-bar { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; }
+</style>
+
+<!-- Page header -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="fw-bold mb-0" style="font-size:1.5rem;">
+            <i class="bi bi-buildings me-2" style="color:var(--brand)"></i>Organisations
+        </h1>
+        <p class="mb-0 mt-1" style="color:var(--muted);font-size:.875rem;">Découvrez les entreprises, institutions et réseaux professionnels</p>
     </div>
-
-    <!-- Filtres -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" class="row g-3">
-                <div class="col-md-3">
-                    <input type="text" name="keyword" class="form-control" 
-                           placeholder="Search..." value="<?= esc($filters['keyword'] ?? '') ?>">
-                </div>
-                <div class="col-md-3">
-                    <select name="type_id" class="form-select">
-                        <option value="">All Types</option>
-                        <?php foreach ($types as $type): ?>
-                            <option value="<?= $type->id ?>" 
-                                    <?= ($filters['type_id'] ?? null) == $type->id ? 'selected' : '' ?>>
-                                <?= esc($type->name) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" name="industry" class="form-control" 
-                           placeholder="Industry" value="<?= esc($filters['industry'] ?? '') ?>">
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Grid d'organisations -->
-    <div class="row g-4">
-        <?php if (!empty($organizations)): ?>
-            <?php foreach ($organizations as $org): ?>
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 shadow-sm hover-shadow transition border-0">
-                        <?php if ($org->logo): ?>
-                            <img src="<?= base_url('uploads/organizations/' . $org->logo) ?>" 
-                                 class="card-img-top" alt="<?= esc($org->name) ?>" style="height: 200px; object-fit: cover;">
-                        <?php else: ?>
-                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
-                                 style="height: 200px;">
-                                <i class="fas fa-building text-muted fa-3x"></i>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title mb-0"><?= esc($org->name) ?></h5>
-                                <?php if ($org->is_verified): ?>
-                                    <span class="badge bg-success">Verified</span>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <p class="text-muted small mb-3"><?= esc($org->type_name ?? 'Organization') ?></p>
-                            
-                            <?php if ($org->industry): ?>
-                                <p class="small mb-2">
-                                    <i class="fas fa-industry"></i> <?= esc($org->industry) ?>
-                                </p>
-                            <?php endif; ?>
-                            
-                            <?php if ($org->employee_count): ?>
-                                <p class="small mb-2">
-                                    <i class="fas fa-users"></i> <?= number_format($org->employee_count) ?> employees
-                                </p>
-                            <?php endif; ?>
-                            
-                            <?php if ($org->website): ?>
-                                <a href="<?= esc($org->website) ?>" target="_blank" class="small text-decoration-none">
-                                    <i class="fas fa-globe"></i> Website
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="card-footer bg-transparent border-top">
-                            <a href="/organizations/<?= $org->id ?>" class="btn btn-sm btn-outline-primary w-100">
-                                View Details
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="col-12">
-                <div class="alert alert-info text-center">
-                    <i class="fas fa-info-circle"></i> No organizations found. 
-                    <?php if (session()->get('user_id')): ?>
-                        <a href="/organizations/create">Create one!</a>
-                    <?php else: ?>
-                        <a href="/login">Login to create one</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <!-- Pagination -->
-    <?php if ($pager): ?>
-        <nav aria-label="Page navigation" class="mt-5">
-            <ul class="pagination justify-content-center">
-                <?= $pager->links() ?>
-            </ul>
-        </nav>
+    <?php if (session()->get('logged_in')): ?>
+        <a href="<?= base_url('organizations/create') ?>" class="btn btn-primary btn-sm px-3">
+            <i class="bi bi-plus-lg me-1"></i>Nouvelle
+        </a>
     <?php endif; ?>
 </div>
 
-<style>
-    .hover-shadow {
-        transition: box-shadow 0.3s ease;
-    }
-    .card:hover {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-    }
-    .transition {
-        transition: all 0.3s ease;
-    }
-</style>
+<!-- Filter bar -->
+<div class="filter-bar">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-4 col-sm-6">
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute" style="left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.8rem;pointer-events:none;"></i>
+                <input type="text" name="keyword" class="form-control form-control-sm"
+                       style="padding-left:30px;border-radius:20px;"
+                       placeholder="Rechercher..."
+                       value="<?= esc($filters['keyword'] ?? '') ?>">
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <select name="type_id" class="form-select form-select-sm" style="border-radius:20px;">
+                <option value="">Tous les types</option>
+                <?php foreach ($types as $type): ?>
+                    <option value="<?= $type->id ?>" <?= ($filters['type_id'] ?? null) == $type->id ? 'selected' : '' ?>>
+                        <?= esc($type->name) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-md-3 col-sm-8">
+            <input type="text" name="industry" class="form-control form-control-sm"
+                   style="border-radius:20px;" placeholder="Secteur d'activité..."
+                   value="<?= esc($filters['industry'] ?? '') ?>">
+        </div>
+        <div class="col-md-2 col-sm-4">
+            <button type="submit" class="btn btn-primary btn-sm w-100" style="border-radius:20px;">
+                <i class="bi bi-funnel me-1"></i>Filtrer
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Organization grid -->
+<div class="row g-3">
+    <?php if (!empty($organizations)): ?>
+        <?php foreach ($organizations as $org): ?>
+            <div class="col-lg-4 col-md-6">
+                <div class="org-card">
+                    <div class="org-logo-wrap">
+                        <?php if (!empty($org->logo)): ?>
+                            <img src="<?= base_url('uploads/organizations/' . esc($org->logo)) ?>" alt="<?= esc($org->name) ?>">
+                        <?php else: ?>
+                            <div class="org-logo-init"><?= strtoupper(substr($org->name, 0, 1)) ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="org-card-body">
+                        <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                            <h6 class="fw-bold mb-0 lh-sm" style="font-size:.925rem;"><?= esc($org->name) ?></h6>
+                            <?php if ($org->is_verified): ?>
+                                <span class="org-badge-verified flex-shrink-0"><i class="bi bi-patch-check-fill me-1"></i>Vérifié</span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (!empty($org->type_name)): ?>
+                            <div class="mb-2"><span class="org-badge-type"><?= esc($org->type_name) ?></span></div>
+                        <?php endif; ?>
+                        <?php if (!empty($org->industry)): ?>
+                            <div class="org-meta"><i class="bi bi-briefcase"></i><?= esc($org->industry) ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($org->employee_count)): ?>
+                            <div class="org-meta"><i class="bi bi-people"></i><?= number_format($org->employee_count) ?> employés</div>
+                        <?php endif; ?>
+                        <?php if (!empty($org->address)): ?>
+                            <div class="org-meta"><i class="bi bi-geo-alt"></i><?= esc(mb_substr($org->address, 0, 45)) ?><?= mb_strlen((string)$org->address) > 45 ? '…' : '' ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="org-card-footer d-flex gap-2 align-items-center">
+                        <a href="<?= base_url('organizations/' . $org->id) ?>" class="btn btn-sm btn-outline-primary flex-grow-1" style="border-radius:20px;font-size:12px;">
+                            <i class="bi bi-eye me-1"></i>Voir
+                        </a>
+                        <?php if (!empty($org->website)): ?>
+                            <a href="<?= esc($org->website) ?>" target="_blank" rel="noopener noreferrer"
+                               class="btn btn-sm btn-outline-secondary" style="border-radius:20px;font-size:12px;" title="Site web">
+                                <i class="bi bi-globe2"></i>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div class="col-12">
+            <div class="text-center py-5" style="color:var(--muted);">
+                <i class="bi bi-buildings" style="font-size:3rem;opacity:.25;display:block;margin-bottom:12px;"></i>
+                <p class="fw-semibold mb-1">Aucune organisation trouvée</p>
+                <p style="font-size:.875rem;">Modifiez vos filtres ou créez la première organisation.</p>
+                <?php if (session()->get('logged_in')): ?>
+                    <a href="<?= base_url('organizations/create') ?>" class="btn btn-primary btn-sm mt-1 px-4">
+                        <i class="bi bi-plus-lg me-1"></i>Créer une organisation
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>
+
+<!-- Pagination -->
+<?php if ($pager): ?>
+    <div class="d-flex justify-content-center mt-4">
+        <?= $pager->links() ?>
+    </div>
+<?php endif; ?>
+
+<?= $this->endSection() ?>

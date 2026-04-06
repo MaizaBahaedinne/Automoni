@@ -6,23 +6,24 @@ use CodeIgniter\Database\Migration;
 
 class CreateOrganizationTypesTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $this->forge->addField([
-            'id'          => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-            'name'        => ['type' => 'VARCHAR', 'constraint' => 100],
-            'slug'        => ['type' => 'VARCHAR', 'constraint' => 100, 'unique' => true],
-            'description' => ['type' => 'TEXT', 'null' => true],
-            'created_at'  => ['type' => 'DATETIME', 'null' => true],
-            'updated_at'  => ['type' => 'DATETIME', 'null' => true],
-        ]);
-
-        $this->forge->addKey('id', false, false, 'PRIMARY');
-        $this->forge->createTable('organization_types', true);
+        $this->db->query('
+            CREATE TABLE IF NOT EXISTS `organization_types` (
+                `id`          INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `name`        VARCHAR(100) NOT NULL,
+                `slug`        VARCHAR(100) NOT NULL,
+                `description` TEXT NULL,
+                `created_at`  DATETIME NULL,
+                `updated_at`  DATETIME NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `slug` (`slug`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ');
     }
 
-    public function down()
+    public function down(): void
     {
-        $this->forge->dropTable('organization_types', true);
+        $this->db->query('DROP TABLE IF EXISTS `organization_types`;');
     }
 }

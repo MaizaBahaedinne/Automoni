@@ -35,6 +35,11 @@ $routes->get('jobs/(:segment)', 'JobController::show/$1');
 $routes->get('companies/(:segment)', 'CompanyController::show/$1');
 
 // ─── Organizations (public read) ──────────────────────────────────────────────
+$routes->get('organizations',                      'OrganizationController::index');
+$routes->get('organizations/create',               'OrganizationController::create'); // must be before (:segment)
+$routes->get('organizations/(:num)',               'OrganizationController::show/$1');
+$routes->get('organizations/(:num)/hierarchy',     'OrganizationController::hierarchy/$1');
+
 $routes->get('organizations',               'OrganizationController::index');
 $routes->get('organizations/(:segment)',    'OrganizationController::show/$1');
 $routes->get('organizations/(:segment)/hierarchy', 'OrganizationController::hierarchy/$1');
@@ -58,6 +63,15 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('profile/cv/upload',          'ProfileController::uploadCv');
     $routes->get ('profile/cv/download/(:num)', 'ProfileController::downloadCv/$1');
     $routes->get ('profile/cv/download',        'ProfileController::downloadCv');
+
+    // ─── Connections ──────────────────────────────────────────────────────────
+    $routes->get ('connections',                'ConnectionController::index');
+    $routes->get ('connections/search',         'ConnectionController::search');
+    $routes->post('connections/send/(:num)',     'ConnectionController::send/$1');
+    $routes->post('connections/accept/(:num)',   'ConnectionController::accept/$1');
+    $routes->post('connections/reject/(:num)',   'ConnectionController::reject/$1');
+    $routes->post('connections/remove/(:num)',   'ConnectionController::remove/$1');
+    $routes->post('connections/withdraw/(:num)', 'ConnectionController::withdraw/$1');
 
     // Experiences & Education (via AJAX/form posts)
     $routes->post('profile/experience/add',           'ProfileController::addExperience');

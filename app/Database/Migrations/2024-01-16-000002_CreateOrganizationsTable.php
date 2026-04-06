@@ -6,45 +6,44 @@ use CodeIgniter\Database\Migration;
 
 class CreateOrganizationsTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $this->forge->addField([
-            'id'                => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-            'parent_id'         => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'null' => true],
-            'type_id'           => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
-            'name'              => ['type' => 'VARCHAR', 'constraint' => 255],
-            'slug'              => ['type' => 'VARCHAR', 'constraint' => 255, 'unique' => true],
-            'description'       => ['type' => 'LONGTEXT', 'null' => true],
-            'logo'              => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => true],
-            'website'           => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => true],
-            'phone'             => ['type' => 'VARCHAR', 'constraint' => 20, 'null' => true],
-            'email'             => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => true],
-            'address'           => ['type' => 'TEXT', 'null' => true],
-            'latitude'          => ['type' => 'DECIMAL', 'constraint' => '10,8', 'null' => true],
-            'longitude'         => ['type' => 'DECIMAL', 'constraint' => '11,8', 'null' => true],
-            'employee_count'    => ['type' => 'INT', 'constraint' => 11, 'null' => true],
-            'industry'          => ['type' => 'VARCHAR', 'constraint' => 100, 'null' => true],
-            'founded_at'        => ['type' => 'DATE', 'null' => true],
-            'status'            => ['type' => 'ENUM', 'constraint' => ['active', 'inactive', 'archived'], 'default' => 'active'],
-            'is_verified'       => ['type' => 'BOOLEAN', 'default' => false],
-            'deleted_at'        => ['type' => 'DATETIME', 'null' => true],
-            'created_at'        => ['type' => 'DATETIME', 'null' => true],
-            'updated_at'        => ['type' => 'DATETIME', 'null' => true],
-        ]);
-
-        $this->forge->addKey('id', false, false, 'PRIMARY');
-        $this->forge->addKey('type_id');
-        $this->forge->addKey('parent_id');
-        $this->forge->addKey('slug');
-        $this->forge->addKey('status');
-        $this->forge->addForeignKey('type_id', 'organization_types', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('parent_id', 'organizations', 'id', 'CASCADE', 'SET NULL');
-
-        $this->forge->createTable('organizations', true);
+        $this->db->query("
+            CREATE TABLE IF NOT EXISTS `organizations` (
+                `id`             INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `parent_id`      INT(11) UNSIGNED NULL,
+                `type_id`        INT(11) UNSIGNED NOT NULL,
+                `name`           VARCHAR(255) NOT NULL,
+                `slug`           VARCHAR(255) NOT NULL,
+                `description`    LONGTEXT NULL,
+                `logo`           VARCHAR(255) NULL,
+                `website`        VARCHAR(255) NULL,
+                `phone`          VARCHAR(20) NULL,
+                `email`          VARCHAR(255) NULL,
+                `address`        TEXT NULL,
+                `latitude`       DECIMAL(10,8) NULL,
+                `longitude`      DECIMAL(11,8) NULL,
+                `employee_count` INT(11) NULL,
+                `industry`       VARCHAR(100) NULL,
+                `founded_at`     DATE NULL,
+                `status`         ENUM('active','inactive','archived') NOT NULL DEFAULT 'active',
+                `is_verified`    TINYINT(1) NOT NULL DEFAULT 0,
+                `deleted_at`     DATETIME NULL,
+                `created_at`     DATETIME NULL,
+                `updated_at`     DATETIME NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `slug` (`slug`),
+                KEY `type_id` (`type_id`),
+                KEY `parent_id` (`parent_id`),
+                KEY `status` (`status`),
+                CONSTRAINT `fk_orgs_type` FOREIGN KEY (`type_id`) REFERENCES `organization_types` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+                CONSTRAINT `fk_orgs_parent` FOREIGN KEY (`parent_id`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
     }
 
-    public function down()
+    public function down(): void
     {
-        $this->forge->dropTable('organizations', true);
+        $this->db->query('DROP TABLE IF EXISTS `organizations`;');
     }
 }

@@ -6,33 +6,32 @@ use CodeIgniter\Database\Migration;
 
 class CreateOrganizationPartnersTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $this->forge->addField([
-            'id'                 => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-            'organization_id'    => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
-            'partner_id'         => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
-            'partnership_type'   => ['type' => 'VARCHAR', 'constraint' => 100, 'null' => true],
-            'description'        => ['type' => 'TEXT', 'null' => true],
-            'started_at'         => ['type' => 'DATE', 'null' => true],
-            'ended_at'           => ['type' => 'DATE', 'null' => true],
-            'is_active'          => ['type' => 'BOOLEAN', 'default' => true],
-            'created_at'         => ['type' => 'DATETIME', 'null' => true],
-            'updated_at'         => ['type' => 'DATETIME', 'null' => true],
-        ]);
-
-        $this->forge->addKey('id', false, false, 'PRIMARY');
-        $this->forge->addKey('organization_id');
-        $this->forge->addKey('partner_id');
-        $this->forge->addKey(['organization_id', 'partner_id'], false, false, 'uk_org_partner');
-        $this->forge->addForeignKey('organization_id', 'organizations', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('partner_id', 'organizations', 'id', 'CASCADE', 'CASCADE');
-
-        $this->forge->createTable('organization_partners', true);
+        $this->db->query("
+            CREATE TABLE IF NOT EXISTS `organization_partners` (
+                `id`               INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `organization_id`  INT(11) UNSIGNED NOT NULL,
+                `partner_id`       INT(11) UNSIGNED NOT NULL,
+                `partnership_type` VARCHAR(100) NULL,
+                `description`      TEXT NULL,
+                `started_at`       DATE NULL,
+                `ended_at`         DATE NULL,
+                `is_active`        TINYINT(1) NOT NULL DEFAULT 1,
+                `created_at`       DATETIME NULL,
+                `updated_at`       DATETIME NULL,
+                PRIMARY KEY (`id`),
+                KEY `organization_id` (`organization_id`),
+                KEY `partner_id` (`partner_id`),
+                KEY `uk_org_partner` (`organization_id`, `partner_id`),
+                CONSTRAINT `fk_org_partners_org` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+                CONSTRAINT `fk_org_partners_partner` FOREIGN KEY (`partner_id`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
     }
 
-    public function down()
+    public function down(): void
     {
-        $this->forge->dropTable('organization_partners', true);
+        $this->db->query("DROP TABLE IF EXISTS `organization_partners`;");
     }
 }
