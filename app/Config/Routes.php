@@ -6,6 +6,9 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
+// ─── Uploaded files (fallback when public/uploads symlink is absent) ─────────
+$routes->get('uploads/(:any)', 'UploadsController::serve/$1');
+
 // ─── Language Switch ────────────────────────────────────────────────────────
 $routes->get('lang/(:segment)', 'LangController::switch/$1');
 
