@@ -3,7 +3,7 @@
 return [
     // ── Navigation ────────────────────────────────────────────────────────────
     'nav_home'        => 'Home',
-    'nav_jobs'        => 'Find Jobs',
+    'nav_jobs'        => 'Jobs',
     'nav_dashboard'   => 'Dashboard',
     'nav_profile'     => 'My Profile',
     'nav_alerts'      => 'Job Alerts',
@@ -12,7 +12,8 @@ return [
     'nav_login'       => 'Sign In',
     'nav_signup'      => 'Sign Up',
     'nav_logout'      => 'Sign Out',
-    'nav_coaching'    => 'Career Coaching',
+    'nav_coaching'    => 'Coaching',
+    'nav_search_placeholder' => 'Search jobs…',
 
     // ── Auth ──────────────────────────────────────────────────────────────────
     'login_title'           => 'Welcome back',

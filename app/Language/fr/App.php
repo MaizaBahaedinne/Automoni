@@ -3,16 +3,17 @@
 return [
     // ── Navigation ────────────────────────────────────────────────────────────
     'nav_home'        => 'Accueil',
-    'nav_jobs'        => 'Offres d\'emploi',
-    'nav_dashboard'   => 'Tableau de bord',
+    'nav_jobs'        => 'Emplois',
+    'nav_dashboard'   => 'Tableau',
     'nav_profile'     => 'Mon profil',
-    'nav_alerts'      => 'Alertes emploi',
-    'nav_post_job'    => 'Publier une offre',
+    'nav_alerts'      => 'Alertes',
+    'nav_post_job'    => 'Publier offre',
     'nav_company'     => 'Mon entreprise',
     'nav_login'       => 'Connexion',
     'nav_signup'      => 'S\'inscrire',
     'nav_logout'      => 'Déconnexion',
-    'nav_coaching'    => 'Conseils carrière',
+    'nav_coaching'    => 'Coaching',
+    'nav_search_placeholder' => 'Rechercher…',
 
     // ── Auth ──────────────────────────────────────────────────────────────────
     'login_title'           => 'Bon retour !',

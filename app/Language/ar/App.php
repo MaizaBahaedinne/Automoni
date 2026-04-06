@@ -4,15 +4,16 @@ return [
     // ── Navigation ────────────────────────────────────────────────────────────
     'nav_home'        => 'الرئيسية',
     'nav_jobs'        => 'الوظائف',
-    'nav_dashboard'   => 'لوحة التحكم',
-    'nav_profile'     => 'ملفي الشخصي',
-    'nav_alerts'      => 'تنبيهات الوظائف',
+    'nav_dashboard'   => 'لوحة',
+    'nav_profile'     => 'ملفي',
+    'nav_alerts'      => 'تنبيهات',
     'nav_post_job'    => 'نشر وظيفة',
     'nav_company'     => 'شركتي',
-    'nav_login'       => 'تسجيل الدخول',
-    'nav_signup'      => 'إنشاء حساب',
-    'nav_logout'      => 'تسجيل الخروج',
-    'nav_coaching'    => 'نصائح مهنية',
+    'nav_login'       => 'دخول',
+    'nav_signup'      => 'تسجيل',
+    'nav_logout'      => 'خروج',
+    'nav_coaching'    => 'نصائح',
+    'nav_search_placeholder' => 'بحث عن وظائف…',
 
     // ── Auth ──────────────────────────────────────────────────────────────────
     'login_title'           => 'أهلاً بعودتك',
