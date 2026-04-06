@@ -7,7 +7,9 @@ use CodeIgniter\Router\RouteCollection;
  */
 
 // ─── Uploaded files (fallback when public/uploads symlink is absent) ─────────
-$routes->get('uploads/(:any)', 'UploadsController::serve/$1');
+// (.+) instead of (:any): (:any) = [^/]+ which stops at the first slash,
+// so uploads/organizations/file.png would never match.
+$routes->get('uploads/(.+)', 'UploadsController::serve/$1');
 
 // ─── Language Switch ────────────────────────────────────────────────────────
 $routes->get('lang/(:segment)', 'LangController::switch/$1');
