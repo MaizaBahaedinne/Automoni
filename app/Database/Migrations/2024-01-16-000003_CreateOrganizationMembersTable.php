@@ -6,28 +6,27 @@ use CodeIgniter\Database\Migration;
 
 class CreateOrganizationMembersTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $this->forge->addField([
-            'id'              => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-            'organization_id' => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
-            'user_id'         => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
-            'role'            => ['type' => 'ENUM', 'constraint' => ['owner', 'manager', 'viewer'], 'default' => 'viewer'],
-            'joined_at'       => ['type' => 'DATETIME', 'null' => true],
-            'created_at'      => ['type' => 'DATETIME', 'null' => true],
-            'updated_at'      => ['type' => 'DATETIME', 'null' => true],
-        ]);
-
-        $this->forge->addKey('id', false, false, 'PRIMARY');
-        $this->forge->addKey(['organization_id', 'user_id'], false, false, 'uk_org_user');
-        $this->forge->addForeignKey('organization_id', 'organizations', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
-
-        $this->forge->createTable('organization_members', true);
+        $this->db->query("
+            CREATE TABLE IF NOT EXISTS `organization_members` (
+                `id`              INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `organization_id` INT(11) UNSIGNED NOT NULL,
+                `user_id`         INT(11) UNSIGNED NOT NULL,
+                `role`            ENUM('owner','manager','viewer') NOT NULL DEFAULT 'viewer',
+                `joined_at`       DATETIME NULL,
+                `created_at`      DATETIME NULL,
+                `updated_at`      DATETIME NULL,
+                PRIMARY KEY (`id`),
+                KEY `uk_org_user` (`organization_id`, `user_id`),
+                CONSTRAINT `fk_org_members_org` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+                CONSTRAINT `fk_org_members_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
     }
 
-    public function down()
+    public function down(): void
     {
-        $this->forge->dropTable('organization_members', true);
+        $this->db->query("DROP TABLE IF EXISTS `organization_members`;");
     }
 }
