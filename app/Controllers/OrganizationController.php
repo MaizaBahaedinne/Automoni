@@ -280,13 +280,14 @@ class OrganizationController extends BaseController
      */
     public function edit(int $id)
     {
-        $organization = $this->organizationModel->find($id);
+        $organization = $this->organizationModel->withDeleted()->find($id);
         if (!$organization) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        if (!$this->organizationService->canEdit($id, $this->userId)) {
-            return redirect()->to("/organizations/$id")->with('error', 'Unauthorized');
+        $isAdmin = session()->get('user_role') === 'admin';
+        if (!$isAdmin && !$this->organizationService->canEdit($id, $this->userId)) {
+            return redirect()->to(base_url("organizations/$id"))->with('error', 'Vous n\'avez pas la permission de modifier cette organisation.');
         }
 
         $socialModel = model('OrganizationSocialLinkModel');
@@ -307,13 +308,14 @@ class OrganizationController extends BaseController
      */
     public function update(int $id)
     {
-        $organization = $this->organizationModel->find($id);
+        $organization = $this->organizationModel->withDeleted()->find($id);
         if (!$organization) {
-            return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Not found']);
+            return redirect()->back()->with('error', 'Organisation introuvable.');
         }
 
-        if (!$this->organizationService->canEdit($id, $this->userId)) {
-            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        $isAdmin = session()->get('user_role') === 'admin';
+        if (!$isAdmin && !$this->organizationService->canEdit($id, $this->userId)) {
+            return redirect()->back()->with('error', 'Vous n\'avez pas la permission de modifier cette organisation.');
         }
 
         $data = [

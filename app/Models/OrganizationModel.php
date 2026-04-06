@@ -44,10 +44,9 @@ class OrganizationModel extends Model
      */
     public function getWithType(int $id)
     {
-        return $this->select('o.*, ot.name as type_name, ot.slug as type_slug')
-                    ->from($this->table . ' as o')
-                    ->join('organization_types as ot', 'ot.id = o.type_id')
-                    ->where('o.id', $id)
+        return $this->select('organizations.*, ot.name as type_name, ot.slug as type_slug')
+                    ->join('organization_types as ot', 'ot.id = organizations.type_id', 'left')
+                    ->where('organizations.id', $id)
                     ->first();
     }
 
@@ -102,36 +101,37 @@ class OrganizationModel extends Model
      */
     public function search(array $filters = [], int $perPage = 15): array
     {
-        $builder = $this->select('o.*, ot.name as type_name')
-                        ->from($this->table . ' as o')
-                        ->join('organization_types as ot', 'ot.id = o.type_id')
-                        ->where('o.status', 'active')
-                        ->orderBy('o.name', 'ASC');
+        $builder = $this->select('organizations.*, ot.name as type_name')
+                        ->join('organization_types as ot', 'ot.id = organizations.type_id', 'left')
+                        ->where('organizations.status', 'active')
+                        ->orderBy('organizations.name', 'ASC');
 
         if (!empty($filters['keyword'])) {
-            $kw = esc($filters['keyword']);
-            $builder->like('o.name', $kw)
-                    ->orLike('o.description', $kw)
-                    ->orLike('o.industry', $kw);
+            $kw = $filters['keyword'];
+            $builder->groupStart()
+                    ->like('organizations.name', $kw)
+                    ->orLike('organizations.description', $kw)
+                    ->orLike('organizations.industry', $kw)
+                    ->groupEnd();
         }
 
         if (!empty($filters['type_id'])) {
-            $builder->where('o.type_id', (int)$filters['type_id']);
+            $builder->where('organizations.type_id', (int)$filters['type_id']);
         }
 
         if (!empty($filters['industry'])) {
-            $builder->where('o.industry', esc($filters['industry']));
+            $builder->where('organizations.industry', $filters['industry']);
         }
 
         if (!empty($filters['is_verified'])) {
-            $builder->where('o.is_verified', $filters['is_verified']);
+            $builder->where('organizations.is_verified', $filters['is_verified']);
         }
 
         if (!empty($filters['parent_id'])) {
-            $builder->where('o.parent_id', (int)$filters['parent_id']);
+            $builder->where('organizations.parent_id', (int)$filters['parent_id']);
         } else {
             // Show only parent organizations by default
-            $builder->where('o.parent_id IS NULL', null, false);
+            $builder->where('organizations.parent_id IS NULL', null, false);
         }
 
         return [
@@ -147,9 +147,8 @@ class OrganizationModel extends Model
      */
     public function getManagedByUser(int $userId)
     {
-        return $this->select('o.*')
-                    ->from($this->table . ' as o')
-                    ->join('organization_members as om', 'om.organization_id = o.id')
+        return $this->select('organizations.*')
+                    ->join('organization_members as om', 'om.organization_id = organizations.id')
                     ->where('om.user_id', $userId)
                     ->where('om.role IN ("owner", "manager")', null, false)
                     ->findAll();

@@ -19,7 +19,7 @@
             <i class="bi bi-buildings me-2" style="color:var(--brand)"></i><?= esc($title) ?>
         </h1>
 
-        <form method="POST" enctype="multipart/form-data" id="organizationForm" class="needs-validation" novalidate>
+        <form method="POST" action="<?= base_url('organizations/' . ($organization->id ?? '')) ?>" enctype="multipart/form-data" id="organizationForm" class="needs-validation" novalidate>
             <?= csrf_field() ?>
 
             <!-- Basic Information -->
