@@ -47,7 +47,7 @@ class HomeController extends BaseController
                 ->findAll();
 
             try {
-                $posts = model(PostModel::class)->getFeed(20);
+                $posts = model(PostModel::class)->getConnectionFeed($userId, 20);
             } catch (\Throwable $e) {
                 log_message('error', '[HomeController] posts query failed: ' . $e->getMessage());
                 $posts = [];
