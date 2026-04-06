@@ -154,10 +154,11 @@ class OrganizationController extends BaseController
         }
 
         return view('organizations/create_enhanced', [
-            'title' => 'Create Organization',
-            'organization' => null,
-            'logo_url' => null,
-            'social_links' => [],
+            'title'         => 'Create Organization',
+            'organization'  => null,
+            'logo_url'      => null,
+            'social_links'  => [],
+            'types'         => $this->typeModel->findAll(),
             'organizations' => $this->organizationModel->where('status', 'active')->findAll(),
         ]);
     }
