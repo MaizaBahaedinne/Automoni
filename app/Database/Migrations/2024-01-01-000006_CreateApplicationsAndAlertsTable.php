@@ -20,7 +20,7 @@ class CreateApplicationsAndAlertsTable extends Migration
             'applied_at'   => ['type' => 'DATETIME', 'null' => true],
             'updated_at'   => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey(['job_id', 'user_id'], false, false, 'unique_application');
         $this->forge->addKey('status');
         $this->forge->addForeignKey('job_id', 'jobs', 'id', 'CASCADE', 'CASCADE');
@@ -40,7 +40,7 @@ class CreateApplicationsAndAlertsTable extends Migration
             'created_at'    => ['type' => 'DATETIME', 'null' => true],
             'updated_at'    => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey(['user_id', 'is_active']);
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('job_alerts');

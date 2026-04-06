@@ -15,7 +15,7 @@ class CreateSkillsAndExperiencesTables extends Migration
             'category'   => ['type' => 'VARCHAR', 'constraint' => 100, 'null' => true],
             'created_at' => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->createTable('skills');
 
         // User ↔ Skill pivot
@@ -26,7 +26,7 @@ class CreateSkillsAndExperiencesTables extends Migration
             'skill_name' => ['type' => 'VARCHAR', 'constraint' => 100],
             'level'      => ['type' => 'ENUM', 'constraint' => ['beginner', 'intermediate', 'advanced', 'expert'], 'default' => 'intermediate'],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey(['user_id', 'skill_name']);
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('user_skills');
@@ -45,7 +45,7 @@ class CreateSkillsAndExperiencesTables extends Migration
             'description' => ['type' => 'TEXT', 'null' => true],
             'sort_order'  => ['type' => 'TINYINT', 'default' => 0],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey('user_id');
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('experiences');
@@ -64,7 +64,7 @@ class CreateSkillsAndExperiencesTables extends Migration
             'description'  => ['type' => 'TEXT', 'null' => true],
             'sort_order'   => ['type' => 'TINYINT', 'default' => 0],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey('user_id');
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('education');
