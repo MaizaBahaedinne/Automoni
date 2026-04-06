@@ -82,6 +82,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
     // Apply to job (job seekers only)
     $routes->post('jobs/(:num)/apply', 'JobController::apply/$1', ['filter' => 'role:job_seeker']);
+
+    // Posts (social feed)
+    $routes->post('posts/store',                 'PostController::store');
+    $routes->post('posts/(:num)/delete',         'PostController::destroy/$1');
+    $routes->post('posts/(:num)/react',          'PostController::react/$1');
+    $routes->post('posts/(:num)/comment',        'PostController::addComment/$1');
+    $routes->get ('posts/(:num)/comments',       'PostController::comments/$1');
 });
 
 // ─── Protected — recruiters only ──────────────────────────────────────────────

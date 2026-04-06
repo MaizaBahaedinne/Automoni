@@ -6,6 +6,8 @@ use App\Models\JobModel;
 use App\Models\ProfileModel;
 use App\Models\UserModel;
 use App\Models\CompanyModel;
+use App\Models\PostModel;
+use App\Models\PostReactionModel;
 use CodeIgniter\Controller;
 
 class HomeController extends BaseController
@@ -25,6 +27,8 @@ class HomeController extends BaseController
         $myProfile    = null;
         $myUser       = null;
         $topCompanies = [];
+        $posts        = [];
+        $myReactions  = [];
 
         if ($userId) {
             $myProfile = model(ProfileModel::class)->getByUserId($userId);
@@ -36,6 +40,19 @@ class HomeController extends BaseController
                 ->orderBy('job_count', 'DESC')
                 ->limit(5)
                 ->findAll();
+
+            $posts = model(PostModel::class)->getFeed(20);
+
+            if (!empty($posts)) {
+                $postIds = array_map(fn($p) => $p->id, $posts);
+                $rawReactions = model(PostReactionModel::class)
+                    ->where('user_id', $userId)
+                    ->whereIn('post_id', $postIds)
+                    ->findAll();
+                foreach ($rawReactions as $r) {
+                    $myReactions[$r->post_id] = $r->reaction_type;
+                }
+            }
         }
 
         return view('home/index', [
@@ -44,6 +61,8 @@ class HomeController extends BaseController
             'myProfile'    => $myProfile,
             'myUser'       => $myUser,
             'topCompanies' => $topCompanies,
+            'posts'        => $posts,
+            'myReactions'  => $myReactions,
         ]);
     }
 
