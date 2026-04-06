@@ -2,17 +2,38 @@
 
 namespace App\Services;
 
-use App\Models\{OrganizationModel, OrganizationMemberModel};
+use App\Models\{
+    OrganizationModel,
+    OrganizationMemberModel,
+    OrganizationCertificationModel,
+    OrganizationPartnerModel,
+    OrganizationQualityLabelModel,
+    OrganizationMarketModel,
+    OrganizationPricingModel,
+    OrganizationTypeModel,
+};
 
 class OrganizationService
 {
     private OrganizationModel $organizationModel;
     private OrganizationMemberModel $memberModel;
+    private OrganizationCertificationModel $certificationModel;
+    private OrganizationPartnerModel $partnerModel;
+    private OrganizationQualityLabelModel $qualityLabelModel;
+    private OrganizationMarketModel $marketModel;
+    private OrganizationPricingModel $pricingModel;
+    private OrganizationTypeModel $typeModel;
 
     public function __construct()
     {
         $this->organizationModel = model(OrganizationModel::class);
         $this->memberModel = model(OrganizationMemberModel::class);
+        $this->certificationModel = model(OrganizationCertificationModel::class);
+        $this->partnerModel = model(OrganizationPartnerModel::class);
+        $this->qualityLabelModel = model(OrganizationQualityLabelModel::class);
+        $this->marketModel = model(OrganizationMarketModel::class);
+        $this->pricingModel = model(OrganizationPricingModel::class);
+        $this->typeModel = model(OrganizationTypeModel::class);
     }
 
     /**
@@ -234,6 +255,258 @@ class OrganizationService
         $node_array = (array)$node;
         $children = $node_array['children'] ?? [];
         unset($node_array['children']);
+
+    /**
+     * ─────────────────────────────────────────────────────────────────────
+     * COMPLETE ORGANIZATION CREATION WITH ALL RELATIONS
+     * ─────────────────────────────────────────────────────────────────────
+     */
+
+    /**
+     * Create organization with all related data in a transaction
+     *
+     * @param array $data Organization data with optional nested relations
+     * @param int $creatorId User ID creating the organization
+     * @return array ['success' => bool, 'data' => object|null, 'message' => string]
+     */
+    public function createCompleteOrganization(array $data, int $creatorId): array
+    {
+        try {
+            // Validation
+            if (!$this->organizationModel->validate($data)) {
+                return [
+                    'success' => false,
+                    'message' => 'Validation failed: ' . implode(', ', $this->organizationModel->errors()),
+                ];
+            }
+
+            // Extract nested relations before main insert
+            $certifications = $data['certifications'] ?? [];
+            $markets = $data['markets'] ?? [];
+            $pricing = $data['pricing'] ?? [];
+            $quality_labels = $data['quality_labels'] ?? [];
+            $partners = $data['partners'] ?? [];
+
+            unset($data['certifications'], $data['markets'], $data['pricing'], $data['quality_labels'], $data['partners']);
+
+            // Convert array fields to JSON
+            if (isset($data['markets_targeted']) && is_array($data['markets_targeted'])) {
+                $data['markets_targeted'] = json_encode($data['markets_targeted']);
+            }
+            if (isset($data['sectors']) && is_array($data['sectors'])) {
+                $data['sectors'] = json_encode($data['sectors']);
+            }
+
+            $db = \Config\Database::connect();
+            $db->transBegin();
+
+            // 1. Insert main organization
+            if (!$this->organizationModel->insert($data)) {
+                throw new \Exception('Failed to create organization');
+            }
+
+            $organizationId = $this->organizationModel->getInsertID();
+
+            // 2. Add creator as owner
+            $this->memberModel->addMember($organizationId, $creatorId, 'owner', isAdmin: true);
+
+            // 3. Add certifications
+            if (!empty($certifications)) {
+                foreach ($certifications as $cert) {
+                    $cert['organization_id'] = $organizationId;
+                    $this->certificationModel->insert($cert);
+                }
+            }
+
+            // 4. Add markets
+            if (!empty($markets)) {
+                foreach ($markets as $market) {
+                    $market['organization_id'] = $organizationId;
+                    $this->marketModel->insert($market);
+                }
+            }
+
+            // 5. Add pricing
+            if (!empty($pricing)) {
+                foreach ($pricing as $price) {
+                    $price['organization_id'] = $organizationId;
+                    $this->pricingModel->insert($price);
+                }
+            }
+
+            // 6. Add quality labels
+            if (!empty($quality_labels)) {
+                foreach ($quality_labels as $label) {
+                    $label['organization_id'] = $organizationId;
+                    $this->qualityLabelModel->insert($label);
+                }
+            }
+
+            // 7. Add partnerships
+            if (!empty($partners)) {
+                foreach ($partners as $partner) {
+                    $partner['organization_id'] = $organizationId;
+                    $this->partnerModel->insert($partner);
+                }
+            }
+
+            $db->transCommit();
+
+            return [
+                'success' => true,
+                'data' => $this->getOrganizationWithRelations($organizationId),
+                'message' => 'Organization created successfully',
+            ];
+        } catch (\Exception $e) {
+            $db = \Config\Database::connect();
+            $db->transRollback();
+
+            return [
+                'success' => false,
+                'message' => 'Error creating organization: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get organization with all relations loaded
+     */
+    public function getOrganizationWithRelations(int $organizationId)
+    {
+        $org = $this->organizationModel->find($organizationId);
+        if (!$org) {
+            return null;
+        }
+
+        // Decode JSON fields
+        if ($org->markets_targeted) {
+            $org->markets_targeted = json_decode($org->markets_targeted, true);
+        }
+        if ($org->sectors) {
+            $org->sectors = json_decode($org->sectors, true);
+        }
+
+        // Load relations
+        $org->type = $this->typeModel->find($org->type_id);
+        $org->parent = $org->parent_id ? $this->organizationModel->find($org->parent_id) : null;
+        $org->certifications = $this->certificationModel->getCertifications($organizationId);
+        $org->quality_labels = $this->qualityLabelModel->getLabels($organizationId);
+        $org->markets = $this->marketModel->getMarkets($organizationId);
+        $org->pricing = $this->pricingModel->getPricing($organizationId);
+        $org->partners = $this->partnerModel->getPartners($organizationId);
+        $org->members = $this->memberModel->getMembers($organizationId);
+
+        return $org;
+    }
+
+    /**
+     * Validate parent organization (prevent circular hierarchy)
+     */
+    public function isValidParent(int $organizationId, ?int $parentId): bool
+    {
+        if (!$parentId) {
+            return true;
+        }
+
+        // Parent cannot be the organization itself
+        if ($organizationId === $parentId) {
+            return false;
+        }
+
+        // Parent cannot be a descendant of this organization
+        $descendants = $this->getAllDescendants($organizationId);
+        $descendantIds = array_column($descendants, 'id');
+
+        return !in_array($parentId, $descendantIds, strict: true);
+    }
+
+    /**
+     * Search for parent organization candidates
+     */
+    public function searchParentOrganizations(string $query, int $limit = 10): array
+    {
+        $query = trim($query);
+
+        if (strlen($query) < 2) {
+            return [];
+        }
+
+        return $this->organizationModel
+            ->select('id, name, type_id, slug')
+            ->where('status', 'active')
+            ->like('name', $query)
+            ->limit($limit)
+            ->findAll();
+    }
+
+    /**
+     * Get organizations filtered by size
+     */
+    public function getBySize(string $size): array
+    {
+        return $this->organizationModel
+            ->where('size', $size)
+            ->where('status', 'active')
+            ->findAll();
+    }
+
+    /**
+     * Get organizations with reputation score >= threshold
+     */
+    public function getByReputationScore(float $minScore): array
+    {
+        return $this->organizationModel
+            ->where('reputation_score >=', $minScore, false)
+            ->where('status', 'active')
+            ->orderBy('reputation_score', 'DESC')
+            ->findAll();
+    }
+
+    /**
+     * Get top organizations by reputation
+     */
+    public function getTopOrganizations(int $limit = 10): array
+    {
+        return $this->organizationModel
+            ->where('status', 'active')
+            ->where('reputation_score IS NOT NULL', null, false)
+            ->orderBy('reputation_score', 'DESC')
+            ->limit($limit)
+            ->findAll();
+    }
+
+    /**
+     * Get organizations operating in specific country
+     */
+    public function getOrganizationsByCountry(string $countryCode): array
+    {
+        return $this->marketModel
+            ->where('country_code', strtoupper($countryCode))
+            ->where('is_active', 1)
+            ->select('DISTINCT organization_id')
+            ->findAll();
+    }
+
+    /**
+     * Get count statistics
+     */
+    public function getStatistics(): array
+    {
+        return [
+            'total' => $this->organizationModel->countAllResults(),
+            'active' => $this->organizationModel->where('status', 'active')->countAllResults(),
+            'by_size' => $this->organizationModel
+                ->select('size, COUNT(*) as count')
+                ->where('status', 'active')
+                ->groupBy('size')
+                ->findAll(),
+            'by_type' => $this->organizationModel
+                ->select('type_id, COUNT(*) as count')
+                ->where('status', 'active')
+                ->groupBy('type_id')
+                ->findAll(),
+        ];
+    }
 
         $result[] = [
             'level' => $level,
