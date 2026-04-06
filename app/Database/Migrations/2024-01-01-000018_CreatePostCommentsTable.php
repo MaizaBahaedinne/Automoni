@@ -16,7 +16,7 @@ class CreatePostCommentsTable extends Migration
             'created_at' => ['type' => 'DATETIME', 'null' => true],
             'updated_at' => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addKey('post_id');
         $this->forge->createTable('post_comments');
     }

@@ -15,7 +15,7 @@ class CreatePostReactionsTable extends Migration
             'reaction_type' => ['type' => 'VARCHAR', 'constraint' => 20, 'default' => 'like'],
             'created_at'    => ['type' => 'DATETIME', 'null' => true],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addPrimaryKey('id');
         $this->forge->addUniqueKey(['post_id', 'user_id']);
         $this->forge->addKey('post_id');
         $this->forge->createTable('post_reactions');
