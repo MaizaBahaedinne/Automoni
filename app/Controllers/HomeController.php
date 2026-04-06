@@ -80,6 +80,7 @@ class HomeController extends BaseController
             'topCompanies' => $topCompanies,
             'posts'        => $posts,
             'myReactions'  => $myReactions,
+            'userId'       => $userId,
         ]);
     }
 
