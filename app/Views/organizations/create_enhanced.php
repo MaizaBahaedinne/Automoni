@@ -191,7 +191,7 @@
             <div class="cr-card">
                 <div class="cr-section-header"><i class="bi bi-gear"></i>Détails de l'organisation</div>
                 <div class="cr-card-body">
-                    <div class="row g-3">
+                    <div class="row g-3 mb-3">
                         <div class="col-md-4">
                             <label for="employee_count" class="form-label fw-semibold">Nombre d'employés</label>
                             <input type="number" name="employee_count" id="employee_count" class="form-control" min="0"
@@ -208,6 +208,89 @@
                                    value="<?= old('tax_id') ?>" placeholder="NIF / SIRET / RC…">
                         </div>
                     </div>
+
+                    <!-- Taille de l'organisation -->
+                    <div class="mb-3">
+                        <label for="size" class="form-label fw-semibold">Taille de l'organisation</label>
+                        <select name="size" id="size" class="form-select">
+                            <option value="">-- Non défini --</option>
+                            <option value="startup" <?= old('size') == 'startup' ? 'selected' : '' ?>>Startup (< 10 employés)</option>
+                            <option value="pme" <?= old('size') == 'pme' ? 'selected' : '' ?>>PME (10-250 employés)</option>
+                            <option value="grande_entreprise" <?= old('size') == 'grande_entreprise' ? 'selected' : '' ?>>Grande entreprise (> 250 employés)</option>
+                        </select>
+                    </div>
+
+                    <!-- Secteurs d'activité (multi-select) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Secteurs d'activité</label>
+                        <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: #f9fafb; max-height: 200px; overflow-y: auto;">
+                            <?php 
+                            $sectors = ['technology', 'finance', 'healthcare', 'manufacturing', 'retail', 'real-estate', 'energy', 'transportation', 'education', 'media', 'hospitality', 'non-profit', 'government', 'professional-services', 'agriculture', 'telecommunications', 'utilities', 'consulting'];
+                            $selected_sectors = old('sectors') ? (is_array(old('sectors')) ? old('sectors') : json_decode(old('sectors'), true)) : [];
+                            ?>
+                            <?php foreach ($sectors as $sector): ?>
+                            <div class="form-check" style="margin-bottom: 8px;">
+                                <input type="checkbox" class="form-check-input" name="sectors[]" id="sector_<?= $sector ?>" value="<?= $sector ?>"
+                                       <?= in_array($sector, $selected_sectors) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="sector_<?= $sector ?>">
+                                    <?= ucfirst(str_replace('-', ' ', $sector)) ?>
+                                </label>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Marchés ciblés -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Marchés ciblés</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="markets_targeted[]" id="market_local" value="local"
+                                       <?= in_array('local', (old('markets_targeted') ?? [])) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="market_local">
+                                    <i class="bi bi-geo-alt me-1"></i>Local (dans le pays)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="markets_targeted[]" id="market_international" value="international"
+                                       <?= in_array('international', (old('markets_targeted') ?? [])) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="market_international">
+                                    <i class="bi bi-globe2 me-1"></i>International
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Score de réputation -->
+                    <div class="mb-3">
+                        <label for="reputation_score" class="form-label fw-semibold">Score de réputation</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="range" class="form-range" name="reputation_score" id="reputation_score" 
+                                   min="0" max="5" step="0.5" value="<?= old('reputation_score') ?? 3 ?>"
+                                   style="flex: 1; max-width: 200px;">
+                            <span id="reputationValue" class="badge" style="background-color: var(--brand); min-width: 50px; text-align: center;">
+                                <?= old('reputation_score') ?? 3 ?> / 5
+                            </span>
+                        </div>
+                        <small class="form-text" style="color: var(--muted);">1 = Faible, 5 = Excellent</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Localisation (Carte Interactive) ────────────────────── -->
+            <div class="cr-card">
+                <div class="cr-section-header"><i class="bi bi-map"></i>Localisation interactive</div>
+                <div class="cr-card-body">
+                    <p style="font-size: .9rem; color: var(--muted); margin-bottom: 12px;">
+                        Cliquez sur la carte pour définir la localisation, ou utilisez votre position actuelle.
+                    </p>
+                    <div id="organizationMap" style="width: 100%; height: 300px; border: 1px solid var(--border); border-radius: var(--radius);"></div>
+                    <button type="button" id="useCurrentLocation" class="btn btn-outline-primary btn-sm mt-2">
+                        <i class="bi bi-geo-fill me-1"></i>Utiliser ma position actuelle
+                    </button>
+                    <button type="button" id="centerMap" class="btn btn-outline-secondary btn-sm mt-2">
+                        <i class="bi bi-zoom-in me-1"></i>Centrer la carte
+                    </button>
                 </div>
             </div>
 
@@ -275,8 +358,157 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" rel="stylesheet">
+
 <script>
-document.getElementById('logo')?.addEventListener('change', function (e) {
+// ── Initialisation de la carte ──────────────────────────────────────
+let organizationMap, currentMarker;
+const mapCenter = { lat: 36.7538, lng: 3.0588 }; // Algérie par défaut
+
+document.addEventListener('DOMContentLoaded', function () {
+    // ── Mise à jour dynamique du score de réputation ────────────────
+    const reputationSlider = document.getElementById('reputation_score');
+    const reputationValue = document.getElementById('reputationValue');
+    
+    if (reputationSlider && reputationValue) {
+        reputationSlider.addEventListener('input', function () {
+            reputationValue.textContent = this.value + ' / 5';
+        });
+    }
+
+    // ── Initialiser la carte
+    organizationMap = L.map('organizationMap').setView([mapCenter.lat, mapCenter.lng], 5);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+    }).addTo(organizationMap);
+
+    // Charger les coordonnées existantes si disponibles
+    const existingLat = document.getElementById('latitude').value;
+    const existingLng = document.getElementById('longitude').value;
+    if (existingLat && existingLng) {
+        updateCoordinates(parseFloat(existingLat), parseFloat(existingLng));
+    }
+
+    // Clic sur la carte pour placer le marqueur
+    organizationMap.on('click', function (e) {
+        updateCoordinates(e.latlng.lat, e.latlng.lng);
+    });
+
+    // Bouton: Position actuelle
+    document.getElementById('useCurrentLocation').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                updateCoordinates(lat, lng);
+                organizationMap.setView([lat, lng], 13);
+            });
+        } else {
+            alert('Géolocalisation non disponible');
+        }
+    });
+
+    // Bouton: Centrer la carte
+    document.getElementById('centerMap').addEventListener('click', function (e) {
+        e.preventDefault();
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        if (lat && lng) {
+            organizationMap.setView([parseFloat(lat), parseFloat(lng)], 13);
+        }
+    });
+});
+
+function updateCoordinates(lat, lng) {
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+    
+    // Placer le marqueur
+    if (currentMarker) {
+        organizationMap.removeLayer(currentMarker);
+    }
+    currentMarker = L.marker([lat, lng]).addTo(organizationMap);
+    currentMarker.bindPopup(`<strong>Position</strong><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+}
+
+// ── Autocomplete: Recherche d'organisation parente ───────────────────
+let parentOrgTimeout;
+document.getElementById('parent_id').addEventListener('focus', function () {
+    // Créer le dropdown à côté du select
+    if (!document.getElementById('parentOrgDropdown')) {
+        const dropdown = document.createElement('div');
+        dropdown.id = 'parentOrgDropdown';
+        dropdown.style.cssText = `
+            position: absolute;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 100%;
+            display: none;
+        `;
+        this.parentElement.style.position = 'relative';
+        this.parentElement.appendChild(dropdown);
+    }
+});
+
+document.getElementById('parent_id').addEventListener('keyup', function (e) {
+    clearTimeout(parentOrgTimeout);
+    const query = this.value.toLowerCase();
+    
+    if (query.length < 2) {
+        document.getElementById('parentOrgDropdown').style.display = 'none';
+        return;
+    }
+
+    parentOrgTimeout = setTimeout(function () {
+        fetch('<?= base_url('api/organizations/search') ?>?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(data => {
+                const dropdown = document.getElementById('parentOrgDropdown');
+                dropdown.innerHTML = '';
+                
+                if (!data.length) {
+                    dropdown.innerHTML = '<div style="padding: 8px; color: var(--muted);">Aucun résultat</div>';
+                } else {
+                    data.forEach(org => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .2s;';
+                        item.innerHTML = `<strong>${org.name}</strong><br><small style="color: var(--muted);">${org.type_name}</small>`;
+                        item.addEventListener('mouseover', () => item.style.background = 'var(--brand-light)');
+                        item.addEventListener('mouseout', () => item.style.background = 'transparent');
+                        item.addEventListener('click', function () {
+                            document.getElementById('parent_id').value = org.id;
+                            document.getElementById('parentOrgDropdown').style.display = 'none';
+                            // Mettre à jour le texte affiché
+                            const select = document.getElementById('parent_id');
+                            select.innerHTML += `<option selected value="${org.id}">${org.name}</option>`;
+                            select.value = org.id;
+                        });
+                        dropdown.appendChild(item);
+                    });
+                }
+                dropdown.style.display = 'block';
+            });
+    }, 300);
+});
+
+// Fermer le dropdown au clic externe
+document.addEventListener('click', function (e) {
+    if (!e.target.closest('#parent_id')) {
+        const dropdown = document.getElementById('parentOrgDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+    }
+});
+
+// ── Logo Preview ────────────────────────────────────────────────────
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
