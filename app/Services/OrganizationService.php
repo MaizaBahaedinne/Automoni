@@ -7,9 +7,6 @@ use App\Models\{
     OrganizationMemberModel,
     OrganizationCertificationModel,
     OrganizationPartnerModel,
-    OrganizationQualityLabelModel,
-    OrganizationMarketModel,
-    OrganizationPricingModel,
     OrganizationTypeModel,
 };
 
@@ -19,9 +16,6 @@ class OrganizationService
     private OrganizationMemberModel $memberModel;
     private OrganizationCertificationModel $certificationModel;
     private OrganizationPartnerModel $partnerModel;
-    private OrganizationQualityLabelModel $qualityLabelModel;
-    private OrganizationMarketModel $marketModel;
-    private OrganizationPricingModel $pricingModel;
     private OrganizationTypeModel $typeModel;
 
     public function __construct()
@@ -30,9 +24,6 @@ class OrganizationService
         $this->memberModel = model(OrganizationMemberModel::class);
         $this->certificationModel = model(OrganizationCertificationModel::class);
         $this->partnerModel = model(OrganizationPartnerModel::class);
-        $this->qualityLabelModel = model(OrganizationQualityLabelModel::class);
-        $this->marketModel = model(OrganizationMarketModel::class);
-        $this->pricingModel = model(OrganizationPricingModel::class);
         $this->typeModel = model(OrganizationTypeModel::class);
     }
 
@@ -256,6 +247,18 @@ class OrganizationService
         $children = $node_array['children'] ?? [];
         unset($node_array['children']);
 
+        $result[] = [
+            'level' => $level,
+            'node' => (object)$node_array,
+        ];
+
+        foreach ($children as $child) {
+            $result = array_merge($result, $this->flattenHierarchy($child, $level + 1));
+        }
+
+        return $result;
+    }
+
     /**
      * ─────────────────────────────────────────────────────────────────────
      * COMPLETE ORGANIZATION CREATION WITH ALL RELATIONS
@@ -318,31 +321,7 @@ class OrganizationService
                 }
             }
 
-            // 4. Add markets
-            if (!empty($markets)) {
-                foreach ($markets as $market) {
-                    $market['organization_id'] = $organizationId;
-                    $this->marketModel->insert($market);
-                }
-            }
-
-            // 5. Add pricing
-            if (!empty($pricing)) {
-                foreach ($pricing as $price) {
-                    $price['organization_id'] = $organizationId;
-                    $this->pricingModel->insert($price);
-                }
-            }
-
-            // 6. Add quality labels
-            if (!empty($quality_labels)) {
-                foreach ($quality_labels as $label) {
-                    $label['organization_id'] = $organizationId;
-                    $this->qualityLabelModel->insert($label);
-                }
-            }
-
-            // 7. Add partnerships
+            // 4. Add partnerships
             if (!empty($partners)) {
                 foreach ($partners as $partner) {
                     $partner['organization_id'] = $organizationId;
@@ -390,9 +369,6 @@ class OrganizationService
         $org->type = $this->typeModel->find($org->type_id);
         $org->parent = $org->parent_id ? $this->organizationModel->find($org->parent_id) : null;
         $org->certifications = $this->certificationModel->getCertifications($organizationId);
-        $org->quality_labels = $this->qualityLabelModel->getLabels($organizationId);
-        $org->markets = $this->marketModel->getMarkets($organizationId);
-        $org->pricing = $this->pricingModel->getPricing($organizationId);
         $org->partners = $this->partnerModel->getPartners($organizationId);
         $org->members = $this->memberModel->getMembers($organizationId);
 
@@ -508,15 +484,4 @@ class OrganizationService
         ];
     }
 
-        $result[] = [
-            'level' => $level,
-            'node' => (object)$node_array,
-        ];
-
-        foreach ($children as $child) {
-            $result = array_merge($result, $this->flattenHierarchy($child, $level + 1));
-        }
-
-        return $result;
-    }
 }
