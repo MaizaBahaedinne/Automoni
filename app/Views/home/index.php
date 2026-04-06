@@ -219,6 +219,137 @@
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .landing-hero { padding: 40px 20px; }
 }
+
+/* ── Create post card ───────────────────────────────────────────────────── */
+.feed-create-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.09);
+    padding: 14px 16px 12px;
+    margin-bottom: 10px;
+}
+.feed-create-input {
+    flex-grow: 1;
+    background: #f3f2f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 9px 18px;
+    font-size: 13.5px;
+    color: #888;
+    cursor: pointer;
+    text-align: left;
+    transition: background .12s, border-color .12s;
+}
+.feed-create-input:hover { background: #e9e8e6; border-color: #bbb; }
+.feed-type-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none;
+    padding: 7px 14px;
+    font-size: 13px; font-weight: 600; color: #666;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .12s;
+}
+.feed-type-btn:hover { background: #f3f2f0; color: #333; }
+.feed-type-divider { height: 1px; background: #f0f0f0; margin: 10px 0 8px; }
+
+/* ── Post card extras (on top of .feed-post base) ───────────────────────── */
+.feed-post-media { line-height: 0; }
+.feed-post-img   { width: 100%; max-height: 460px; object-fit: cover; }
+.feed-post-video-wrap {
+    position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+    background: #000;
+}
+.feed-post-video-wrap iframe,
+.feed-post-video-wrap video {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    border: none;
+}
+.feed-post-content { padding: 10px 16px 12px; font-size: 13.5px; color: #333; line-height: 1.65; white-space: pre-wrap; }
+
+/* ── Announcement banner ────────────────────────────────────────────────── */
+.announce-banner {
+    display: flex; align-items: center; gap: 14px;
+    margin: 0 16px 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 600;
+}
+.announce-banner .announce-icon { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+.announce-banner .announce-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; opacity: .75; margin-bottom: 2px; }
+.announce-banner .announce-title { font-size: 15px; font-weight: 700; }
+.announce-new_job      { background: #ecfdf5; color: #065f46; }
+.announce-open_to_work { background: #eff6ff; color: #1e40af; }
+.announce-certification{ background: #fefce8; color: #78350f; }
+.announce-promotion    { background: #f5f3ff; color: #4c1d95; }
+.announce-other        { background: #f8f9fa; color: #374151; }
+
+/* ── Job card in feed (with "Offre" badge) ──────────────────────────────── */
+.feed-job-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #eff6ff; color: #1d4ed8;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+    border: 1px solid #bfdbfe;
+    margin-bottom: 6px;
+}
+
+/* ── Reactions / comments bar ───────────────────────────────────────────── */
+.feed-reactions-bar {
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 16px 10px;
+    font-size: 12px; color: #999;
+    border-bottom: 1px solid #f0f0f0;
+}
+.feed-reactions-bar i { font-size: 14px; color: #0A66C2; }
+.feed-action-bar {
+    display: flex; align-items: stretch;
+    padding: 2px 8px 4px;
+}
+.feed-action-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: none; border: none;
+    padding: 8px;
+    font-size: 13px; font-weight: 600; color: #666;
+    border-radius: 6px; cursor: pointer;
+    transition: background .12s, color .12s;
+}
+.feed-action-btn:hover { background: #f3f2f0; color: #333; }
+.feed-action-btn.liked { color: #0A66C2; }
+.feed-action-btn.liked i::before { font-weight: 900; }
+
+/* ── Comments section ───────────────────────────────────────────────────── */
+.feed-comments-section {
+    border-top: 1px solid #f0f0f0;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-radius: 0 0 10px 10px;
+}
+.post-cmt-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.post-cmt-av  { width: 32px; height: 32px; min-width: 32px; border-radius: 50%; object-fit: cover; }
+.post-cmt-av-init {
+    width: 32px; height: 32px; min-width: 32px;
+    border-radius: 50%;
+    background: #4f46e5; color: #fff; font-size: 13px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+}
+.post-cmt-bubble { flex: 1; }
+.post-cmt-bubble strong { font-size: 12.5px; color: #111; }
+.post-cmt-time { font-size: 11px; color: #aaa; margin-left: 4px; }
+.post-cmt-text { font-size: 13px; color: #444; margin-top: 2px; line-height: 1.5; }
+.post-cmt-input-row { display: flex; gap: 8px; margin-top: 8px; }
+.post-cmt-input {
+    flex: 1; background: #fff; border: 1px solid #ddd; border-radius: 20px;
+    padding: 7px 14px; font-size: 13px; color: #333; outline: none;
+    transition: border-color .15s;
+}
+.post-cmt-input:focus { border-color: #0A66C2; }
+.post-cmt-send {
+    background: #0A66C2; color: #fff; border: none; border-radius: 20px;
+    padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .12s;
+}
+.post-cmt-send:hover { background: #084e96; }
 </style>
 
 <?php if (session()->get('logged_in')): ?>
@@ -302,6 +433,39 @@
     <!-- ── Main feed ─────────────────────────────────────────────── -->
     <div class="col-lg-6">
 
+    <?php $csrfName = csrf_token(); $csrfHash = csrf_hash(); ?>
+    <script>let CSRF={name:'<?= $csrfName ?>',hash:'<?= $csrfHash ?>'};</script>
+
+        <!-- Create post quick card -->
+        <div class="feed-create-card">
+            <div class="d-flex align-items-center gap-3">
+                <?php if ($avatarSrc): ?>
+                    <img src="<?= $avatarSrc ?>" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="">
+                <?php else: ?>
+                    <div style="width:40px;height:40px;border-radius:50%;background:#4f46e5;color:#fff;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?></div>
+                <?php endif; ?>
+                <button class="feed-create-input" onclick="openPostModal('text')">
+                    Partagez quelque chose, <?= esc(explode(' ', $fullName)[0]) ?>&nbsp;&hellip;
+                </button>
+            </div>
+            <div class="feed-type-divider"></div>
+            <div class="d-flex gap-1 flex-wrap">
+                <button class="feed-type-btn" onclick="openPostModal('image')">
+                    <i class="bi bi-image" style="color:#15803d;"></i> Photo
+                </button>
+                <button class="feed-type-btn" onclick="openPostModal('video')">
+                    <i class="bi bi-play-circle-fill" style="color:#dc2626;"></i> Vid&eacute;o
+                </button>
+                <button class="feed-type-btn" onclick="openPostModal('announcement')">
+                    <i class="bi bi-megaphone-fill" style="color:#d97706;"></i> Annonce
+                </button>
+                <button class="feed-type-btn" onclick="openPostModal('text')">
+                    <i class="bi bi-pencil-square" style="color:#0A66C2;"></i> Texte
+                </button>
+            </div>
+        </div>
+
+        <!-- Search bar -->
         <div class="feed-search-card">
             <form action="<?= base_url('jobs') ?>" method="get" class="d-flex gap-2">
                 <div class="d-flex align-items-center gap-2 flex-grow-1"
@@ -315,81 +479,180 @@
             </form>
         </div>
 
-        <?php if (empty($latestJobs)): ?>
-        <div class="feed-post" style="padding:40px;text-align:center;color:#999;">
-            <i class="bi bi-briefcase display-4 d-block mb-3 opacity-25"></i>
-            <p class="mb-0">Aucune offre disponible.</p>
+        <?php if (empty($posts) && empty($latestJobs)): ?>
+        <div class="feed-post" style="padding:48px 40px;text-align:center;color:#aaa;">
+            <i class="bi bi-wind" style="font-size:3rem;display:block;margin-bottom:12px;opacity:.25;"></i>
+            <p class="mb-1 fw-semibold" style="color:#666;">Votre fil est vide pour l&rsquo;instant.</p>
+            <p style="font-size:13px;">Soyez le premier &agrave; publier quelque chose&nbsp;!</p>
         </div>
-        <?php else: ?>
-        <?php foreach ($latestJobs as $job):
-            $posted    = !empty($job->created_at) ? (new DateTime($job->created_at))->diff(new DateTime()) : null;
-            $postedAgo = '';
-            if ($posted) {
-                $postedAgo = $posted->days > 0 ? $posted->days . 'j' : ($posted->h . 'h');
-                $postedAgo .= ' ago';
-            }
+
+        <?php else:
+        $jobIdx   = 0;
+        $jobCount = count($latestJobs);
+        $announceConfig = [
+            'new_job'       => ['icon' => '&#127881;', 'label' => 'Nouveau poste',    'cls' => 'announce-new_job'],
+            'open_to_work'  => ['icon' => '&#128269;', 'label' => 'Disponible',       'cls' => 'announce-open_to_work'],
+            'certification' => ['icon' => '&#127942;', 'label' => 'Certification',    'cls' => 'announce-certification'],
+            'promotion'     => ['icon' => '&#128640;', 'label' => 'Promotion',        'cls' => 'announce-promotion'],
+            'other'         => ['icon' => '&#128226;', 'label' => 'Annonce',          'cls' => 'announce-other'],
+        ];
+        ?>
+
+        <?php foreach ($posts as $pIdx => $post):
+
+            /* ---- Interleave job card every 4 user posts ---- */
+            if ($pIdx > 0 && $pIdx % 4 === 0 && $jobIdx < $jobCount):
+                $job = $latestJobs[$jobIdx++];
+                try { $jd = (new DateTime($job->created_at))->diff(new DateTime()); $jAgo = ($jd->days > 0 ? $jd->days.'j' : ($jd->h > 0 ? $jd->h.'h' : '1h')) . ' ago'; } catch (\Exception $e) { $jAgo = ''; }
         ?>
         <div class="feed-post">
+            <div style="padding:8px 16px 0;"><span class="feed-job-badge"><i class="bi bi-briefcase-fill"></i>&nbsp;Offre d&rsquo;emploi</span></div>
             <div class="feed-post-head">
-                <?php if (!empty($job->company_logo)): ?>
-                    <img src="<?= base_url('uploads/logos/' . esc($job->company_logo)) ?>"
-                         alt="" class="feed-co-icon">
-                <?php else: ?>
-                    <div class="feed-co-init"><?= strtoupper(substr($job->company_name ?? 'C', 0, 1)) ?></div>
-                <?php endif; ?>
+                <?php if (!empty($job->company_logo)): ?><img src="<?= base_url('uploads/logos/' . esc($job->company_logo)) ?>" alt="" class="feed-co-icon"><?php else: ?><div class="feed-co-init"><?= strtoupper(substr($job->company_name ?? 'C', 0, 1)) ?></div><?php endif; ?>
                 <div class="flex-grow-1">
-                    <div class="feed-post-title">
-                        <a href="<?= base_url('jobs/' . esc($job->slug)) ?>"><?= esc($job->title) ?></a>
-                    </div>
-                    <div class="feed-post-sub">
-                        <?php if (!empty($job->company_slug)): ?>
-                        <a href="<?= base_url('companies/' . esc($job->company_slug)) ?>"
-                           style="color:inherit;text-decoration:none;font-weight:600;"><?= esc($job->company_name) ?></a>
-                        <?php else: ?>
-                        <strong><?= esc($job->company_name) ?></strong>
-                        <?php endif; ?>
-                        <?php if (!empty($job->location)): ?> &middot; <?= esc($job->location) ?><?php endif; ?>
-                    </div>
-                    <?php if ($postedAgo): ?>
-                    <div class="feed-post-time"><i class="bi bi-clock me-1"></i><?= $postedAgo ?></div>
-                    <?php endif; ?>
+                    <div class="feed-post-title"><a href="<?= base_url('jobs/' . esc($job->slug)) ?>"><?= esc($job->title) ?></a></div>
+                    <div class="feed-post-sub"><?php if (!empty($job->company_slug)): ?><a href="<?= base_url('companies/' . esc($job->company_slug)) ?>" style="color:inherit;text-decoration:none;font-weight:600;"><?= esc($job->company_name) ?></a><?php else: ?><strong><?= esc($job->company_name) ?></strong><?php endif; ?><?php if (!empty($job->location)): ?> &middot; <?= esc($job->location) ?><?php endif; ?></div>
+                    <?php if ($jAgo): ?><div class="feed-post-time"><i class="bi bi-clock me-1"></i><?= $jAgo ?></div><?php endif; ?>
                 </div>
-                <a href="<?= base_url('jobs/' . esc($job->slug)) ?>"
-                   class="btn btn-sm btn-outline-primary align-self-start flex-shrink-0"
-                   style="border-radius:20px!important;font-size:12px;padding:4px 14px;">
-                    Postuler
-                </a>
+                <a href="<?= base_url('jobs/' . esc($job->slug)) ?>" class="btn btn-sm btn-outline-primary align-self-start flex-shrink-0" style="border-radius:20px!important;font-size:12px;padding:4px 14px;">Postuler</a>
+            </div>
+            <?php if (!empty($job->description)): ?><div class="feed-post-body"><?= esc(mb_substr(strip_tags($job->description), 0, 180)) ?><?= mb_strlen(strip_tags((string)$job->description)) > 180 ? '&hellip;' : '' ?></div><?php endif; ?>
+            <div class="feed-post-footer">
+                <span class="feed-badge cdi"><?= esc($job->contract_type) ?></span>
+                <?php if (!empty($job->remote) && $job->remote !== 'onsite'): ?><span class="feed-badge remote"><?= ucfirst(esc($job->remote)) ?></span><?php endif; ?>
+                <?php if (!empty($job->salary_min)): ?><span class="feed-badge salary"><i class="bi bi-cash me-1"></i><?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?> <?= esc($job->salary_currency ?? 'MAD') ?>/an</span><?php endif; ?>
+                <a href="<?= base_url('jobs/' . esc($job->slug)) ?>" class="ms-auto" style="font-size:12.5px;color:#0A66C2;text-decoration:none;font-weight:500;">Voir l&rsquo;offre &#8594;</a>
+            </div>
+        </div>
+            <?php endif; /* end interleave */ ?>
+
+        <!-- ── User post ──────────────────────────────────────────── -->
+        <?php
+        $isOwner  = ((int)$post->user_id === $userId);
+        $postAv   = !empty($post->avatar) ? base_url('uploads/' . esc($post->avatar)) : null;
+        $postName = esc(trim(($post->first_name ?? '') . ' ' . ($post->last_name ?? '')));
+        $postHead = esc($post->headline ?? $post->user_position ?? '');
+        try { $pd = (new DateTime($post->created_at))->diff(new DateTime()); $pAgo = $pd->days > 0 ? $pd->days.'j' : ($pd->h > 0 ? $pd->h.'h' : max(1,$pd->i).'min'); } catch (\Exception $e) { $pAgo = ''; }
+        $hasReacted = isset($myReactions[$post->id]);
+        $ytId = null;
+        if ($post->type === 'video' && !empty($post->video_url)) {
+            preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $post->video_url, $ytM);
+            $ytId = $ytM[1] ?? null;
+        }
+        $ac = ($post->type === 'announcement') ? ($announceConfig[$post->announcement_subtype] ?? $announceConfig['other']) : null;
+        ?>
+        <div class="feed-post" id="post-<?= $post->id ?>">
+
+            <div class="feed-post-head">
+                <?php if ($postAv): ?><img src="<?= $postAv ?>" style="width:46px;height:46px;min-width:46px;border-radius:50%;object-fit:cover;" alt=""><?php else: ?><div class="feed-co-init" style="border-radius:50%!important;"><?= strtoupper(substr($post->first_name ?? 'U', 0, 1)) ?></div><?php endif; ?>
+                <div class="flex-grow-1">
+                    <div class="feed-post-title"><?= $postName ?></div>
+                    <?php if ($postHead): ?><div class="feed-post-sub"><?= $postHead ?></div><?php endif; ?>
+                    <?php if ($pAgo): ?><div class="feed-post-time"><i class="bi bi-clock me-1"></i><?= $pAgo ?></div><?php endif; ?>
+                </div>
+                <?php if ($isOwner): ?>
+                <form action="<?= base_url('posts/' . $post->id . '/delete') ?>" method="post" style="display:inline;"
+                      onsubmit="return confirm('Supprimer cette publication ?')">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-sm btn-light" style="padding:3px 8px;font-size:12px;color:#999;" title="Supprimer">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+                <?php endif; ?>
             </div>
 
-            <?php if (!empty($job->description)): ?>
-            <div class="feed-post-body">
-                <?= esc(mb_substr(strip_tags($job->description), 0, 180)) ?><?= mb_strlen(strip_tags((string)$job->description)) > 180 ? '&hellip;' : '' ?>
+            <?php if ($post->type === 'announcement' && $ac): ?>
+            <div class="announce-banner <?= $ac['cls'] ?>">
+                <span class="announce-icon"><?= $ac['icon'] ?></span>
+                <div>
+                    <div class="announce-label"><?= $ac['label'] ?></div>
+                    <?php if (!empty($post->content)): ?><div class="announce-title"><?= esc($post->content) ?></div><?php endif; ?>
+                </div>
+            </div>
+            <?php elseif (!empty($post->content)): ?>
+            <div class="feed-post-content"><?= nl2br(esc($post->content)) ?></div>
+            <?php endif; ?>
+
+            <?php if ($post->type === 'image' && !empty($post->media_file)): ?>
+            <div class="feed-post-media">
+                <img src="<?= base_url('uploads/posts/' . esc($post->media_file)) ?>" class="feed-post-img" alt="" loading="lazy">
+            </div>
+            <?php elseif ($post->type === 'video'): ?>
+            <div class="feed-post-media">
+                <div class="feed-post-video-wrap">
+                    <?php if ($ytId): ?>
+                    <iframe src="https://www.youtube-nocookie.com/embed/<?= esc($ytId) ?>" allowfullscreen loading="lazy" title="Video"></iframe>
+                    <?php elseif (!empty($post->media_file)): ?>
+                    <video controls preload="metadata">
+                        <source src="<?= base_url('uploads/posts/' . esc($post->media_file)) ?>">
+                    </video>
+                    <?php endif; ?>
+                </div>
             </div>
             <?php endif; ?>
 
-            <div class="feed-post-footer">
-                <span class="feed-badge cdi"><?= esc($job->contract_type) ?></span>
-                <?php if (!empty($job->remote) && $job->remote !== 'onsite'): ?>
-                <span class="feed-badge remote"><i class="bi bi-laptop me-1"></i><?= ucfirst(esc($job->remote)) ?></span>
-                <?php endif; ?>
-                <?php if (!empty($job->experience_level)): ?>
-                <span class="feed-badge"><?= esc($job->experience_level) ?></span>
-                <?php endif; ?>
-                <?php if (!empty($job->salary_min)): ?>
-                <span class="feed-badge salary">
-                    <i class="bi bi-cash me-1"></i><?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?>&nbsp;<?= esc($job->salary_currency ?? 'MAD') ?>/an
-                </span>
-                <?php endif; ?>
-                <a href="<?= base_url('jobs/' . esc($job->slug)) ?>" class="ms-auto"
-                   style="font-size:12.5px;color:#0A66C2;text-decoration:none;font-weight:500;">
-                    Voir l&rsquo;offre &#8594;
-                </a>
+            <?php if ($post->reactions_count > 0 || $post->comments_count > 0): ?>
+            <div class="feed-reactions-bar">
+                <?php if ($post->reactions_count > 0): ?><i class="bi bi-hand-thumbs-up-fill"></i><span><?= (int)$post->reactions_count ?></span><?php endif; ?>
+                <?php if ($post->comments_count > 0): ?><span class="ms-auto" style="cursor:pointer;" onclick="toggleComments(<?= $post->id ?>)"><?= (int)$post->comments_count ?> commentaire<?= $post->comments_count > 1 ? 's' : '' ?></span><?php endif; ?>
             </div>
+            <?php endif; ?>
+
+            <div class="feed-action-bar">
+                <button class="feed-action-btn <?= $hasReacted ? 'liked' : '' ?>" id="react-btn-<?= $post->id ?>" onclick="toggleReaction(<?= $post->id ?>)">
+                    <i class="bi bi-hand-thumbs-up<?= $hasReacted ? '-fill' : '' ?>"></i>
+                    J&rsquo;aime <span id="react-count-<?= $post->id ?>"><?= $post->reactions_count > 0 ? '('.(int)$post->reactions_count.')' : '' ?></span>
+                </button>
+                <button class="feed-action-btn" onclick="toggleComments(<?= $post->id ?>)">
+                    <i class="bi bi-chat"></i>
+                    Commenter <span id="cmt-count-<?= $post->id ?>"><?= $post->comments_count > 0 ? '('.(int)$post->comments_count.')' : '' ?></span>
+                </button>
+                <button class="feed-action-btn" onclick="navigator.share ? navigator.share({url:'<?= base_url('') ?>'}) : void 0">
+                    <i class="bi bi-share"></i> Partager
+                </button>
+            </div>
+
+            <div class="feed-comments-section" id="cmt-section-<?= $post->id ?>" style="display:none;">
+                <div id="cmt-list-<?= $post->id ?>"></div>
+                <div class="post-cmt-input-row">
+                    <?php if ($avatarSrc): ?><img src="<?= $avatarSrc ?>" class="post-cmt-av" alt=""><?php else: ?><div class="post-cmt-av post-cmt-av-init"><?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?></div><?php endif; ?>
+                    <input type="text" class="post-cmt-input" id="cmt-input-<?= $post->id ?>"
+                           placeholder="Ajouter un commentaire&hellip;"
+                           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitComment(<?= $post->id ?>);}">
+                    <button class="post-cmt-send" onclick="submitComment(<?= $post->id ?>)"><i class="bi bi-send-fill"></i></button>
+                </div>
+            </div>
+
         </div>
         <?php endforeach; ?>
-        <div class="text-center py-2">
-            <a href="<?= base_url('jobs') ?>" class="btn btn-outline-primary px-5"
-               style="border-radius:20px!important;">
+
+        <?php while ($jobIdx < $jobCount):
+            $job = $latestJobs[$jobIdx++];
+            try { $jd = (new DateTime($job->created_at))->diff(new DateTime()); $jAgo = ($jd->days > 0 ? $jd->days.'j' : ($jd->h > 0 ? $jd->h.'h' : '1h')) . ' ago'; } catch (\Exception $e) { $jAgo = ''; }
+        ?>
+        <div class="feed-post">
+            <div style="padding:8px 16px 0;"><span class="feed-job-badge"><i class="bi bi-briefcase-fill"></i>&nbsp;Offre d&rsquo;emploi</span></div>
+            <div class="feed-post-head">
+                <?php if (!empty($job->company_logo)): ?><img src="<?= base_url('uploads/logos/' . esc($job->company_logo)) ?>" alt="" class="feed-co-icon"><?php else: ?><div class="feed-co-init"><?= strtoupper(substr($job->company_name ?? 'C', 0, 1)) ?></div><?php endif; ?>
+                <div class="flex-grow-1">
+                    <div class="feed-post-title"><a href="<?= base_url('jobs/' . esc($job->slug)) ?>"><?= esc($job->title) ?></a></div>
+                    <div class="feed-post-sub"><?php if (!empty($job->company_slug)): ?><a href="<?= base_url('companies/' . esc($job->company_slug)) ?>" style="color:inherit;text-decoration:none;font-weight:600;"><?= esc($job->company_name) ?></a><?php else: ?><strong><?= esc($job->company_name) ?></strong><?php endif; ?><?php if (!empty($job->location)): ?> &middot; <?= esc($job->location) ?><?php endif; ?></div>
+                    <?php if ($jAgo): ?><div class="feed-post-time"><i class="bi bi-clock me-1"></i><?= $jAgo ?></div><?php endif; ?>
+                </div>
+                <a href="<?= base_url('jobs/' . esc($job->slug)) ?>" class="btn btn-sm btn-outline-primary align-self-start flex-shrink-0" style="border-radius:20px!important;font-size:12px;padding:4px 14px;">Postuler</a>
+            </div>
+            <?php if (!empty($job->description)): ?><div class="feed-post-body"><?= esc(mb_substr(strip_tags($job->description), 0, 180)) ?><?= mb_strlen(strip_tags((string)$job->description)) > 180 ? '&hellip;' : '' ?></div><?php endif; ?>
+            <div class="feed-post-footer">
+                <span class="feed-badge cdi"><?= esc($job->contract_type) ?></span>
+                <?php if (!empty($job->remote) && $job->remote !== 'onsite'): ?><span class="feed-badge remote"><?= ucfirst(esc($job->remote)) ?></span><?php endif; ?>
+                <?php if (!empty($job->salary_min)): ?><span class="feed-badge salary"><i class="bi bi-cash me-1"></i><?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?> <?= esc($job->salary_currency ?? 'MAD') ?>/an</span><?php endif; ?>
+                <a href="<?= base_url('jobs/' . esc($job->slug)) ?>" class="ms-auto" style="font-size:12.5px;color:#0A66C2;text-decoration:none;font-weight:500;">Voir l&rsquo;offre &#8594;</a>
+            </div>
+        </div>
+        <?php endwhile; ?>
+
+        <div class="text-center py-3">
+            <a href="<?= base_url('jobs') ?>" class="btn btn-outline-primary px-5" style="border-radius:20px!important;">
                 Voir toutes les offres <i class="bi bi-arrow-right ms-1"></i>
             </a>
         </div>
@@ -459,6 +722,234 @@
     </div>
 
 </div>
+
+<!-- ====================================================================
+     CREATE POST MODAL
+===================================================================== -->
+<div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px;border:none;">
+            <div class="modal-header" style="border-bottom:1px solid #f0f0f0;padding:16px 20px;">
+                <h6 class="modal-title fw-bold" id="postModalLabel">Cr&eacute;er une publication</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Type selector pills -->
+            <div class="d-flex gap-2 flex-wrap px-4 pt-3 pb-2" style="border-bottom:1px solid #f0f0f0;">
+                <button class="feed-type-btn post-type-pill active" data-type="text"      onclick="switchPostType('text')">      <i class="bi bi-pencil-square"   style="color:#0A66C2;"></i>&nbsp;Texte</button>
+                <button class="feed-type-btn post-type-pill"        data-type="image"     onclick="switchPostType('image')">     <i class="bi bi-image"           style="color:#15803d;"></i>&nbsp;Photo</button>
+                <button class="feed-type-btn post-type-pill"        data-type="video"     onclick="switchPostType('video')">     <i class="bi bi-play-circle-fill" style="color:#dc2626;"></i>&nbsp;Vid&eacute;o</button>
+                <button class="feed-type-btn post-type-pill"        data-type="announcement" onclick="switchPostType('announcement')"><i class="bi bi-megaphone-fill" style="color:#d97706;"></i>&nbsp;Annonce</button>
+            </div>
+
+            <form action="<?= base_url('posts/store') ?>" method="post" enctype="multipart/form-data" id="postForm">
+                <?= csrf_field() ?>
+                <input type="hidden" name="type" id="postType" value="text">
+
+                <div class="modal-body" style="padding:20px 24px;">
+
+                    <!-- Author row -->
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <?php if ($avatarSrc): ?>
+                            <img src="<?= $avatarSrc ?>" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" alt="">
+                        <?php else: ?>
+                            <div style="width:44px;height:44px;border-radius:50%;background:#4f46e5;color:#fff;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;"><?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?></div>
+                        <?php endif; ?>
+                        <div>
+                            <div style="font-size:15px;font-weight:700;"><?= esc(session()->get('user_name') ?? '') ?></div>
+                            <div style="font-size:12px;color:#888;"><i class="bi bi-globe2 me-1"></i>Visible par tous</div>
+                        </div>
+                    </div>
+
+                    <!-- Content textarea -->
+                    <textarea name="content" id="postContent" rows="5"
+                              class="form-control border-0 bg-transparent"
+                              style="resize:none;font-size:15px;color:#222;padding:0;"
+                              placeholder="Que souhaitez-vous partager ?"></textarea>
+
+                    <!-- Announcement subtype selector (visible only for announcement) -->
+                    <div id="announceSubtypeWrap" style="display:none;margin-top:16px;">
+                        <label class="form-label small fw-semibold">Type d&rsquo;annonce</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <label class="announce-pill" style="cursor:pointer;">
+                                <input type="radio" name="announcement_subtype" value="new_job" style="display:none;">
+                                <span class="announce-pill-btn announce-new_job">&#127881; Nouveau poste</span>
+                            </label>
+                            <label class="announce-pill" style="cursor:pointer;">
+                                <input type="radio" name="announcement_subtype" value="open_to_work" style="display:none;">
+                                <span class="announce-pill-btn announce-open_to_work">&#128269; Disponible</span>
+                            </label>
+                            <label class="announce-pill" style="cursor:pointer;">
+                                <input type="radio" name="announcement_subtype" value="certification" style="display:none;">
+                                <span class="announce-pill-btn announce-certification">&#127942; Certification</span>
+                            </label>
+                            <label class="announce-pill" style="cursor:pointer;">
+                                <input type="radio" name="announcement_subtype" value="promotion" style="display:none;">
+                                <span class="announce-pill-btn announce-promotion">&#128640; Promotion</span>
+                            </label>
+                            <label class="announce-pill" style="cursor:pointer;">
+                                <input type="radio" name="announcement_subtype" value="other" checked style="display:none;">
+                                <span class="announce-pill-btn announce-other">&#128226; Autre</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Image upload -->
+                    <div id="imageUploadWrap" style="display:none;margin-top:14px;">
+                        <label class="form-label small fw-semibold">Image (JPG, PNG, GIF &bull; max 10&nbsp;Mo)</label>
+                        <input type="file" name="media_file" id="imageFileInput" class="form-control form-control-sm"
+                               accept="image/jpeg,image/png,image/gif,image/webp">
+                        <div id="imagePreview" style="margin-top:10px;display:none;">
+                            <img id="imagePreviewImg" src="" style="max-width:100%;max-height:300px;border-radius:8px;object-fit:contain;" alt="">
+                        </div>
+                    </div>
+
+                    <!-- Video upload / URL -->
+                    <div id="videoUploadWrap" style="display:none;margin-top:14px;">
+                        <label class="form-label small fw-semibold">Lien YouTube</label>
+                        <input type="url" name="video_url" class="form-control form-control-sm mb-2"
+                               placeholder="https://www.youtube.com/watch?v=...">
+                        <label class="form-label small fw-semibold">ou Fichier vid&eacute;o (MP4/WebM &bull; max 200&nbsp;Mo)</label>
+                        <input type="file" name="media_file" id="videoFileInput" class="form-control form-control-sm"
+                               accept="video/mp4,video/webm,video/ogg">
+                    </div>
+
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #f0f0f0;padding:12px 20px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary px-4" style="border-radius:20px!important;">
+                        <i class="bi bi-send-fill me-1"></i>Publier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.post-type-pill.active { background: #eff6ff; color: #1d4ed8; }
+.announce-pill-btn {
+    display: inline-block; padding: 5px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent;
+    transition: all .12s;
+}
+input[type="radio"]:checked + .announce-pill-btn { border-color: currentColor; font-weight: 700; }
+</style>
+
+<script>
+(function(){
+    /* ── Post modal ─────────────────────────────────────────────── */
+    window.openPostModal = function(type) {
+        switchPostType(type);
+        new bootstrap.Modal(document.getElementById('postModal')).show();
+    };
+
+    window.switchPostType = function(type) {
+        document.getElementById('postType').value = type;
+        document.getElementById('announceSubtypeWrap').style.display = type === 'announcement' ? '' : 'none';
+        document.getElementById('imageUploadWrap').style.display     = type === 'image'        ? '' : 'none';
+        document.getElementById('videoUploadWrap').style.display     = type === 'video'        ? '' : 'none';
+        var ph = {
+            text:         'Quoi de neuf ? Partagez vos r&eacute;flexions\u2026',
+            image:        'D&eacute;crivez votre photo\u2026',
+            video:        'D&eacute;crivez votre vid&eacute;o\u2026',
+            announcement: 'Pr&eacute;cisez votre annonce\u2026'
+        };
+        document.getElementById('postContent').placeholder = ph[type] || ph.text;
+        document.querySelectorAll('.post-type-pill').forEach(function(b){
+            b.classList.toggle('active', b.dataset.type === type);
+        });
+    };
+
+    // Image preview
+    var imgInput = document.getElementById('imageFileInput');
+    if (imgInput) {
+        imgInput.addEventListener('change', function() {
+            var f = this.files[0];
+            if (!f) return;
+            var r = new FileReader();
+            r.onload = function(e) {
+                document.getElementById('imagePreviewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = '';
+            };
+            r.readAsDataURL(f);
+        });
+    }
+
+    /* ── Reactions ──────────────────────────────────────────────── */
+    window.toggleReaction = function(postId) {
+        fetch('<?= base_url('posts/') ?>' + postId + '/react', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'},
+            body: CSRF.name + '=' + encodeURIComponent(CSRF.hash) + '&type=like'
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(d) {
+            var btn = document.getElementById('react-btn-' + postId);
+            var cnt = document.getElementById('react-count-' + postId);
+            if (!btn) return;
+            if (d.reacted) {
+                btn.classList.add('liked');
+                btn.querySelector('i').className = 'bi bi-hand-thumbs-up-fill';
+            } else {
+                btn.classList.remove('liked');
+                btn.querySelector('i').className = 'bi bi-hand-thumbs-up';
+            }
+            cnt.textContent = d.count > 0 ? '(' + d.count + ')' : '';
+        })
+        .catch(function(){});
+    };
+
+    /* ── Comments ───────────────────────────────────────────────── */
+    var cmtOpen = {};
+    window.toggleComments = function(postId) {
+        var section = document.getElementById('cmt-section-' + postId);
+        if (!section) return;
+        if (cmtOpen[postId]) {
+            section.style.display = 'none';
+            cmtOpen[postId] = false;
+        } else {
+            section.style.display = '';
+            cmtOpen[postId] = true;
+            if (!section.dataset.loaded) {
+                fetch('<?= base_url('posts/') ?>' + postId + '/comments', {
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                })
+                .then(function(r){ return r.json(); })
+                .then(function(d) {
+                    document.getElementById('cmt-list-' + postId).innerHTML = d.html;
+                    section.dataset.loaded = '1';
+                })
+                .catch(function(){});
+            }
+        }
+    };
+
+    window.submitComment = function(postId) {
+        var input = document.getElementById('cmt-input-' + postId);
+        var val = (input && input.value) ? input.value.trim() : '';
+        if (!val) return;
+        input.disabled = true;
+        fetch('<?= base_url('posts/') ?>' + postId + '/comment', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'},
+            body: CSRF.name + '=' + encodeURIComponent(CSRF.hash) + '&content=' + encodeURIComponent(val)
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(d) {
+            document.getElementById('cmt-list-' + postId).innerHTML = d.html;
+            var section = document.getElementById('cmt-section-' + postId);
+            if (section) section.dataset.loaded = '1';
+            var cnt = document.getElementById('cmt-count-' + postId);
+            if (cnt) cnt.textContent = d.count > 0 ? '(' + d.count + ')' : '';
+            input.value = '';
+            input.disabled = false;
+            input.focus();
+        })
+        .catch(function(){ input.disabled = false; });
+    };
+})();
+</script>
 
 <?php else: ?>
 <!-- ====================================================================
