@@ -251,24 +251,73 @@ class ProfileController extends BaseController
         }
 
         try {
-            $previewService = new CvPreviewService();
             $mimeType = mime_content_type($cvPath);
-            $preview = $previewService->parseAndPreview($cvPath, $mimeType);
-
-            // Store in session cache for later apply
-            session()->set('cv_preview', $preview);
-
-            return $this->response->setJSON([
+            
+            // Use CvParser directly for simpler approach
+            $cvParser = new CvParser();
+            $parsed = $cvParser->parseDetailed($cvPath, $mimeType);
+            
+            // Build response data - ensure clean JSON serialization
+            $response = [
                 'success' => true,
                 'message' => 'CV analyzed successfully',
-                'data'    => $preview,
-            ]);
+                'data' => [
+                    'profile' => [
+                        'headline' => (string) ($parsed['headline']['value'] ?? ''),
+                        'headline_confidence' => (float) ($parsed['headline']['confidence'] ?? 0),
+                        'summary' => (string) ($parsed['summary']['value'] ?? ''),
+                        'summary_confidence' => (float) ($parsed['summary']['confidence'] ?? 0),
+                        'email' => (string) ($parsed['email']['value'] ?? ''),
+                        'email_confidence' => (float) ($parsed['email']['confidence'] ?? 0),
+                        'phone' => (string) ($parsed['phone']['value'] ?? ''),
+                        'phone_confidence' => (float) ($parsed['phone']['confidence'] ?? 0),
+                    ],
+                    'skills' => array_map(function($s) {
+                        return is_array($s) ? $s : ['name' => (string)$s, 'confidence' => 0.75];
+                    }, $parsed['skills'] ?? []),
+                    'languages' => array_map(function($l) {
+                        return is_array($l) ? [
+                            'name' => (string)($l['name'] ?? ''),
+                            'level' => (string)($l['level'] ?? 'intermediate'),
+                            'confidence' => (float)($l['confidence'] ?? 0.8),
+                        ] : ['name' => (string)$l, 'level' => 'intermediate', 'confidence' => 0.8];
+                    }, $parsed['languages'] ?? []),
+                    'experiences' => array_map(function($e) {
+                        return [
+                            'title' => (string)($e['title'] ?? ''),
+                            'organization' => (string)($e['organization'] ?? ''),
+                            'start_year' => (int)($e['start_year'] ?? 0),
+                            'end_year' => $e['end_year'] ? (int)$e['end_year'] : null,
+                            'confidence' => (float)($e['confidence'] ?? 0),
+                        ];
+                    }, $parsed['experiences'] ?? []),
+                    'education' => array_map(function($e) {
+                        return [
+                            'degree' => (string)($e['degree'] ?? ''),
+                            'institution' => (string)($e['institution'] ?? ''),
+                            'field' => (string)($e['field'] ?? ''),
+                            'year' => $e['year'] ? (int)$e['year'] : null,
+                            'confidence' => (float)($e['confidence'] ?? 0),
+                        ];
+                    }, $parsed['education'] ?? []),
+                    'metadata' => [
+                        'overall_confidence' => (float)($parsed['overall_confidence'] ?? 0),
+                        'parsed_at' => date('Y-m-d H:i:s'),
+                    ],
+                ],
+            ];
+
+            // Store in session for later
+            session()->set('cv_preview', $response['data']);
+
+            return $this->response->setJSON($response);
+            
         } catch (\Throwable $e) {
             $errMsg = $e->getMessage();
-            log_message('error', 'CV preview failed: ' . $errMsg . ' | Trace: ' . $e->getTraceAsString());
+            log_message('error', 'CV preview failed: ' . $errMsg . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'message' => 'Failed to parse CV: ' . (in_array(ENVIRONMENT, ['development', 'testing']) ? $errMsg : 'An error occurred'),
+                'message' => 'Failed to parse CV: ' . (ENVIRONMENT === 'development' ? $errMsg : 'An error occurred'),
             ]);
         }
     }
