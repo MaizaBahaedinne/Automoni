@@ -6,6 +6,7 @@ use App\Models\{ProfileModel, SkillModel, ExperienceModel, EducationModel,
     CertificationModel, LanguageModel, ProjectModel, ProjectMemberModel, VolunteeringModel,
     ConnectionModel};
 use App\Libraries\CvParser;
+use App\Services\CvPreviewService;
 use CodeIgniter\HTTP\RedirectResponse;
 
 class ProfileController extends BaseController
@@ -196,6 +197,114 @@ class ProfileController extends BaseController
 
         $this->profileModel->recalculateCompleteness($this->userId);
         return redirect()->to('/profile/edit')->with('success', 'CV uploaded' . (session()->getFlashdata('cv_parsed') ? ' and parsed' : '') . ' successfully.');
+    }
+
+    // ─── CV Preview (Intelligent Parsing) ─────────────────────────────────
+
+    /**
+     * POST /profile/cv/preview
+     * Parse uploaded CV and return a preview of extracted data.
+     * Returns JSON with profile, experiences, education, skills.
+     * Does NOT save anything.
+     */
+    public function previewCv()
+    {
+        // Get the current CV file
+        $profile = $this->profileModel->getByUserId($this->userId);
+        if (!$profile || !$profile->cv_file) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'No CV found. Please upload a CV first.',
+            ]);
+        }
+
+        $cvPath = WRITEPATH . 'uploads/cv/' . $profile->cv_file;
+        if (!file_exists($cvPath)) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'CV file not found on disk.',
+            ]);
+        }
+
+        try {
+            $previewService = new CvPreviewService();
+            $preview = $previewService->parseAndPreview($cvPath, mime_content_type($cvPath));
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'CV analyzed successfully',
+                'data'    => $preview,
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'CV preview failed: ' . $e->getMessage());
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Failed to parse CV: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * POST /profile/cv/apply-preview
+     * Apply the cached CV preview to the database.
+     * Accepts user-provided edits and merges with preview.
+     * Returns JSON.
+     */
+    public function applyPreview()
+    {
+        // Validate CSRF
+        if (!$this->validate(['csrf_token' => 'required'])) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'success' => false,
+                'message' => 'CSRF token invalid',
+            ]);
+        }
+
+        try {
+            // Get user edits from request body
+            $edits = $this->request->getJSON(true) ?? [];
+
+            // Apply the preview (this also clears the cache on success)
+            $previewService = new CvPreviewService();
+            $previewService->applyPreview($edits);
+
+            // Recalculate completeness
+            $profile = $this->profileModel->getByUserId($this->userId);
+            if ($profile) {
+                $this->profileModel->recalculateCompleteness($profile->id);
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Profile updated successfully from CV',
+                'redirect' => '/profile',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'CV apply preview failed: ' . $e->getMessage());
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Failed to apply preview: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * GET /profile/cv-preview
+     * Show the CV preview page (optional web view, returns HTML).
+     */
+    public function showPreview()
+    {
+        $previewService = new CvPreviewService();
+        $preview = $previewService->getPreviewFromCache();
+
+        if (!$preview) {
+            return redirect()->to('/profile/edit')->with('error', 'No CV preview available. Please analyze your CV first.');
+        }
+
+        return view('profile/cv_preview', [
+            'title'   => 'CV Preview',
+            'preview' => $preview,
+        ]);
     }
 
     // ─── Download CV ─────────────────────────────────────────────────────

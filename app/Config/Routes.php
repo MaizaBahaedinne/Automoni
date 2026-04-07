@@ -59,6 +59,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get ('profile/edit',               'ProfileController::edit');
     $routes->post('profile/update',             'ProfileController::update');
     $routes->post('profile/cv/upload',          'ProfileController::uploadCv');
+    $routes->post('profile/cv/preview',         'ProfileController::previewCv');
+    $routes->post('profile/cv/apply-preview',   'ProfileController::applyPreview');
+    $routes->get ('profile/cv-preview',         'ProfileController::showPreview');
     $routes->get ('profile/cv/download/(:num)', 'ProfileController::downloadCv/$1');
     $routes->get ('profile/cv/download',        'ProfileController::downloadCv');
 
