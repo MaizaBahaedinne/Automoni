@@ -1,6 +1,30 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
+<?php
+// Helper function to get country flag and name
+$getCountryInfo = function($code) {
+    $countries = [
+        'DZ' => ['name' => 'Algérie', 'flag' => '🇩🇿'],
+        'TN' => ['name' => 'Tunisie', 'flag' => '🇹🇳'],
+        'MA' => ['name' => 'Maroc', 'flag' => '🇲🇦'],
+        'FR' => ['name' => 'France', 'flag' => '🇫🇷'],
+        'US' => ['name' => 'États-Unis', 'flag' => '🇺🇸'],
+        'GB' => ['name' => 'Royaume-Uni', 'flag' => '🇬🇧'],
+        'ES' => ['name' => 'Espagne', 'flag' => '🇪🇸'],
+        'IT' => ['name' => 'Italie', 'flag' => '🇮🇹'],
+        'CH' => ['name' => 'Suisse', 'flag' => '🇨🇭'],
+        'CA' => ['name' => 'Canada', 'flag' => '🇨🇦'],
+        'BE' => ['name' => 'Belgique', 'flag' => '🇧🇪'],
+        'DE' => ['name' => 'Allemagne', 'flag' => '🇩🇪'],
+        'NL' => ['name' => 'Pays-Bas', 'flag' => '🇳🇱'],
+        'SE' => ['name' => 'Suède', 'flag' => '🇸🇪'],
+        'NO' => ['name' => 'Norvège', 'flag' => '🇳🇴'],
+    ];
+    return $countries[strtoupper($code ?? '')] ?? ['name' => $code, 'flag' => '🌍'];
+};
+?>
+
 <style>
 .org-card {
     border: 1px solid var(--border);
@@ -51,7 +75,8 @@
 <!-- Filter bar -->
 <div class="filter-bar">
     <form method="GET" class="row g-2 align-items-end">
-        <div class="col-md-4 col-sm-6">
+        <!-- Recherche -->
+        <div class="col-lg-3 col-md-6 col-sm-6">
             <div class="position-relative">
                 <i class="bi bi-search position-absolute" style="left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.8rem;pointer-events:none;"></i>
                 <input type="text" name="keyword" class="form-control form-control-sm"
@@ -60,9 +85,11 @@
                        value="<?= esc($filters['keyword'] ?? '') ?>">
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+
+        <!-- Type -->
+        <div class="col-lg-2 col-md-6 col-sm-6">
             <select name="type_id" class="form-select form-select-sm" style="border-radius:20px;">
-                <option value="">Tous les types</option>
+                <option value="">Tous types</option>
                 <?php foreach ($types as $type): ?>
                     <option value="<?= $type->id ?>" <?= ($filters['type_id'] ?? null) == $type->id ? 'selected' : '' ?>>
                         <?= esc($type->name) ?>
@@ -70,12 +97,33 @@
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-md-3 col-sm-8">
-            <input type="text" name="industry" class="form-control form-control-sm"
-                   style="border-radius:20px;" placeholder="Secteur d'activité..."
-                   value="<?= esc($filters['industry'] ?? '') ?>">
+
+        <!-- Secteur d'activité -->
+        <div class="col-lg-2 col-md-6 col-sm-6">
+            <select name="industry" class="form-select form-select-sm" style="border-radius:20px;">
+                <option value="">Tous secteurs</option>
+                <?php foreach ($sectors as $sector): ?>
+                    <option value="<?= esc($sector) ?>" <?= ($filters['industry'] ?? null) === $sector ? 'selected' : '' ?>>
+                        <?= esc($sector) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
         </div>
-        <div class="col-md-2 col-sm-4">
+
+        <!-- Pays -->
+        <div class="col-lg-2 col-md-6 col-sm-6">
+            <select name="country_code" class="form-select form-select-sm" style="border-radius:20px;">
+                <option value="">🌍 Tous pays</option>
+                <?php foreach ($countriesWithFlags as $code => $data): ?>
+                    <option value="<?= $code ?>" <?= ($filters['country_code'] ?? null) === $code ? 'selected' : '' ?>>
+                        <?= $data['flag'] ?> <?= esc($data['name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <!-- Bouton Filtrer -->
+        <div class="col-lg-auto col-md-6 col-sm-6">
             <button type="submit" class="btn btn-primary btn-sm w-100" style="border-radius:20px;">
                 <i class="bi bi-funnel me-1"></i>Filtrer
             </button>
@@ -108,6 +156,10 @@
                         <?php endif; ?>
                         <?php if (!empty($org->industry)): ?>
                             <div class="org-meta"><i class="bi bi-briefcase"></i><?= esc($org->industry) ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($org->country_code)): ?>
+                            <?php $countryInfo = $getCountryInfo($org->country_code); ?>
+                            <div class="org-meta"><span style="font-size:1.1rem;margin-right:4px;"><?= $countryInfo['flag'] ?></span><?= esc($countryInfo['name']) ?></div>
                         <?php endif; ?>
                         <?php if (!empty($org->employee_count)): ?>
                             <div class="org-meta"><i class="bi bi-people"></i><?= number_format($org->employee_count) ?> employés</div>

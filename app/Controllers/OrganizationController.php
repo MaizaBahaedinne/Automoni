@@ -38,18 +38,90 @@ class OrganizationController extends BaseController
             'keyword'    => $this->request->getVar('keyword'),
             'type_id'    => $this->request->getVar('type_id'),
             'industry'   => $this->request->getVar('industry'),
+            'country_code' => $this->request->getVar('country_code'),
             'is_verified' => $this->request->getVar('is_verified'),
         ];
 
         $result = $this->organizationModel->search($filters, 12);
+
+        // Sectors list
+        $sectors = [
+            'Technologie', 'Finance', 'Santé', 'Industrie', 'Commerce de détail', 'Immobilier',
+            'Énergie', 'Transport', 'Éducation', 'Médias', 'Hôtellerie', 'Non-profit',
+            'Gouvernement', 'Services professionnels', 'Agriculture', 'Télécommunications', 'Utilitaires', 'Conseil'
+        ];
+
+        // Countries
+        $countries = [
+            'DZ' => 'Algérie',
+            'TN' => 'Tunisie',
+            'MA' => 'Maroc',
+            'FR' => 'France',
+            'US' => 'États-Unis',
+            'GB' => 'Royaume-Uni',
+            'ES' => 'Espagne',
+            'IT' => 'Italie',
+            'CH' => 'Suisse',
+            'CA' => 'Canada',
+            'BE' => 'Belgique',
+            'DE' => 'Allemagne',
+            'NL' => 'Pays-Bas',
+            'SE' => 'Suède',
+            'NO' => 'Norvège',
+        ];
 
         return view('organizations/index', [
             'title' => 'Organizations',
             'organizations' => $result['data'],
             'pager' => $this->organizationModel->pager,
             'types' => $this->typeModel->findAll(),
+            'sectors' => $sectors,
+            'countries' => $countries,
+            'countriesWithFlags' => $this->getCountriesWithFlags(),
             'filters' => $filters,
         ]);
+    }
+
+    /**
+     * Get countries with their flag emojis
+     */
+    private function getCountriesWithFlags(): array
+    {
+        return [
+            'DZ' => ['name' => 'Algérie', 'flag' => '🇩🇿'],
+            'TN' => ['name' => 'Tunisie', 'flag' => '🇹🇳'],
+            'MA' => ['name' => 'Maroc', 'flag' => '🇲🇦'],
+            'FR' => ['name' => 'France', 'flag' => '🇫🇷'],
+            'US' => ['name' => 'États-Unis', 'flag' => '🇺🇸'],
+            'GB' => ['name' => 'Royaume-Uni', 'flag' => '🇬🇧'],
+            'ES' => ['name' => 'Espagne', 'flag' => '🇪🇸'],
+            'IT' => ['name' => 'Italie', 'flag' => '🇮🇹'],
+            'CH' => ['name' => 'Suisse', 'flag' => '🇨🇭'],
+            'CA' => ['name' => 'Canada', 'flag' => '🇨🇦'],
+            'BE' => ['name' => 'Belgique', 'flag' => '🇧🇪'],
+            'DE' => ['name' => 'Allemagne', 'flag' => '🇩🇪'],
+            'NL' => ['name' => 'Pays-Bas', 'flag' => '🇳🇱'],
+            'SE' => ['name' => 'Suède', 'flag' => '🇸🇪'],
+            'NO' => ['name' => 'Norvège', 'flag' => '🇳🇴'],
+        ];
+    }
+
+    /**
+     * Get country flag by code
+     */
+    private function getCountryFlag(string $countryCode): string
+    {
+        $countriesWithFlags = $this->getCountriesWithFlags();
+        return $countriesWithFlags[strtoupper($countryCode)]['flag'] ?? '🌍';
+    }
+
+    /**
+     * Get country name by code
+     */
+    private function getCountryName(string $countryCode): string
+    {
+        $countriesWithFlags = $this->getCountriesWithFlags();
+        return $countriesWithFlags[strtoupper($countryCode)]['name'] ?? $countryCode;
     }
 
     /**
@@ -61,6 +133,7 @@ class OrganizationController extends BaseController
             'keyword'    => $this->request->getVar('keyword'),
             'type_id'    => $this->request->getVar('type_id'),
             'industry'   => $this->request->getVar('industry'),
+            'country_code' => $this->request->getVar('country_code'),
             'is_verified' => $this->request->getVar('is_verified'),
             'parent_id'  => $this->request->getVar('parent_id'),
         ];

@@ -123,6 +123,10 @@ class OrganizationModel extends Model
             $builder->where('organizations.industry', $filters['industry']);
         }
 
+        if (!empty($filters['country_code'])) {
+            $builder->where('organizations.country_code', strtoupper($filters['country_code']));
+        }
+
         if (!empty($filters['is_verified'])) {
             $builder->where('organizations.is_verified', $filters['is_verified']);
         }
