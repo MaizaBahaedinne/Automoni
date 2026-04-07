@@ -334,13 +334,9 @@
                     <p class="text-muted small mb-3">
                         Remplissez automatiquement votre profil en analysant votre CV avec l'IA.
                     </p>
-                    <button type="button" class="btn btn-primary" id="smartProfileFillBtn" style="background:#6366f1;border-color:#6366f1;">
+                    <a href="/profile/cv-analyze" class="btn btn-primary" style="background:#6366f1;border-color:#6366f1;">
                         <i class="bi bi-brain me-1"></i>🧠 Analyser mon CV
-                    </button>
-                    <div id="analysisSpinner" class="spinner-border spinner-border-sm ms-2 ms-1 d-none" role="status">
-                        <span class="visually-hidden">Analyse...</span>
-                    </div>
-                    <div id="analysisMessage" class="mt-2"></div>
+                    </a>
                 </div>
                 <?php endif; ?>
             </div>
@@ -2241,67 +2237,6 @@ if (expIsCurrent) {
 
 <!-- Smart Profile Fill Script -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('smartProfileFillBtn');
-    if (!btn) return;
 
-    btn.addEventListener('click', async () => {
-        const spinner = document.getElementById('analysisSpinner');
-        const msgDiv = document.getElementById('analysisMessage');
-        
-        msgDiv.innerHTML = '';
-        spinner.classList.remove('d-none');
-        btn.disabled = true;
-
-        try {
-            // Get CSRF token
-            const CSRF_NAME = '<?= csrf_token() ?>';
-            const CSRF_HASH = '<?= csrf_hash() ?>';
-            
-            // Prepare body with CSRF token
-            const body = new URLSearchParams();
-            body.append(CSRF_NAME, CSRF_HASH);
-            
-            const resp = await fetch('<?= base_url('profile/cv/preview') ?>', {
-                method: 'POST',
-                headers: { 
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: body
-            });
-
-            const text = await resp.text();
-            spinner.classList.add('d-none');
-            
-            // Try to parse JSON
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                // If not JSON, it's probably an error page
-                console.error('Response text:', text);
-                msgDiv.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>Server error: ' + text.substring(0, 200) + '</div>';
-                btn.disabled = false;
-                return;
-            }
-
-            if (data.success) {
-                msgDiv.innerHTML = '<div class="alert alert-success mb-0"><i class="bi bi-check-circle me-1"></i>Analyse complete! Redirection...</div>';
-                setTimeout(() => {
-                    window.location.href = '<?= base_url('profile/cv-preview') ?>';
-                }, 800);
-            } else {
-                msgDiv.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>' + (data.message || 'Erreur lors de l\'analyse') + '</div>';
-                btn.disabled = false;
-            }
-        } catch (err) {
-            spinner.classList.add('d-none');
-            console.error('Error:', err);
-            msgDiv.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>Erreur: ' + err.message + '</div>';
-            btn.disabled = false;
-        }
-    });
-});
-</script>
 
 <?= $this->endSection() ?>

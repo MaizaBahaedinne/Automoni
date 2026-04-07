@@ -121,6 +121,22 @@ class ProfileController extends BaseController
         return redirect()->to('/profile')->with('success', 'Profile updated successfully.');
     }
 
+    // ─── CV Analysis Page (NEW) ───────────────────────────────────────────
+
+    /**
+     * GET /profile/cv-analyze
+     * Show the CV upload & analysis page (new page before preview).
+     */
+    public function analyzeCv(): string
+    {
+        $profile = $this->profileModel->getByUserId($this->userId);
+
+        return view('profile/analyze_cv', [
+            'title'   => lang('App.cv_preview_title'),
+            'profile' => $profile,
+        ]);
+    }
+
     // ─── CV Upload ────────────────────────────────────────────────────────
 
     public function uploadCv(): RedirectResponse

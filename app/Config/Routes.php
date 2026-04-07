@@ -60,6 +60,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get ('profile',                    'ProfileController::show');
     $routes->get ('profile/view/(:num)',         'ProfileController::show/$1');
     $routes->get ('profile/edit',               'ProfileController::edit');
+    $routes->get ('profile/cv-analyze',         'ProfileController::analyzeCv');
     $routes->post('profile/update',             'ProfileController::update');
     $routes->post('profile/cv/upload',          'ProfileController::uploadCv');
     $routes->post('profile/cv/preview',         'ProfileController::previewCv');
