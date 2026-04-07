@@ -385,8 +385,14 @@ class ProfileController extends BaseController
      */
     public function showPreview()
     {
-        $previewService = new CvPreviewService();
-        $preview = $previewService->getPreviewFromCache();
+        // Try session first (from previewCv AJAX call)
+        $preview = session()->get('cv_preview');
+        
+        // Fall back to service cache if not in session
+        if (!$preview) {
+            $previewService = new CvPreviewService();
+            $preview = $previewService->getPreviewFromCache();
+        }
 
         if (!$preview) {
             return redirect()->to('/profile/edit')->with('error', 'No CV preview available. Please analyze your CV first.');
