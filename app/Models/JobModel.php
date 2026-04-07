@@ -15,6 +15,11 @@ class JobModel extends Model
         'requirements', 'benefits', 'contract_type', 'location', 'remote',
         'salary_min', 'salary_max', 'salary_currency', 'experience_level',
         'status', 'views', 'expires_at',
+        // Enhanced fields
+        'internal_ref', 'department', 'num_positions', 'hierarchical_level',
+        'direct_manager', 'min_experience_years', 'education_level', 'education_field',
+        'mission_context', 'salary_period', 'salary_public', 'salary_variable',
+        'salary_bonus_pct', 'recruitment_notes', 'internal_only', 'visibility_level',
     ];
 
     protected $validationRules = [
