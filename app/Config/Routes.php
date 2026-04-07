@@ -168,3 +168,8 @@ $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
     $routes->get ('admin/applications',                    'AdminApplicationController::index');
     $routes->post('admin/applications/(:num)/status',      'AdminApplicationController::updateStatus/$1');
 });
+
+// ─── DEBUG (temp) ─────────────────────────────────────────────────────────────
+if (ENVIRONMENT === 'development') {
+    $routes->get('debug/test-cv-parser',  'ProfileController::testCvParser');  
+}

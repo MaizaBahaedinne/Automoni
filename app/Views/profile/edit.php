@@ -2263,8 +2263,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({})
             });
 
-            const data = await resp.json();
+            const text = await resp.text();
             spinner.classList.add('d-none');
+            
+            // Try to parse JSON
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                // If not JSON, it's probably an error page
+                console.error('Response text:', text);
+                msgDiv.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>Server error: ' + text.substring(0, 200) + '</div>';
+                btn.disabled = false;
+                return;
+            }
 
             if (data.success) {
                 msgDiv.innerHTML = '<div class="alert alert-success mb-0"><i class="bi bi-check-circle me-1"></i>Analyse complete! Redirection...</div>';
@@ -2277,6 +2289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             spinner.classList.add('d-none');
+            console.error('Error:', err);
             msgDiv.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>Erreur: ' + err.message + '</div>';
             btn.disabled = false;
         }

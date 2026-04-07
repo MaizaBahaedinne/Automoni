@@ -209,9 +209,24 @@ class ProfileController extends BaseController
      */
     public function previewCv()
     {
+        // Ensure this is AJAX
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'This endpoint only accepts AJAX requests.',
+            ]);
+        }
+
         // Get the current CV file
         $profile = $this->profileModel->getByUserId($this->userId);
-        if (!$profile || !$profile->cv_file) {
+        if (!$profile) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'Profile not found. Please create a profile first.',
+            ]);
+        }
+
+        if (empty($profile->cv_file)) {
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
                 'message' => 'No CV found. Please upload a CV first.',
@@ -220,15 +235,28 @@ class ProfileController extends BaseController
 
         $cvPath = WRITEPATH . 'uploads/cv/' . $profile->cv_file;
         if (!file_exists($cvPath)) {
+            log_message('error', "CV file not found at: $cvPath");
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
-                'message' => 'CV file not found on disk.',
+                'message' => 'CV file not found on disk. Please re-upload.',
+            ]);
+        }
+
+        if (!is_readable($cvPath)) {
+            log_message('error', "CV file not readable at: $cvPath");
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'CV file is not readable.',
             ]);
         }
 
         try {
             $previewService = new CvPreviewService();
-            $preview = $previewService->parseAndPreview($cvPath, mime_content_type($cvPath));
+            $mimeType = mime_content_type($cvPath);
+            $preview = $previewService->parseAndPreview($cvPath, $mimeType);
+
+            // Store in session cache for later apply
+            session()->set('cv_preview', $preview);
 
             return $this->response->setJSON([
                 'success' => true,
@@ -236,10 +264,11 @@ class ProfileController extends BaseController
                 'data'    => $preview,
             ]);
         } catch (\Throwable $e) {
-            log_message('error', 'CV preview failed: ' . $e->getMessage());
+            $errMsg = $e->getMessage();
+            log_message('error', 'CV preview failed: ' . $errMsg . ' | Trace: ' . $e->getTraceAsString());
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'message' => 'Failed to parse CV: ' . $e->getMessage(),
+                'message' => 'Failed to parse CV: ' . (in_array(ENVIRONMENT, ['development', 'testing']) ? $errMsg : 'An error occurred'),
             ]);
         }
     }
@@ -695,5 +724,29 @@ class ProfileController extends BaseController
             $model->delete($id);
         }
         return redirect()->to('/profile/edit#volunteering')->with('success', 'Volunteering removed.');
+    }
+
+    // ─── DEBUG: Test CV Parser (dev only) ──────────────────────────────────
+    public function testCvParser()
+    {
+        $profile = $this->profileModel->getByUserId($this->userId);
+        if (!$profile || !$profile->cv_file) {
+            return "<h2>No CV found for this user.</h2>";
+        }
+
+        $cvPath = WRITEPATH . 'uploads/cv/' . $profile->cv_file;
+        if (!file_exists($cvPath)) {
+            return "<h2>CV file not found at: $cvPath</h2>";
+        }
+
+        try {
+            $parser = new CvParser();
+            $mimeType = mime_content_type($cvPath);
+            $result = $parser->parseDetailed($cvPath, $mimeType);
+            
+            return "<pre>" . json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "</pre>";
+        } catch (\Throwable $e) {
+            return "<h2>Error:</h2><pre>" . $e->getMessage() . "\n\n" . $e->getTraceAsString() . "</pre>";
+        }
     }
 }
