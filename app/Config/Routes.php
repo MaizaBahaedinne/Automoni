@@ -156,6 +156,7 @@ $routes->group('', ['filter' => 'role:recruiter,admin'], static function ($route
 
 // ─── Protected — admin only ───────────────────────────────────────────────────
 $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
-    $routes->get ('admin/deploy', 'DeployController::index');
+    $routes->get ('admin/deploy',      'DeployController::index');
     $routes->post('admin/deploy/pull', 'DeployController::pull');
+    $routes->get ('admin/logs',        'LogController::index');
 });

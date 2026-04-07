@@ -5,10 +5,13 @@
 
     <div class="mb-4 d-flex align-items-center gap-2">
         <i class="bi bi-arrow-down-circle-fill fs-3" style="color:var(--brand);"></i>
-        <div>
+        <div class="flex-grow-1">
             <h4 class="mb-0 fw-bold" style="color:var(--text);">Déploiement — Git Pull</h4>
             <small style="color:var(--muted);">Disponible uniquement pour les administrateurs.</small>
         </div>
+        <a href="<?= base_url('admin/logs') ?>" class="btn btn-sm" style="border-radius:20px; border:1px solid var(--border); font-size:.8rem;">
+            <i class="bi bi-journal-text me-1"></i>Voir les logs
+        </a>
     </div>
 
     <?php if (isset($ran)): ?>
