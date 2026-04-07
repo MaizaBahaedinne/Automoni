@@ -42,11 +42,23 @@ class CvParser
     {
         $text = $this->extractText($filePath, $mimeType);
 
+        // Wrap email and phone results to ensure consistent array format
+        $email = $this->extractEmail($text);
+        $phone = $this->extractPhone($text);
+
         return [
             'headline'    => $this->extractHeadline($text),
             'summary'     => $this->extractSummary($text),
-            'email'       => $this->extractEmail($text),
-            'phone'       => $this->extractPhone($text),
+            'email'       => [
+                'value'      => $email,
+                'confidence' => $email ? 0.95 : 0.0,
+                'source'     => 'regex_pattern',
+            ],
+            'phone'       => [
+                'value'      => $phone,
+                'confidence' => $phone ? 0.90 : 0.0,
+                'source'     => 'regex_pattern',
+            ],
             'skills'      => $this->extractSkillsDetailed($text),
             'languages'   => $this->extractLanguagesDetailed($text),
             'experiences' => $this->extractExperiences($text),

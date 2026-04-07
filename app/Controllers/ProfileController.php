@@ -251,7 +251,18 @@ class ProfileController extends BaseController
         }
 
         try {
-            $mimeType = mime_content_type($cvPath);
+            // Detect MIME type safely
+            $extension = strtolower(pathinfo($cvPath, PATHINFO_EXTENSION));
+            $mimeType = 'application/octet-stream';
+            
+            if ($extension === 'pdf') {
+                $mimeType = 'application/pdf';
+            } elseif (in_array($extension, ['doc', 'docx'])) {
+                $mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                if ($extension === 'doc') {
+                    $mimeType = 'application/msword';
+                }
+            }
             
             // Use CvParser directly for simpler approach
             $cvParser = new CvParser();
@@ -314,7 +325,9 @@ class ProfileController extends BaseController
             
         } catch (\Throwable $e) {
             $errMsg = $e->getMessage();
-            log_message('error', 'CV preview failed: ' . $errMsg . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+            $errFile = $e->getFile();
+            $errLine = $e->getLine();
+            log_message('error', "CV preview failed: $errMsg | File: $errFile:$errLine");
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
                 'message' => 'Failed to parse CV: ' . (ENVIRONMENT === 'development' ? $errMsg : 'An error occurred'),
