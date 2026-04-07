@@ -2254,13 +2254,20 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
 
         try {
+            // Get CSRF token
+            const CSRF_NAME = '<?= csrf_token() ?>';
+            const CSRF_HASH = '<?= csrf_hash() ?>';
+            
+            // Prepare body with CSRF token
+            const body = new URLSearchParams();
+            body.append(CSRF_NAME, CSRF_HASH);
+            
             const resp = await fetch('<?= base_url('profile/cv/preview') ?>', {
                 method: 'POST',
                 headers: { 
-                    'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({})
+                body: body
             });
 
             const text = await resp.text();
