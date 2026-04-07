@@ -506,3 +506,4 @@ class CvParser
             'HTML', 'CSS', 'SASS', 'REST', 'GraphQL', 'Agile', 'Scrum', 'Jira',
         ];
     }
+}
