@@ -1,30 +1,6 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
-<?php
-// Helper function to get country flag and name
-$getCountryInfo = function($code) {
-    $countries = [
-        'DZ' => ['name' => 'Algérie', 'flag' => '🇩🇿'],
-        'TN' => ['name' => 'Tunisie', 'flag' => '🇹🇳'],
-        'MA' => ['name' => 'Maroc', 'flag' => '🇲🇦'],
-        'FR' => ['name' => 'France', 'flag' => '🇫🇷'],
-        'US' => ['name' => 'États-Unis', 'flag' => '🇺🇸'],
-        'GB' => ['name' => 'Royaume-Uni', 'flag' => '🇬🇧'],
-        'ES' => ['name' => 'Espagne', 'flag' => '🇪🇸'],
-        'IT' => ['name' => 'Italie', 'flag' => '🇮🇹'],
-        'CH' => ['name' => 'Suisse', 'flag' => '🇨🇭'],
-        'CA' => ['name' => 'Canada', 'flag' => '🇨🇦'],
-        'BE' => ['name' => 'Belgique', 'flag' => '🇧🇪'],
-        'DE' => ['name' => 'Allemagne', 'flag' => '🇩🇪'],
-        'NL' => ['name' => 'Pays-Bas', 'flag' => '🇳🇱'],
-        'SE' => ['name' => 'Suède', 'flag' => '🇸🇪'],
-        'NO' => ['name' => 'Norvège', 'flag' => '🇳🇴'],
-    ];
-    return $countries[strtoupper($code ?? '')] ?? ['name' => $code, 'flag' => '🌍'];
-};
-?>
-
 <style>
 .org-card {
     border: 1px solid var(--border);
@@ -158,7 +134,7 @@ $getCountryInfo = function($code) {
                             <div class="org-meta"><i class="bi bi-briefcase"></i><?= esc($org->industry) ?></div>
                         <?php endif; ?>
                         <?php if (!empty($org->country_code)): ?>
-                            <?php $countryInfo = $getCountryInfo($org->country_code); ?>
+                            <?php $countryInfo = $countriesWithFlags[strtoupper($org->country_code)] ?? ['name' => $org->country_code, 'flag' => '🌍']; ?>
                             <div class="org-meta"><span style="font-size:1.1rem;margin-right:4px;"><?= $countryInfo['flag'] ?></span><?= esc($countryInfo['name']) ?></div>
                         <?php endif; ?>
                         <?php if (!empty($org->employee_count)): ?>
