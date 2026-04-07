@@ -311,6 +311,9 @@ class ProfileController extends BaseController
                             'confidence' => (float)($e['confidence'] ?? 0),
                         ];
                     }, $parsed['education'] ?? []),
+                    'certifications' => [],  // Placeholder - can be extended
+                    'projects' => [],         // Placeholder - can be extended
+                    'volunteering' => [],     // Placeholder - can be extended
                     'metadata' => [
                         'overall_confidence' => (float)($parsed['overall_confidence'] ?? 0),
                         'parsed_at' => date('Y-m-d H:i:s'),
