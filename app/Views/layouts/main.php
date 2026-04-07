@@ -522,7 +522,19 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
                         <li><a class="dropdown-item" href="<?= base_url('jobs/create') ?>"><i class="bi bi-plus-circle me-2"></i><?= lang('App.nav_post_job') ?></a></li>
                         <li><a class="dropdown-item" href="<?= base_url('company/edit') ?>"><i class="bi bi-building me-2"></i><?= lang('App.nav_company') ?></a></li>
                         <?php endif; ?>
+                        <?php if (session()->get('user_role') === 'admin'): ?>
                         <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <div class="px-3 py-1 text-uppercase" style="font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:.06em;">
+                                Admin
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/applications') ?>"><i class="bi bi-briefcase-fill me-2" style="color:var(--brand-dark);"></i>Candidatures</a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/404-logs') ?>"><i class="bi bi-signpost-split me-2" style="color:#f59e0b;"></i>Erreurs 404</a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/logs') ?>"><i class="bi bi-file-earmark-text me-2" style="color:#6366f1;"></i>Logs CI4</a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/deploy') ?>"><i class="bi bi-cloud-arrow-down me-2" style="color:#22c55e;"></i>Déploiement</a></li>
+                        <?php endif; ?>
+                        <li><hr class="dropdown-divider">
                         <!-- Language switcher -->
                         <li>
                             <div class="px-3 py-1 d-flex align-items-center gap-2">
@@ -612,6 +624,17 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             <?php if (in_array(session()->get('user_role'), ['recruiter', 'admin'])): ?>
             <a class="mobile-sheet-item" href="<?= base_url('jobs/create') ?>"><i class="bi bi-plus-circle"></i><?= lang('App.nav_post_job') ?></a>
             <a class="mobile-sheet-item" href="<?= base_url('company/edit') ?>"><i class="bi bi-building"></i><?= lang('App.nav_company') ?></a>
+            <?php endif; ?>
+            <?php if (session()->get('user_role') === 'admin'): ?>
+            <div class="px-4 pt-3 pb-1 border-top"
+                 style="font-size:.65rem;font-weight:700;text-transform:uppercase;
+                        color:var(--muted);letter-spacing:.06em;">
+                Administration
+            </div>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/applications') ?>"><i class="bi bi-briefcase-fill" style="color:var(--brand-dark);"></i>Candidatures</a>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/404-logs') ?>"><i class="bi bi-signpost-split" style="color:#f59e0b;"></i>Erreurs 404</a>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/logs') ?>"><i class="bi bi-file-earmark-text" style="color:#6366f1;"></i>Logs CI4</a>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/deploy') ?>"><i class="bi bi-cloud-arrow-down" style="color:#22c55e;"></i>Déploiement</a>
             <?php endif; ?>
             <div class="px-4 py-2 d-flex align-items-center gap-2 border-top mt-1">
                 <small class="text-muted"><i class="bi bi-translate me-1"></i></small>
