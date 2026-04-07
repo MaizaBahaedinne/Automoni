@@ -2,7 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Models\{JobModel, CompanyModel, ApplicationModel, JobAlertModel, UserModel};
+use App\Models\{
+    JobModel, CompanyModel, ApplicationModel, JobAlertModel, UserModel,
+    JobLanguageModel, JobCertificationModel, JobPrescreeningModel, JobRecruitmentStepModel
+};
 use App\Libraries\AlertMailer;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -58,15 +61,19 @@ class JobController extends BaseController
         $userId     = session()->get('user_id');
         $hasApplied = $userId ? model(ApplicationModel::class)->hasApplied($userId, $job->id) : false;
 
-        // Fetch required skills for this job
-        $db         = \Config\Database::connect();
-        $jobSkills  = $db->table('job_skills')->where('job_id', $job->id)->get()->getResultArray();
+        // Fetch related data
+        $db        = \Config\Database::connect();
+        $jobSkills = $db->table('job_skills')->where('job_id', $job->id)->get()->getResultArray();
 
         return view('jobs/show', [
             'title'      => $job->title,
             'job'        => $job,
             'hasApplied' => $hasApplied,
             'jobSkills'  => $jobSkills,
+            'languages'  => model(JobLanguageModel::class)->getByJob($job->id),
+            'certs'      => model(JobCertificationModel::class)->getByJob($job->id),
+            'questions'  => model(JobPrescreeningModel::class)->getByJob($job->id),
+            'steps'      => model(JobRecruitmentStepModel::class)->getByJob($job->id),
         ]);
     }
 
@@ -76,100 +83,124 @@ class JobController extends BaseController
     {
         $company = model(CompanyModel::class)->getByUserId(session()->get('user_id'));
         if (!$company) {
-            return redirect()->to('/company/create')->with('error', 'You must create a company profile first.');
+            return redirect()->to('/company/create')->with('error', 'Vous devez créer un profil entreprise d\'abord.');
         }
-        return view('jobs/create', ['title' => 'Post a Job', 'company' => $company]);
+        return view('jobs/create', ['title' => 'Publier une offre', 'company' => $company]);
     }
 
     public function store(): RedirectResponse
     {
         $rules = [
-            'title'         => 'required|min_length[5]|max_length[255]',
-            'description'   => 'required|min_length[50]',
-            'contract_type' => 'required|in_list[CDI,CDD,Freelance,Internship,PartTime]',
-            'location'      => 'permit_empty|max_length[200]',
-            'salary_min'    => 'permit_empty|integer',
-            'salary_max'    => 'permit_empty|integer',
-            'expires_at'    => 'permit_empty|valid_date',
+            'title'            => 'required|min_length[5]|max_length[255]',
+            'description'      => 'required|min_length[30]',
+            'contract_type'    => 'required|in_list[CDI,CDD,Freelance,Internship,PartTime]',
+            'location'         => 'permit_empty|max_length[200]',
+            'salary_min'       => 'permit_empty|integer',
+            'salary_max'       => 'permit_empty|integer',
+            'expires_at'       => 'permit_empty|valid_date',
+            'num_positions'    => 'permit_empty|integer|greater_than[0]',
+            'min_experience_years' => 'permit_empty|integer',
         ];
 
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $userId  = session()->get('user_id');
+        $userId  = (int) session()->get('user_id');
         $company = model(CompanyModel::class)->getByUserId($userId);
         if (!$company) {
-            return redirect()->to('/company/create')->with('error', 'Company profile required.');
+            return redirect()->to('/company/create')->with('error', 'Profil entreprise requis.');
         }
 
         $data = array_merge(
             $this->request->getPost([
-                'title', 'description', 'requirements', 'benefits',
+                'title', 'description', 'mission_context', 'requirements', 'benefits',
                 'contract_type', 'location', 'remote', 'salary_min', 'salary_max',
-                'salary_currency', 'experience_level', 'expires_at',
+                'salary_currency', 'salary_period', 'experience_level', 'expires_at',
+                'internal_ref', 'department', 'num_positions', 'hierarchical_level',
+                'direct_manager', 'min_experience_years', 'education_level', 'education_field',
+                'recruitment_notes', 'visibility_level',
             ]),
             [
-                'company_id' => $company->id,
-                'user_id'    => $userId,
-                'status'     => 'active',
+                'company_id'       => $company->id,
+                'user_id'          => $userId,
+                'status'           => 'active',
+                'salary_public'    => (int) ($this->request->getPost('salary_public')    ?? 0),
+                'salary_variable'  => (int) ($this->request->getPost('salary_variable')  ?? 0),
+                'salary_bonus_pct' => $this->request->getPost('salary_bonus_pct') ?: null,
+                'internal_only'    => (int) ($this->request->getPost('internal_only')    ?? 0),
             ]
         );
 
         $jobId = $this->jobModel->insert($data);
 
-        // Save job skills
-        $rawSkills = $this->request->getPost('skills');
-        if ($rawSkills) {
-            $this->saveJobSkills($jobId, $rawSkills);
-        }
+        $this->syncRelated($jobId);
 
         // Fire job alerts
         $job = $this->jobModel->find($jobId);
         $this->dispatchAlerts($job);
 
-        return redirect()->to('/jobs/' . $data['slug'] ?? '/dashboard')
-                         ->with('success', 'Job posted successfully!');
+        return redirect()->to(base_url('jobs/' . ($job->slug ?? '')))
+                         ->with('success', 'Offre publiée avec succès !');
     }
 
     public function edit(int $id): string
     {
-        $job = $this->ownerJob($id);
-        $db  = \Config\Database::connect();
-        $jobSkills = $db->table('job_skills')->where('job_id', $id)->get()->getResultArray();
-        $skillsList = implode(', ', array_column($jobSkills, 'skill_name'));
-        return view('jobs/edit', ['title' => 'Edit Job', 'job' => $job, 'skillsList' => $skillsList]);
+        $job  = $this->ownerJob($id);
+        $db   = \Config\Database::connect();
+
+        $skillsList = implode(', ', array_column(
+            $db->table('job_skills')->where('job_id', $id)->get()->getResultArray(),
+            'skill_name'
+        ));
+
+        return view('jobs/create', [
+            'title'       => 'Modifier l\'offre',
+            'company'     => model(CompanyModel::class)->getByUserId(session()->get('user_id')),
+            'job'         => $job,
+            'skillsList'  => $skillsList,
+            'languages'   => model(JobLanguageModel::class)->getByJob($id),
+            'certs'       => model(JobCertificationModel::class)->getByJob($id),
+            'questions'   => model(JobPrescreeningModel::class)->getByJob($id),
+            'steps'       => model(JobRecruitmentStepModel::class)->getByJob($id),
+            'isEdit'      => true,
+        ]);
     }
 
     public function update(int $id): RedirectResponse
     {
-        $job = $this->ownerJob($id);
+        $this->ownerJob($id);
 
         $rules = [
             'title'         => 'required|min_length[5]|max_length[255]',
-            'description'   => 'required|min_length[50]',
+            'description'   => 'required|min_length[30]',
             'contract_type' => 'required|in_list[CDI,CDD,Freelance,Internship,PartTime]',
         ];
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $data = $this->request->getPost([
-            'title', 'description', 'requirements', 'benefits',
-            'contract_type', 'location', 'remote', 'salary_min', 'salary_max',
-            'salary_currency', 'experience_level', 'status', 'expires_at',
-        ]);
+        $data = array_merge(
+            $this->request->getPost([
+                'title', 'description', 'mission_context', 'requirements', 'benefits',
+                'contract_type', 'location', 'remote', 'salary_min', 'salary_max',
+                'salary_currency', 'salary_period', 'experience_level', 'status', 'expires_at',
+                'internal_ref', 'department', 'num_positions', 'hierarchical_level',
+                'direct_manager', 'min_experience_years', 'education_level', 'education_field',
+                'recruitment_notes', 'visibility_level',
+            ]),
+            [
+                'salary_public'    => (int) ($this->request->getPost('salary_public')    ?? 0),
+                'salary_variable'  => (int) ($this->request->getPost('salary_variable')  ?? 0),
+                'salary_bonus_pct' => $this->request->getPost('salary_bonus_pct') ?: null,
+                'internal_only'    => (int) ($this->request->getPost('internal_only')    ?? 0),
+            ]
+        );
         $this->jobModel->update($id, $data);
 
-        // Sync job skills
-        $db = \Config\Database::connect();
-        $db->table('job_skills')->where('job_id', $id)->delete();
-        $rawSkills = $this->request->getPost('skills');
-        if ($rawSkills) {
-            $this->saveJobSkills($id, $rawSkills);
-        }
+        $this->syncRelated($id);
 
-        return redirect()->to('/dashboard')->with('success', 'Job updated.');
+        return redirect()->to(base_url('dashboard'))->with('success', 'Offre mise à jour.');
     }
 
     public function delete(int $id): RedirectResponse
@@ -281,6 +312,45 @@ class JobController extends BaseController
         foreach ($skills as $skill) {
             $db->table('job_skills')->insert(['job_id' => $jobId, 'skill_name' => $skill]);
         }
+    }
+
+    /**
+     * Sync all related one-to-many tables from POST data.
+     * Called after insert or update.
+     */
+    private function syncRelated(int $jobId): void
+    {
+        // Skills
+        $db = \Config\Database::connect();
+        $db->table('job_skills')->where('job_id', $jobId)->delete();
+        $rawSkills = $this->request->getPost('skills');
+        if ($rawSkills) {
+            $this->saveJobSkills($jobId, $rawSkills);
+        }
+
+        // Languages
+        model(JobLanguageModel::class)->syncForJob(
+            $jobId,
+            (array) ($this->request->getPost('languages') ?? [])
+        );
+
+        // Certifications
+        model(JobCertificationModel::class)->syncForJob(
+            $jobId,
+            (array) ($this->request->getPost('certifications') ?? [])
+        );
+
+        // Pre-screening questions
+        model(JobPrescreeningModel::class)->syncForJob(
+            $jobId,
+            (array) ($this->request->getPost('questions') ?? [])
+        );
+
+        // Recruitment steps
+        model(JobRecruitmentStepModel::class)->syncForJob(
+            $jobId,
+            (array) ($this->request->getPost('steps') ?? [])
+        );
     }
 
     private function dispatchAlerts(object $job): void

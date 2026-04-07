@@ -6,6 +6,9 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
+// ─── Custom 404 handler (logs every hit + renders branded page) ──────────────
+$routes->set404Override('App\Controllers\ErrorController::notFound');
+
 // ─── Uploaded files (fallback when public/uploads symlink is absent) ─────────
 // (.+) instead of (:any): (:any) = [^/]+ which stops at the first slash,
 // so uploads/organizations/file.png would never match.
@@ -156,6 +159,12 @@ $routes->group('', ['filter' => 'role:recruiter,admin'], static function ($route
 
 // ─── Protected — admin only ───────────────────────────────────────────────────
 $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
-    $routes->get ('admin/deploy', 'DeployController::index');
+    $routes->get ('admin/deploy',      'DeployController::index');
     $routes->post('admin/deploy/pull', 'DeployController::pull');
+    $routes->get ('admin/logs',        'LogController::index');
+    $routes->get ('admin/404-logs',    'NotFoundLogController::index');
+    $routes->post('admin/404-logs/delete/(:num)', 'NotFoundLogController::delete/$1');
+    $routes->post('admin/404-logs/clear',         'NotFoundLogController::clear');
+    $routes->get ('admin/applications',                    'AdminApplicationController::index');
+    $routes->post('admin/applications/(:num)/status',      'AdminApplicationController::updateStatus/$1');
 });

@@ -507,32 +507,6 @@ class OrganizationController extends BaseController
     }
 
     /**
-     * Convert country code to full country name
-     */
-    private function getCountryName(string $code): string
-    {
-        $countries = [
-            'DZ' => 'Algeria',
-            'TN' => 'Tunisia',
-            'MA' => 'Morocco',
-            'FR' => 'France',
-            'US' => 'United States',
-            'GB' => 'United Kingdom',
-            'ES' => 'Spain',
-            'IT' => 'Italy',
-            'CH' => 'Switzerland',
-            'CA' => 'Canada',
-            'BE' => 'Belgium',
-            'DE' => 'Germany',
-            'NL' => 'Netherlands',
-            'SE' => 'Sweden',
-            'NO' => 'Norway',
-        ];
-
-        return $countries[strtoupper($code)] ?? $code;
-    }
-
-    /**
      * Check if client wants JSON response
      */
     private function wantsJson(): bool

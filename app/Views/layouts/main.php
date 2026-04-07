@@ -224,32 +224,109 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         }
         .user-btn:hover { border-color: var(--brand); background: var(--brand-light); color: var(--brand-dark); }
         .user-avatar {
-            width: 30px; height: 30px;
+            width: 36px; height: 36px;
             background: linear-gradient(135deg, var(--brand-dark), #7c3aed);
-            border-radius: 8px;
+            border-radius: 50%;
             color: #fff;
-            font-size: .75rem;
+            font-size: .78rem;
             font-weight: 700;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
             flex-shrink: 0;
         }
-        .user-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 8px; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
 
         /* Hamburger mobile */
         .nav-toggler {
             display: none;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 6px 10px;
-            font-size: 1.1rem;
+            background: none;
+            border: none;
+            padding: 4px;
             cursor: pointer;
             color: var(--text);
             margin-<?= $isRtl ? 'right' : 'left' ?>: auto;
         }
 
-        /* ── Dropdown ─────────────────────────────────────────────── */
+        /* ── Mobile bottom nav ───────────────────────────────────── */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 56px;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            z-index: 1030;
+            padding: 0 4px;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .mobile-bottom-nav a, .mobile-bottom-nav button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: .6rem;
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            line-height: 1.1;
+            flex: 1;
+            transition: color .15s;
+        }
+        .mobile-bottom-nav a i, .mobile-bottom-nav button i { font-size: 1.3rem; display: block; }
+        .mobile-bottom-nav a.active, .mobile-bottom-nav a:hover,
+        .mobile-bottom-nav button.active { color: var(--brand-dark); }
+
+        /* Mobile user drawer */
+        .mobile-user-drawer {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 56px;
+            background: rgba(15,23,42,.45);
+            z-index: 1028;
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        .mobile-user-drawer.open { opacity: 1; }
+        .mobile-user-sheet {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            padding: 16px 0 20px;
+            transform: translateY(100%);
+            transition: transform .25s cubic-bezier(.32,1,.6,1);
+        }
+        .mobile-user-drawer.open .mobile-user-sheet { transform: translateY(0); }
+        .mobile-sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+        .mobile-sheet-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: .9rem;
+            font-weight: 500;
+            transition: background .12s;
+        }
+        .mobile-sheet-item:hover { background: var(--brand-light); color: var(--brand-dark); }
+        .mobile-sheet-item.danger { color: #dc2626; }
+        .mobile-sheet-item.danger:hover { background: #fef2f2; }
+        .mobile-sheet-item i { font-size: 1.1rem; width: 22px; text-align: center; }
+
+        @media (max-width: 768px) {
+            body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+            .nav-links, .nav-actions { display: none !important; }
+            .nav-toggler { display: block; }
+            .mobile-bottom-nav { display: flex; }
+        }
         .dropdown-menu {
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -373,23 +450,7 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg) !important; }
         .stat-number { font-size: 2rem; font-weight: 800; line-height: 1; }
 
-        /* ── Mobile ───────────────────────────────────────────────── */
-        @media (max-width: 768px) {
-            .nav-links, .nav-actions { display: none; }
-            .nav-toggler { display: block; }
-            .nav-links.open, .nav-actions.open {
-                display: flex;
-                flex-direction: column;
-                position: fixed;
-                top: var(--nav-h);
-                left: 0; right: 0;
-                background: var(--surface);
-                border-bottom: 1px solid var(--border);
-                padding: 12px 16px;
-                gap: 6px;
-                z-index: 1029;
-            }
-        }
+        /* ── Mobile (legacy block — superseded by bottom nav above) ─ */
 
         /* RTL tweaks */
         <?php if ($isRtl): ?>
@@ -461,7 +522,19 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
                         <li><a class="dropdown-item" href="<?= base_url('jobs/create') ?>"><i class="bi bi-plus-circle me-2"></i><?= lang('App.nav_post_job') ?></a></li>
                         <li><a class="dropdown-item" href="<?= base_url('company/edit') ?>"><i class="bi bi-building me-2"></i><?= lang('App.nav_company') ?></a></li>
                         <?php endif; ?>
+                        <?php if (session()->get('user_role') === 'admin'): ?>
                         <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <div class="px-3 py-1 text-uppercase" style="font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:.06em;">
+                                Admin
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/applications') ?>"><i class="bi bi-briefcase-fill me-2" style="color:var(--brand-dark);"></i>Candidatures</a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/404-logs') ?>"><i class="bi bi-signpost-split me-2" style="color:#f59e0b;"></i>Erreurs 404</a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/logs') ?>"><i class="bi bi-file-earmark-text me-2" style="color:#6366f1;"></i>Logs CI4</a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('admin/deploy') ?>"><i class="bi bi-cloud-arrow-down me-2" style="color:#22c55e;"></i>Déploiement</a></li>
+                        <?php endif; ?>
+                        <li><hr class="dropdown-divider">
                         <!-- Language switcher -->
                         <li>
                             <div class="px-3 py-1 d-flex align-items-center gap-2">
@@ -486,11 +559,96 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             <?php endif; ?>
         </div>
 
-        <button class="nav-toggler" id="navToggler" aria-label="Toggle navigation">
-            <i class="bi bi-list"></i>
+        <button class="nav-toggler" id="navToggler" aria-label="Mon compte">
+            <span class="user-avatar" style="width:34px;height:34px;font-size:.78rem;">
+                <?php if (session()->get('user_avatar')): ?>
+                    <img src="<?= base_url('uploads/' . esc(session()->get('user_avatar'))) ?>" alt="">
+                <?php elseif (session()->get('logged_in')): ?>
+                    <?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?>
+                <?php else: ?>
+                    <i class="bi bi-person" style="font-size:1rem;"></i>
+                <?php endif; ?>
+            </span>
         </button>
     </div>
 </nav>
+
+<!-- ── Mobile bottom navigation bar ───────────────────────────────────────── -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a href="<?= base_url('/') ?>"><i class="bi bi-house-fill"></i><span>Accueil</span></a>
+    <a href="<?= base_url('jobs') ?>"><i class="bi bi-briefcase"></i><span>Emplois</span></a>
+    <?php if (session()->get('logged_in')): ?>
+        <a href="<?= base_url('connections') ?>"><i class="bi bi-people"></i><span>Relations</span></a>
+        <a href="<?= base_url('organizations') ?>"><i class="bi bi-buildings"></i><span>Orgs</span></a>
+    <?php else: ?>
+        <a href="<?= base_url('coaching') ?>"><i class="bi bi-lightbulb"></i><span>Coaching</span></a>
+        <a href="<?= base_url('login') ?>"><i class="bi bi-box-arrow-in-right"></i><span>Connexion</span></a>
+    <?php endif; ?>
+    <button id="mobileUserBtn" aria-label="Mon compte">
+        <span class="user-avatar" style="width:30px;height:30px;font-size:.7rem;margin-bottom:2px;">
+            <?php if (session()->get('user_avatar')): ?>
+                <img src="<?= base_url('uploads/' . esc(session()->get('user_avatar'))) ?>" alt="">
+            <?php elseif (session()->get('logged_in')): ?>
+                <?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?>
+            <?php else: ?>
+                <i class="bi bi-person"></i>
+            <?php endif; ?>
+        </span>
+        <span><?= session()->get('logged_in') ? esc(explode(' ', session()->get('user_name') ?? 'U')[0]) : 'Compte' ?></span>
+    </button>
+</nav>
+
+<!-- ── Mobile user drawer ─────────────────────────────────────────────────── -->
+<div class="mobile-user-drawer" id="mobileUserDrawer">
+    <div class="mobile-user-sheet">
+        <div class="mobile-sheet-handle"></div>
+        <?php if (session()->get('logged_in')): ?>
+            <div class="d-flex align-items-center gap-3 px-4 pb-3 border-bottom mb-1">
+                <span class="user-avatar" style="width:46px;height:46px;font-size:1rem;flex-shrink:0;">
+                    <?php if (session()->get('user_avatar')): ?>
+                        <img src="<?= base_url('uploads/' . esc(session()->get('user_avatar'))) ?>" alt="">
+                    <?php else: ?>
+                        <?= strtoupper(substr(session()->get('user_name') ?? 'U', 0, 1)) ?>
+                    <?php endif; ?>
+                </span>
+                <div>
+                    <div class="fw-bold" style="font-size:.95rem;"><?= esc(session()->get('user_name')) ?></div>
+                    <div class="text-muted" style="font-size:.75rem;"><?= esc(session()->get('user_email')) ?></div>
+                </div>
+            </div>
+            <a class="mobile-sheet-item" href="<?= base_url('profile') ?>"><i class="bi bi-person"></i><?= lang('App.nav_profile') ?></a>
+            <a class="mobile-sheet-item" href="<?= base_url('dashboard') ?>"><i class="bi bi-grid"></i>Tableau de bord</a>
+            <?php if (session()->get('user_role') === 'job_seeker'): ?>
+            <a class="mobile-sheet-item" href="<?= base_url('alerts') ?>"><i class="bi bi-bell"></i><?= lang('App.nav_alerts') ?></a>
+            <?php endif; ?>
+            <?php if (in_array(session()->get('user_role'), ['recruiter', 'admin'])): ?>
+            <a class="mobile-sheet-item" href="<?= base_url('jobs/create') ?>"><i class="bi bi-plus-circle"></i><?= lang('App.nav_post_job') ?></a>
+            <a class="mobile-sheet-item" href="<?= base_url('company/edit') ?>"><i class="bi bi-building"></i><?= lang('App.nav_company') ?></a>
+            <?php endif; ?>
+            <?php if (session()->get('user_role') === 'admin'): ?>
+            <div class="px-4 pt-3 pb-1 border-top"
+                 style="font-size:.65rem;font-weight:700;text-transform:uppercase;
+                        color:var(--muted);letter-spacing:.06em;">
+                Administration
+            </div>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/applications') ?>"><i class="bi bi-briefcase-fill" style="color:var(--brand-dark);"></i>Candidatures</a>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/404-logs') ?>"><i class="bi bi-signpost-split" style="color:#f59e0b;"></i>Erreurs 404</a>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/logs') ?>"><i class="bi bi-file-earmark-text" style="color:#6366f1;"></i>Logs CI4</a>
+            <a class="mobile-sheet-item" href="<?= base_url('admin/deploy') ?>"><i class="bi bi-cloud-arrow-down" style="color:#22c55e;"></i>Déploiement</a>
+            <?php endif; ?>
+            <div class="px-4 py-2 d-flex align-items-center gap-2 border-top mt-1">
+                <small class="text-muted"><i class="bi bi-translate me-1"></i></small>
+                <a href="<?= base_url('lang/en') ?>" class="lang-btn <?= $locale === 'en' ? 'active' : '' ?>">EN</a>
+                <a href="<?= base_url('lang/fr') ?>" class="lang-btn <?= $locale === 'fr' ? 'active' : '' ?>">FR</a>
+                <a href="<?= base_url('lang/ar') ?>" class="lang-btn <?= $locale === 'ar' ? 'active' : '' ?>">ع</a>
+            </div>
+            <a class="mobile-sheet-item danger" href="<?= base_url('logout') ?>"><i class="bi bi-box-arrow-right"></i><?= lang('App.nav_logout') ?></a>
+        <?php else: ?>
+            <a class="mobile-sheet-item" href="<?= base_url('login') ?>"><i class="bi bi-box-arrow-in-right"></i><?= lang('App.nav_login') ?></a>
+            <a class="mobile-sheet-item" href="<?= base_url('register') ?>"><i class="bi bi-person-plus"></i><?= lang('App.nav_signup') ?></a>
+        <?php endif; ?>
+    </div>
+</div>
 
 <!-- ── Flash messages ─────────────────────────────────────────────────────── -->
 <div class="flash-wrap" id="flashWrap">
@@ -552,15 +710,27 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         setTimeout(() => el.classList.add('fade'), 4000);
         setTimeout(() => el.remove(), 4500);
     });
-    // Mobile menu
-    document.getElementById('navToggler')?.addEventListener('click', () => {
-        document.getElementById('navLinks').classList.toggle('open');
-        document.getElementById('navActions').classList.toggle('open');
+    // Mobile user drawer
+    function openMobileDrawer() {
+        const d = document.getElementById('mobileUserDrawer');
+        d.style.display = 'block';
+        requestAnimationFrame(() => d.classList.add('open'));
+    }
+    function closeMobileDrawer() {
+        const d = document.getElementById('mobileUserDrawer');
+        d.classList.remove('open');
+        setTimeout(() => { d.style.display = ''; }, 250);
+    }
+    document.getElementById('mobileUserBtn')?.addEventListener('click', openMobileDrawer);
+    document.getElementById('navToggler')?.addEventListener('click', openMobileDrawer);
+    document.getElementById('mobileUserDrawer')?.addEventListener('click', function (e) {
+        if (e.target === this) closeMobileDrawer();
     });
     // Active nav link
     (function () {
         const curr = window.location.pathname.replace(/\/$/, '') || '/';
-        document.querySelectorAll('.nav-links a').forEach(a => {
+        const allNavLinks = document.querySelectorAll('.nav-links a, .mobile-bottom-nav a');
+        allNavLinks.forEach(a => {
             try {
                 const href = new URL(a.href).pathname.replace(/\/$/, '') || '/';
                 if (curr === href || (href.length > 1 && curr.startsWith(href))) {
