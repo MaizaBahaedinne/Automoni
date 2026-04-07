@@ -153,3 +153,9 @@ $routes->group('', ['filter' => 'role:recruiter,admin'], static function ($route
     // Application management
     $routes->post('applications/(:num)/status', 'JobController::updateApplicationStatus/$1');
 });
+
+// ─── Protected — admin only ───────────────────────────────────────────────────
+$routes->group('', ['filter' => 'role:admin'], static function ($routes) {
+    $routes->get ('admin/deploy', 'DeployController::index');
+    $routes->post('admin/deploy/pull', 'DeployController::pull');
+});
