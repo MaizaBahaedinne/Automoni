@@ -38,13 +38,17 @@ class DeployController extends BaseController
 
         $outputText = implode("\n", $output);
 
+        $permissionError = str_contains($outputText, 'Permission denied');
+
         log_message('info', '[Deploy] git pull by user ' . session()->get('user_id') . ' — exit ' . $exitCode . "\n" . $outputText);
 
         return view('admin/deploy', [
-            'title'    => 'Déploiement',
-            'output'   => $outputText,
-            'exitCode' => $exitCode,
-            'ran'      => true,
+            'title'           => 'Déploiement',
+            'output'          => $outputText,
+            'exitCode'        => $exitCode,
+            'ran'             => true,
+            'permissionError' => $permissionError,
+            'projectRoot'     => $projectRoot,
         ]);
     }
 }

@@ -38,6 +38,20 @@
             max-height:400px;
             overflow-y:auto;
         "><?= htmlspecialchars($output ?? '') ?></pre>
+
+        <?php if (!empty($permissionError)): ?>
+        <div class="mt-3 p-3" style="background:#fef9c3; border:1px solid #fde68a; border-radius:8px;">
+            <p class="mb-2 fw-semibold" style="color:#92400e;">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Cause : le processus PHP (www-data/apache) n'a pas les droits d'écriture sur <code>.git/</code>.
+            </p>
+            <p class="mb-2" style="color:#78350f; font-size:.9rem;">
+                Connectez-vous en <strong>SSH</strong> et exécutez <strong>une seule fois</strong> :
+            </p>
+            <pre style="background:#1e1b4b; color:#c7d2fe; border-radius:6px; padding:.75rem 1rem; font-size:.8rem; margin:0 0 .5rem;">sudo chown -R $(whoami):$(whoami) <?= htmlspecialchars($projectRoot ?? '/home/persomy.com/public_html') ?>/.git</pre>
+            <p class="mb-0" style="color:#78350f; font-size:.85rem;">Relancez ensuite le git pull depuis cette page.</p>
+        </div>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
 
