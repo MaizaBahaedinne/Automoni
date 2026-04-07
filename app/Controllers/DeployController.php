@@ -26,9 +26,10 @@ class DeployController extends BaseController
         }
 
         $command = sprintf(
-            'cd %s && %s pull 2>&1',
+            'cd %s && %s -c safe.directory=%s pull 2>&1',
             escapeshellarg($projectRoot),
-            escapeshellarg($gitBin)
+            escapeshellarg($gitBin),
+            escapeshellarg($projectRoot)
         );
 
         $output   = [];
