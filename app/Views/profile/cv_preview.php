@@ -118,43 +118,46 @@
                 <i class="bi bi-person"></i> Profile Information
             </h3>
 
-            <?php if (!empty($preview['profile']['headline']['value'])): ?>
-                <div class="preview-field">
-                    <label>
-                        Headline
-                        <span class="confidence-badge confidence-<?= $preview['profile']['headline']['confidence'] >= 0.9 ? 'high' : ($preview['profile']['headline']['confidence'] >= 0.75 ? 'medium' : 'low') ?>">
-                            <?= round($preview['profile']['headline']['confidence'] * 100) ?>%
-                        </span>
-                    </label>
-                    <input type="text" class="form-control" name="profile[headline]" 
-                           value="<?= esc($preview['profile']['headline']['value'] ?? '') ?>">
-                </div>
-            <?php endif; ?>
+            <div class="preview-field">
+                <label>
+                    Headline
+                    <span class="confidence-badge confidence-<?= ($preview['profile']['headline_confidence'] ?? 0) >= 0.9 ? 'high' : (($preview['profile']['headline_confidence'] ?? 0) >= 0.75 ? 'medium' : 'low') ?>">
+                        <?= round(($preview['profile']['headline_confidence'] ?? 0) * 100) ?>%
+                    </span>
+                </label>
+                <input type="text" class="form-control" name="profile[headline]" 
+                       value="<?= esc($preview['profile']['headline'] ?? '') ?>"
+                       placeholder="e.g., Senior PHP Developer">
+            </div>
 
-            <?php if (!empty($preview['profile']['summary']['value'])): ?>
-                <div class="preview-field">
-                    <label>
-                        Summary
-                        <span class="confidence-badge confidence-<?= $preview['profile']['summary']['confidence'] >= 0.9 ? 'high' : ($preview['profile']['summary']['confidence'] >= 0.75 ? 'medium' : 'low') ?>">
-                            <?= round($preview['profile']['summary']['confidence'] * 100) ?>%
-                        </span>
-                    </label>
-                    <textarea class="form-control" name="profile[summary]" rows="4"><?= esc($preview['profile']['summary']['value'] ?? '') ?></textarea>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="preview-field">
+                        <label>Email</label>
+                        <input type="email" class="form-control" name="profile[email]" 
+                               value="<?= esc($preview['profile']['email'] ?? '') ?>"
+                               placeholder="your.email@example.com">
+                    </div>
                 </div>
-            <?php endif; ?>
+                <div class="col-md-6">
+                    <div class="preview-field">
+                        <label>Phone</label>
+                        <input type="tel" class="form-control" name="profile[phone]" 
+                               value="<?= esc($preview['profile']['phone'] ?? '') ?>"
+                               placeholder="+33 6 12 34 56 78">
+                    </div>
+                </div>
+            </div>
 
-            <?php if (!empty($preview['profile']['phone']['value'])): ?>
-                <div class="preview-field">
-                    <label>
-                        Phone
-                        <span class="confidence-badge confidence-high">
-                            <?= round($preview['profile']['phone']['confidence'] * 100) ?>%
-                        </span>
-                    </label>
-                    <input type="tel" class="form-control" name="profile[phone]" 
-                           value="<?= esc($preview['profile']['phone']['value'] ?? '') ?>">
-                </div>
-            <?php endif; ?>
+            <div class="preview-field">
+                <label>
+                    Professional Summary
+                    <span class="confidence-badge confidence-<?= ($preview['profile']['summary_confidence'] ?? 0) >= 0.9 ? 'high' : (($preview['profile']['summary_confidence'] ?? 0) >= 0.75 ? 'medium' : 'low') ?>">
+                        <?= round(($preview['profile']['summary_confidence'] ?? 0) * 100) ?>%
+                    </span>
+                </label>
+                <textarea class="form-control" name="profile[summary]" rows="4" placeholder="Tell us about yourself..."><?= esc($preview['profile']['summary'] ?? '') ?></textarea>
+            </div>
         </div>
 
         <!-- 2. Skills Section -->
@@ -164,15 +167,16 @@
                     <i class="bi bi-star"></i> Skills
                 </h3>
                 <div class="preview-field">
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        <?php foreach ($preview['skills'] as $skill): ?>
-                            <div class="skill-badge" style="position: relative; padding-right: 1.8rem;">
-                                <?= esc($skill['name']) ?>
-                                <span class="confidence-badge confidence-<?= $skill['confidence'] >= 0.9 ? 'high' : 'medium' ?>" 
-                                      style="position: absolute; right: 0.4rem; top: 0.2rem; display: inline; margin: 0;">
-                                    <?= round($skill['confidence'] * 100) ?>%
+                    <small class="text-muted">The following skills were detected in your CV:</small>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">
+                        <?php foreach ($preview['skills'] as $idx => $skill): ?>
+                            <div style="background: var(--brand-light); padding: 0.6rem 1rem;border-radius: 20px; display: flex; align-items: center; gap: 0.5rem;">
+                                <span><?= esc($skill['name'] ?? $skill) ?></span>
+                                <span class="confidence-badge confidence-<?= ($skill['confidence'] ?? 0.75) >= 0.9 ? 'high' : (($skill['confidence'] ?? 0.75) >= 0.75 ? 'medium' : 'low') ?>" 
+                                      style="margin: 0;">
+                                    <?= round(($skill['confidence'] ?? 0.75) * 100) ?>%
                                 </span>
-                                <input type="hidden" name="skills[]" value="<?= esc($skill['name']) ?>">
+                                <input type="hidden" name="skills[]" value="<?= esc($skill['name'] ?? $skill) ?>">
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -184,34 +188,54 @@
         <?php if (!empty($preview['experiences'])): ?>
             <div class="preview-card editable">
                 <h3 style="margin-top: 0; color: var(--brand);">
-                    <i class="bi bi-briefcase"></i> Experiences
+                    <i class="bi bi-briefcase"></i> Experiences (<?= count($preview['experiences']) ?>)
                 </h3>
-                <ul class="preview-list">
-                    <?php foreach ($preview['experiences'] as $idx => $exp): ?>
-                        <li>
-                            <div style="flex: 1;">
-                                <strong><?= esc($exp['title'] ?? 'Position') ?></strong>
-                                <?php if (!empty($exp['organization'])): ?>
-                                    <span style="color: #666;"><?= esc($exp['organization']) ?></span>
-                                    <br>
-                                <?php endif; ?>
-                                <small style="color: var(--muted);">
-                                    <?= $exp['start_year'] ?? '?' ?> 
-                                    {{ to }} 
-                                    <?= $exp['end_year'] ? esc((string)$exp['end_year']) : 'Present' ?>
-                                </small>
+                <?php foreach ($preview['experiences'] as $idx => $exp): ?>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; border-left: 3px solid var(--brand);">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="preview-field" style="margin-bottom: 0.75rem;">
+                                    <label style="font-size: 0.85rem;">Job Title</label>
+                                    <input type="text" class="form-control form-control-sm" name="experiences[<?= $idx ?>][title]"
+                                           value="<?= esc($exp['title'] ?? '') ?>"
+                                           placeholder="e.g., Senior Developer">
+                                </div>
                             </div>
-                            <span class="confidence-badge confidence-<?= $exp['confidence'] >= 0.85 ? 'high' : 'medium' ?>" 
-                                  style="margin-left: 1rem; white-space: nowrap;">
-                                <?= round($exp['confidence'] * 100) ?>%
-                            </span>
-                            <input type="hidden" name="experiences[<?= $idx ?>][title]" value="<?= esc($exp['title'] ?? '') ?>">
-                            <input type="hidden" name="experiences[<?= $idx ?>][organization]" value="<?= esc($exp['organization'] ?? '') ?>">
-                            <input type="hidden" name="experiences[<?= $idx ?>][start_year]" value="<?= esc((string)($exp['start_year'] ?? '')) ?>">
-                            <input type="hidden" name="experiences[<?= $idx ?>][end_year]" value="<?= esc((string)($exp['end_year'] ?? '')) ?>">
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                            <div class="col-md-5">
+                                <div class="preview-field" style="margin-bottom: 0.75rem;">
+                                    <label style="font-size: 0.85rem;">Company</label>
+                                    <input type="text" class="form-control form-control-sm" name="experiences[<?= $idx ?>][organization]"
+                                           value="<?= esc($exp['organization'] ?? '') ?>"
+                                           placeholder="Company name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="preview-field" style="margin-bottom: 0;">
+                                    <label style="font-size: 0.85rem;">Start Year</label>
+                                    <input type="number" class="form-control form-control-sm" name="experiences[<?= $idx ?>][start_year]" min="1950" max="2099"
+                                           value="<?= $exp['start_year'] ?? '' ?>" placeholder="2020">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="preview-field" style="margin-bottom: 0;">
+                                    <label style="font-size: 0.85rem;">End Year</label>
+                                    <input type="number" class="form-control form-control-sm" name="experiences[<?= $idx ?>][end_year]" min="1950" max="2099"
+                                           value="<?= $exp['end_year'] ?? '' ?>" placeholder="2023">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="preview-field" style="margin-bottom: 0;">
+                                    <label style="font-size: 0.85rem;">Confidence</label>
+                                    <span class="confidence-badge confidence-<?= ($exp['confidence'] ?? 0) >= 0.85 ? 'high' : 'medium' ?>" style="display: block; width: 100%; text-align: center;">
+                                        <?= round(($exp['confidence'] ?? 0) * 100) ?>%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
         <?php endif; ?>
 
@@ -219,37 +243,56 @@
         <?php if (!empty($preview['education'])): ?>
             <div class="preview-card editable">
                 <h3 style="margin-top: 0; color: var(--brand);">
-                    <i class="bi bi-mortarboard"></i> Education
+                    <i class="bi bi-mortarboard"></i> Education (<?= count($preview['education']) ?>)
                 </h3>
-                <ul class="preview-list">
-                    <?php foreach ($preview['education'] as $idx => $edu): ?>
-                        <li>
-                            <div style="flex: 1;">
-                                <strong>
-                                    <?= esc($edu['degree'] ?? 'Degree') ?>
-                                    <?php if (!empty($edu['field'])): ?>
-                                        in <?= esc($edu['field']) ?>
-                                    <?php endif; ?>
-                                </strong>
-                                <?php if (!empty($edu['institution'])): ?>
-                                    <span style="color: #666;">{{ at }} <?= esc($edu['institution']) ?></span>
-                                    <br>
-                                <?php endif; ?>
-                                <?php if (!empty($edu['year'])): ?>
-                                    <small style="color: var(--muted);">Graduated: <?= esc((string)$edu['year']) ?></small>
-                                <?php endif; ?>
+                <?php foreach ($preview['education'] as $idx => $edu): ?>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; border-left: 3px solid var(--brand);">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="preview-field" style="margin-bottom: 0.75rem;">
+                                    <label style="font-size: 0.85rem;">Degree</label>
+                                    <input type="text" class="form-control form-control-sm" name="education[<?= $idx ?>][degree]"
+                                           value="<?= esc($edu['degree'] ?? '') ?>"
+                                           placeholder="e.g., Bachelor, Master, PhD">
+                                </div>
                             </div>
-                            <span class="confidence-badge confidence-<?= $edu['confidence'] >= 0.85 ? 'high' : 'medium' ?>" 
-                                  style="margin-left: 1rem; white-space: nowrap;">
-                                <?= round($edu['confidence'] * 100) ?>%
-                            </span>
-                            <input type="hidden" name="education[<?= $idx ?>][degree]" value="<?= esc($edu['degree'] ?? '') ?>">
-                            <input type="hidden" name="education[<?= $idx ?>][institution]" value="<?= esc($edu['institution'] ?? '') ?>">
-                            <input type="hidden" name="education[<?= $idx ?>][field]" value="<?= esc($edu['field'] ?? '') ?>">
-                            <input type="hidden" name="education[<?= $idx ?>][year]" value="<?= esc((string)($edu['year'] ?? '')) ?>">
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                            <div class="col-md-6">
+                                <div class="preview-field" style="margin-bottom: 0.75rem;">
+                                    <label style="font-size: 0.85rem;">Field of Study</label>
+                                    <input type="text" class="form-control form-control-sm" name="education[<?= $idx ?>][field]"
+                                           value="<?= esc($edu['field'] ?? '') ?>"
+                                           placeholder="e.g., Computer Science">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="preview-field" style="margin-bottom: 0.75rem;">
+                                    <label style="font-size: 0.85rem;">Institution</label>
+                                    <input type="text" class="form-control form-control-sm" name="education[<?= $idx ?>][institution]"
+                                           value="<?= esc($edu['institution'] ?? '') ?>"
+                                           placeholder="University name">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="preview-field" style="margin-bottom: 0.75rem;">
+                                    <label style="font-size: 0.85rem;">Year Graduated</label>
+                                    <input type="number" class="form-control form-control-sm" name="education[<?= $idx ?>][year]" min="1950" max="2099"
+                                           value="<?= $edu['year'] ?? '' ?>" placeholder="2020">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <small class="text-muted">
+                                    Confidence: <span class="confidence-badge confidence-<?= ($edu['confidence'] ?? 0) >= 0.85 ? 'high' : 'medium' ?>" style="margin: 0;">
+                                        <?= round(($edu['confidence'] ?? 0) * 100) ?>%
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
         <?php endif; ?>
 
