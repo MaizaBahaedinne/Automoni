@@ -324,6 +324,25 @@
                     </div>
                     <div class="form-text"><?= lang('App.cv_hint_size') ?></div>
                 </form>
+
+                <?php if (!empty($profile?->cv_file)): ?>
+                <!-- Smart Profile Fill Section -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="fw-bold mb-3">
+                        <i class="bi bi-stars me-1" style="color:#6366f1;"></i>Analyse Intelligente du CV
+                    </h6>
+                    <p class="text-muted small mb-3">
+                        Remplissez automatiquement votre profil en analysant votre CV avec l'IA.
+                    </p>
+                    <button type="button" class="btn btn-primary" id="smartProfileFillBtn" style="background:#6366f1;border-color:#6366f1;">
+                        <i class="bi bi-brain me-1"></i>🧠 Analyser mon CV
+                    </button>
+                    <div id="analysisSpinner" class="spinner-border spinner-border-sm ms-2 ms-1 d-none" role="status">
+                        <span class="visually-hidden">Analyse...</span>
+                    </div>
+                    <div id="analysisMessage" class="mt-2"></div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -2218,6 +2237,51 @@ if (expIsCurrent) {
 
     document.querySelectorAll('.org-ac').forEach(initOrgAc);
 })();
+</script>
+
+<!-- Smart Profile Fill Script -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('smartProfileFillBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+        const spinner = document.getElementById('analysisSpinner');
+        const msgDiv = document.getElementById('analysisMessage');
+        
+        msgDiv.innerHTML = '';
+        spinner.classList.remove('d-none');
+        btn.disabled = true;
+
+        try {
+            const resp = await fetch('<?= base_url('profile/cv/preview') ?>', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({})
+            });
+
+            const data = await resp.json();
+            spinner.classList.add('d-none');
+
+            if (data.success) {
+                msgDiv.innerHTML = '<div class="alert alert-success mb-0"><i class="bi bi-check-circle me-1"></i>Analyse complete! Redirection...</div>';
+                setTimeout(() => {
+                    window.location.href = '<?= base_url('profile/cv-preview') ?>';
+                }, 800);
+            } else {
+                msgDiv.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>' + (data.message || 'Erreur lors de l\'analyse') + '</div>';
+                btn.disabled = false;
+            }
+        } catch (err) {
+            spinner.classList.add('d-none');
+            msgDiv.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>Erreur: ' + err.message + '</div>';
+            btn.disabled = false;
+        }
+    });
+});
 </script>
 
 <?= $this->endSection() ?>
