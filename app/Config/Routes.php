@@ -69,6 +69,11 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get ('profile/cv/download/(:num)', 'ProfileController::downloadCv/$1');
     $routes->get ('profile/cv/download',        'ProfileController::downloadCv');
 
+    // ─── CV Integration (NEW) ──────────────────────────────────────────────────
+    $routes->get ('profile/cv-integrate',       'CvIntegrationController::showIntegrationPage');
+    $routes->post('profile/cv-parse',           'CvIntegrationController::parseCv');
+    $routes->post('profile/cv-save',            'CvIntegrationController::saveProfileFromCv');
+
     // ─── Connections ──────────────────────────────────────────────────────────
     $routes->get ('connections',                'ConnectionController::index');
     $routes->get ('connections/search',         'ConnectionController::search');

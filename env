@@ -153,3 +153,26 @@
 
 # LINKEDIN_CLIENT_ID     = your_client_id_here
 # LINKEDIN_CLIENT_SECRET = your_client_secret_here
+
+#--------------------------------------------------------------------
+# CV PARSING SERVICE (Python microservice integration)
+# For enhanced CV parsing with AI (Ollama)
+#--------------------------------------------------------------------
+
+# Enable CV Parsing integration
+# CV_PARSING_ENABLED = true
+
+# Base URL of Python CV Parsing mikicroservice
+# Make sure Python service is running before enabling
+# CV_PARSING_BASE_URL = http://localhost:8001
+
+# API Key for authentication with Python service
+# Should match the key in Python service config
+# CV_PARSING_API_KEY = your-secret-api-key-here
+
+# Request timeouts (seconds)
+# CV_PARSING_TIMEOUT = 60
+# CV_PARSING_CONNECT_TIMEOUT = 10
+
+# Max file size for upload (MB)
+# CV_PARSING_MAX_SIZE_MB = 10
