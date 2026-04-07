@@ -40,15 +40,41 @@ class CvParser
      */
     public function parseDetailed(string $filePath, string $mimeType): array
     {
-        $text = $this->extractText($filePath, $mimeType);
+        try {
+            $text = $this->extractText($filePath, $mimeType);
+        } catch (\Throwable $e) {
+            log_message('warning', 'extractText failed: ' . $e->getMessage());
+            $text = '';
+        }
 
-        // Wrap email and phone results to ensure consistent array format
-        $email = $this->extractEmail($text);
-        $phone = $this->extractPhone($text);
+        if (empty($text)) {
+            return [
+                'headline'    => ['value' => '', 'confidence' => 0, 'source' => 'empty'],
+                'summary'     => ['value' => '', 'confidence' => 0, 'source' => 'empty'],
+                'email'       => ['value' => null, 'confidence' => 0, 'source' => 'empty'],
+                'phone'       => ['value' => null, 'confidence' => 0, 'source' => 'empty'],
+                'skills'      => [],
+                'languages'   => [],
+                'experiences' => [],
+                'education'   => [],
+                'overall_confidence' => 0.0,
+            ];
+        }
+
+        // Extract each field safely
+        $headline    = $this->safExtract('extractHeadline', $text);
+        $summary     = $this->safExtract('extractSummary', $text);
+        $email       = $this->extractEmail($text);
+        $phone       = $this->extractPhone($text);
+        $skills      = $this->safExtract('extractSkillsDetailed', $text) ?? [];
+        $languages   = $this->safExtract('extractLanguagesDetailed', $text) ?? [];
+        $experiences = $this->safExtract('extractExperiences', $text) ?? [];
+        $education   = $this->safExtract('extractEducation', $text) ?? [];
+        $confidence  = $this->safExtract('calculateOverallConfidence', $text) ?? 0.5;
 
         return [
-            'headline'    => $this->extractHeadline($text),
-            'summary'     => $this->extractSummary($text),
+            'headline'    => $headline ?? ['value' => '', 'confidence' => 0, 'source' => 'error'],
+            'summary'     => $summary ?? ['value' => '', 'confidence' => 0, 'source' => 'error'],
             'email'       => [
                 'value'      => $email,
                 'confidence' => $email ? 0.95 : 0.0,
@@ -59,12 +85,25 @@ class CvParser
                 'confidence' => $phone ? 0.90 : 0.0,
                 'source'     => 'regex_pattern',
             ],
-            'skills'      => $this->extractSkillsDetailed($text),
-            'languages'   => $this->extractLanguagesDetailed($text),
-            'experiences' => $this->extractExperiences($text),
-            'education'   => $this->extractEducation($text),
-            'overall_confidence' => $this->calculateOverallConfidence($text),
+            'skills'      => is_array($skills) ? $skills : [],
+            'languages'   => is_array($languages) ? $languages : [],
+            'experiences' => is_array($experiences) ? $experiences : [],
+            'education'   => is_array($education) ? $education : [],
+            'overall_confidence' => is_numeric($confidence) ? (float)$confidence : 0.5,
         ];
+    }
+
+    /**
+     * Safely call an extractor method and catch any errors
+     */
+    private function safExtract(string $method, string $text)
+    {
+        try {
+            return $this->$method($text);
+        } catch (\Throwable $e) {
+            log_message('warning', "Extraction method '$method' failed: " . $e->getMessage());
+            return null;
+        }
     }
 
     // ─── Text Extraction ────────────────────────────────────────────────
