@@ -177,20 +177,7 @@
                     </div>
                 <?php endif; ?>
 
-                <!-- Prescreening questions (visible questions, not expected answers) -->
-                <?php if (!empty($questions)): ?>
-                    <h5 class="fw-bold">Questions de présélection</h5>
-                    <ol class="mb-0 ps-3">
-                        <?php foreach ($questions as $q): ?>
-                            <li class="mb-1" style="font-size:.9rem;">
-                                <?= esc($q->question_text) ?>
-                                <?php if (($q->question_type ?? '') === 'yes_no'): ?>
-                                    <small class="text-muted">(Oui / Non)</small>
-                                <?php endif; ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ol>
-                <?php endif; ?>
+
 
             </div>
         </div>
@@ -212,37 +199,11 @@
                         <i class="bi bi-check-circle me-2"></i><?= lang('App.already_applied') ?>
                     </div>
                 <?php else: ?>
-                    <h6 class="fw-bold mb-3"><?= lang('App.apply_job_title') ?></h6>
-                    <form action="<?= base_url('jobs/' . $job->id . '/apply') ?>" method="post" enctype="multipart/form-data">
-                        <?= csrf_field() ?>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small d-flex align-items-center gap-1">
-                                <?= lang('App.cv_optional') ?>
-                                <?php if (!empty($job->require_cover_letter)): ?>
-                                    <span class="badge text-bg-danger" style="font-size:.65rem;">Obligatoire</span>
-                                <?php else: ?>
-                                    <span class="badge text-bg-secondary" style="font-size:.65rem;">Optionnelle</span>
-                                <?php endif; ?>
-                            </label>
-                            <textarea name="cover_letter" class="form-control" rows="4"
-                                      placeholder="<?= lang('App.cover_letter_ph') ?>"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small d-flex align-items-center gap-1">
-                                <?= lang('App.cv_optional') ?>
-                                <?php if (!empty($job->require_cv)): ?>
-                                    <span class="badge text-bg-danger" style="font-size:.65rem;">Obligatoire</span>
-                                <?php else: ?>
-                                    <span class="badge text-bg-secondary" style="font-size:.65rem;">Optionnel</span>
-                                <?php endif; ?>
-                            </label>
-                            <input type="file" name="cv_file" class="form-control" accept=".pdf,.doc,.docx">
-                            <div class="form-text"><?= lang('App.cv_hint') ?></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-semibold">
-                            <i class="bi bi-send me-1"></i><?= lang('App.btn_submit_apply') ?>
-                        </button>
-                    </form>
+                    <p class="text-muted small mb-3">Rejoignez <strong><?= esc($job->company_name) ?></strong> en tant que <strong><?= esc($job->title) ?></strong>.</p>
+                    <button type="button" class="btn btn-primary w-100 fw-semibold"
+                            data-bs-toggle="modal" data-bs-target="#applyModal">
+                        <i class="bi bi-send me-2"></i>Postuler à cette offre
+                    </button>
                 <?php endif; ?>
             </div>
         </div>
@@ -294,5 +255,104 @@
         <?php endif; ?>
     </div>
 </div>
+
+<?php if (session()->get('logged_in') && session()->get('user_role') === 'job_seeker' && !($hasApplied ?? false)): ?>
+<!-- ── Apply Modal ───────────────────────────────────────────────────────── -->
+<div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--brand-light);border-bottom:1px solid var(--border);">
+        <div>
+          <h5 class="modal-title fw-bold mb-0" id="applyModalLabel">
+            <i class="bi bi-briefcase-fill me-2" style="color:var(--brand-dark);"></i>Postuler — <?= esc($job->title) ?>
+          </h5>
+          <small class="text-muted"><?= esc($job->company_name) ?></small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="<?= base_url('jobs/' . $job->id . '/apply') ?>" method="post" enctype="multipart/form-data">
+        <?= csrf_field() ?>
+        <div class="modal-body">
+
+          <!-- CV -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold d-flex align-items-center gap-2">
+              <i class="bi bi-file-earmark-person-fill" style="color:var(--brand-dark);"></i>
+              CV
+              <?php if (!empty($job->require_cv)): ?>
+                <span class="badge text-bg-danger" style="font-size:.65rem;">Obligatoire</span>
+              <?php else: ?>
+                <span class="badge text-bg-secondary" style="font-size:.65rem;">Optionnel</span>
+              <?php endif; ?>
+            </label>
+            <input type="file" name="cv_file" class="form-control" accept=".pdf,.doc,.docx">
+            <div class="form-text"><i class="bi bi-info-circle me-1"></i>PDF, DOC, DOCX — max 5 Mo. Si vide, votre CV de profil sera utilisé.</div>
+          </div>
+
+          <!-- Cover letter -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold d-flex align-items-center gap-2">
+              <i class="bi bi-envelope-paper-fill" style="color:#6366f1;"></i>
+              Lettre de motivation
+              <?php if (!empty($job->require_cover_letter)): ?>
+                <span class="badge text-bg-danger" style="font-size:.65rem;">Obligatoire</span>
+              <?php else: ?>
+                <span class="badge text-bg-secondary" style="font-size:.65rem;">Optionnelle</span>
+              <?php endif; ?>
+            </label>
+            <textarea name="cover_letter" class="form-control" rows="5"
+                      placeholder="<?= lang('App.cover_letter_ph') ?>"></textarea>
+          </div>
+
+          <?php if (!empty($questions)): ?>
+          <!-- Prescreening questions -->
+          <hr>
+          <h6 class="fw-bold mb-3"><i class="bi bi-patch-question-fill me-2" style="color:var(--brand-dark);"></i>Questions de présélection</h6>
+          <?php foreach ($questions as $qi => $q): ?>
+            <div class="mb-3 p-3" style="background:var(--brand-light);border-radius:8px;border:1px solid var(--border);">
+              <label class="form-label fw-semibold" style="font-size:.88rem;">
+                <?= $qi + 1 ?>. <?= esc($q->question_text) ?>
+                <?php if (!empty($q->is_eliminatory)): ?>
+                  <span class="badge text-bg-danger ms-1" style="font-size:.6rem;">Éliminatoire</span>
+                <?php endif; ?>
+              </label>
+              <?php if (($q->question_type ?? 'text') === 'yes_no'): ?>
+                <div class="d-flex gap-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio"
+                           name="answers[<?= $qi ?>][answer]" value="yes"
+                           id="ans_<?= $qi ?>_yes"
+                           <?= !empty($q->is_eliminatory) ? 'required' : '' ?>>
+                    <label class="form-check-label" for="ans_<?= $qi ?>_yes">Oui</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio"
+                           name="answers[<?= $qi ?>][answer]" value="no"
+                           id="ans_<?= $qi ?>_no">
+                    <label class="form-check-label" for="ans_<?= $qi ?>_no">Non</label>
+                  </div>
+                </div>
+              <?php else: ?>
+                <textarea name="answers[<?= $qi ?>][answer]" class="form-control form-control-sm" rows="2"
+                          placeholder="Votre réponse…"
+                          <?= !empty($q->is_eliminatory) ? 'required' : '' ?>></textarea>
+              <?php endif; ?>
+              <input type="hidden" name="answers[<?= $qi ?>][question_id]" value="<?= (int)$q->id ?>">
+            </div>
+          <?php endforeach; ?>
+          <?php endif; ?>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary fw-semibold">
+            <i class="bi bi-send me-2"></i>Envoyer ma candidature
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
 
 <?= $this->endSection() ?>
