@@ -71,7 +71,11 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th><?= lang('App.col_job') ?></th><th><?= lang('App.col_company') ?></th><th><?= lang('App.col_date') ?></th><th><?= lang('App.col_status') ?></th>
+                            <th><?= lang('App.col_job') ?></th>
+                            <th><?= lang('App.col_company') ?></th>
+                            <th>Postulé le</th>
+                            <th>Expiration</th>
+                            <th><?= lang('App.col_status') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,11 +83,30 @@
                         <tr>
                             <td>
                                 <a href="<?= base_url('jobs/' . esc($app->slug ?? $app->job_id)) ?>" class="text-decoration-none fw-semibold">
-                                    <?= esc($app->title ?? 'Job #' . $app->job_id) ?>
+                                    <?= esc($app->job_title ?? 'Job #' . $app->job_id) ?>
                                 </a>
                             </td>
                             <td class="text-muted"><?= esc($app->company_name ?? '—') ?></td>
-                            <td class="text-muted small"><?= !empty($app->created_at) ? date('d M Y', strtotime($app->created_at)) : '—' ?></td>
+                            <td class="text-muted small">
+                                <?php if (!empty($app->created_at)): ?>
+                                    <?= date('d', strtotime($app->created_at)) . ' ' . lang('App.months.' . date('n', strtotime($app->created_at))) . ' ' . date('Y', strtotime($app->created_at)) ?>
+                                <?php else: ?>—<?php endif; ?>
+                            </td>
+                            <td class="small">
+                                <?php if (!empty($app->expires_at)): ?>
+                                    <?php
+                                    $expTs  = strtotime($app->expires_at);
+                                    $daysLeft = (int) ceil(($expTs - time()) / 86400);
+                                    $expColor = $daysLeft <= 0 ? 'text-danger' : ($daysLeft <= 7 ? 'text-warning fw-semibold' : 'text-muted');
+                                    ?>
+                                    <span class="<?= $expColor ?>">
+                                        <?= date('d', $expTs) . ' ' . lang('App.months.' . date('n', $expTs)) . ' ' . date('Y', $expTs) ?>
+                                        <?php if ($daysLeft <= 0): ?><small>(expirée)</small>
+                                        <?php elseif ($daysLeft <= 7): ?><small>(<?= $daysLeft ?>j)</small>
+                                        <?php endif; ?>
+                                    </span>
+                                <?php else: ?><span class="text-muted">—</span><?php endif; ?>
+                            </td>
                             <td>
                                 <?php
                                 $statusColors = [

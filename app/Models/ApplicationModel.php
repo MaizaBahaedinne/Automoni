@@ -47,11 +47,11 @@ class ApplicationModel extends Model
 
     public function getApplicationsForUser(int $userId): array
     {
-        return $this->select('applications.*, jobs.title as job_title, companies.name as company_name')
+        return $this->select('applications.*, jobs.title AS job_title, jobs.slug, jobs.expires_at, companies.name as company_name')
                     ->join('jobs', 'jobs.id = applications.job_id')
                     ->join('companies', 'companies.id = jobs.company_id')
                     ->where('applications.user_id', $userId)
-                    ->orderBy('applications.applied_at', 'DESC')
+                    ->orderBy('applications.created_at', 'DESC')
                     ->findAll();
     }
 
