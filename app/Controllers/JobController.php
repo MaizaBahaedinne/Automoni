@@ -81,9 +81,10 @@ class JobController extends BaseController
 
     public function create(): string|RedirectResponse
     {
-        $company = model(CompanyModel::class)->getByUserId(session()->get('user_id'));
+        $userId  = (int) session()->get('user_id');
+        $company = model(CompanyModel::class)->resolveForUser($userId);
         if (!$company) {
-            return redirect()->to('/company/create')->with('error', 'Vous devez créer un profil entreprise d\'abord.');
+            return redirect()->to('/organizations/create')->with('error', 'Créez d\'abord une organisation pour publier des offres.');
         }
         return view('jobs/create', [
             'title'   => 'Publier une offre',
@@ -111,9 +112,9 @@ class JobController extends BaseController
         }
 
         $userId  = (int) session()->get('user_id');
-        $company = model(CompanyModel::class)->getByUserId($userId);
+        $company = model(CompanyModel::class)->resolveForUser($userId);
         if (!$company) {
-            return redirect()->to('/company/create')->with('error', 'Profil entreprise requis.');
+            return redirect()->to('/organizations/create')->with('error', 'Créez d\'abord une organisation pour publier des offres.');
         }
 
         $data = array_merge(

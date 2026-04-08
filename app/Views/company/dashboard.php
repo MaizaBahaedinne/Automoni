@@ -125,10 +125,8 @@
     <?php else: ?>
     <div class="dash-card p-4 text-center">
         <div class="mb-3" style="font-size:3rem;opacity:.25;"><i class="bi bi-building-add"></i></div>
-        <p class="text-muted mb-3">Vous n'avez pas encore de profil entreprise.</p>
-        <a href="<?= base_url('company/create') ?>" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus me-1"></i>Créer un profil entreprise
-        </a>
+        <p class="text-muted mb-1" style="font-size:.875rem;">Aucun profil entreprise lié.</p>
+        <p class="text-muted small mb-3">Vos organisations servent de profil entreprise. Un profil dédié sera créé automatiquement lors de votre première publication d'offre.</p>
     </div>
     <?php endif; ?>
 </div>

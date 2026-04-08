@@ -8,19 +8,6 @@
     </a>
 </div>
 
-<?php if (!$company && empty($orgs)): ?>
-    <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        <?= lang('App.no_company_warning') ?>
-        <a href="<?= base_url('company/create') ?>" class="btn btn-warning btn-sm ms-2"><?= lang('App.create_company_btn') ?></a>
-    </div>
-<?php elseif (!$company && !empty($orgs)): ?>
-    <div class="alert alert-info d-flex align-items-center gap-2 mb-3 py-2">
-        <i class="bi bi-buildings-fill" style="font-size:1.1rem;"></i>
-        <span style="font-size:.875rem;">Vous gérez <strong><?= count($orgs) ?></strong> organisation(s). Créez un <a href="<?= base_url('company/create') ?>">profil entreprise</a> pour publier des offres d'emploi.</span>
-    </div>
-<?php endif; ?>
-
 <!-- Stats -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">

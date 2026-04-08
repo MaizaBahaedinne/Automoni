@@ -29,6 +29,38 @@ class CompanyModel extends Model
         return is_array($result) ? (object) $result : $result;
     }
 
+    /**
+     * Return the company for a user, or auto-create one from their first
+     * managed organization if they have none. Returns null only if the user
+     * has no organizations either.
+     */
+    public function resolveForUser(int $userId): ?object
+    {
+        $company = $this->getByUserId($userId);
+        if ($company) {
+            return $company;
+        }
+
+        // Try to seed from first managed organization
+        $org = model(\App\Models\OrganizationModel::class)->getManagedByUser($userId)[0] ?? null;
+        if (!$org) {
+            return null;
+        }
+
+        $this->insert([
+            'user_id'     => $userId,
+            'name'        => $org->name,
+            'website'     => $org->website    ?? null,
+            'industry'    => $org->industry   ?? null,
+            'size'        => $org->size        ?? null,
+            'country'     => $org->country    ?? null,
+            'city'        => $org->city        ?? null,
+            'description' => $org->description ?? null,
+        ]);
+
+        return $this->getByUserId($userId);
+    }
+
     protected $beforeInsert = ['generateSlug'];
     protected $beforeUpdate = ['generateSlugOnUpdate'];
 
