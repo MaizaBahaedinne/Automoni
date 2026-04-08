@@ -29,7 +29,7 @@ TECH_SKILLS: List[str] = [
     # Programming languages
     "Python", "JavaScript", "TypeScript", "PHP", "Java", "Kotlin", "Swift",
     "C", "C++", "C#", "Go", "Rust", "Ruby", "Scala", "R", "MATLAB",
-    "Dart", "Perl", "Bash", "Shell", "PowerShell", "Haskell", "Elixir",
+    "Dart", "Perl", "Bash", "Shell", "PowerShell", "Haskell", "Elixir", "VBA",
     # Frontend
     "HTML", "CSS", "SASS", "LESS", "React", "Vue", "Angular", "Svelte",
     "Next.js", "Nuxt.js", "jQuery", "Bootstrap", "Tailwind", "Material UI",
@@ -41,7 +41,7 @@ TECH_SKILLS: List[str] = [
     "Elasticsearch", "Cassandra", "Neo4j", "DynamoDB", "Firebase",
     # DevOps / Cloud
     "Docker", "Kubernetes", "Terraform", "Ansible", "Jenkins", "GitHub Actions",
-    "AWS", "Azure", "GCP", "Heroku", "Vercel", "Netlify", "DigitalOcean",
+    "AWS", "Azure", "Microsoft Azure", "GCP", "Heroku", "Vercel", "Netlify", "DigitalOcean",
     # Tools & protocols
     "Git", "Linux", "Nginx", "Apache", "GraphQL", "REST", "gRPC", "WebSocket",
     "RabbitMQ", "Kafka", "Celery", "Webpack", "Vite", "CI/CD",
@@ -52,6 +52,20 @@ TECH_SKILLS: List[str] = [
     "PHPUnit", "Jest", "pytest", "Selenium", "Cypress",
     # Methodologies
     "Agile", "Scrum", "Kanban", "JIRA", "Figma", "Photoshop",
+    # ── SAP ecosystem ────────────────────────────────────────────────────────
+    "SAP", "SAP BASIS", "SAP HANA", "SAP S/4HANA", "SAP ECC", "SAP BW",
+    "SAP Fiori", "SAP PI", "SAP PO", "SAP PI/PO", "Solution Manager",
+    "ChaRM", "IDocs", "RFC", "ABAP", "SAP GRC", "SAP HR", "SAP MM",
+    "SAP SD", "SAP FI", "SAP CO", "SAP PM", "SAP PS", "SAP WM", "SAP TM",
+    "SAP CRM", "SAP SRM", "SAP HCM", "SAP SuccessFactors", "SAP Ariba",
+    "SAP BTP", "SAP MDG",
+    # ── Security / compliance ────────────────────────────────────────────────
+    "ISO 27001", "ISO 9001", "RGPD", "GDPR", "PCI DSS", "SOC 2",
+    "SMSI", "PRA", "PCA", "DRP",
+    # ── Other enterprise tools ───────────────────────────────────────────────
+    "Salesforce", "ServiceNow", "Workday", "Oracle ERP", "Microsoft 365",
+    "Power BI", "Tableau", "SharePoint", "Active Directory", "LDAP",
+    "Nginx", "Apache", "IIS", "VMware", "Hyper-V", "ITIL",
 ]
 
 # ── Human language map ─────────────────────────────────────────────────────────
@@ -143,14 +157,79 @@ class SpacyExtractor:
 
         return {
             "name":      cls._extract_name(doc, text),
+            "headline":  cls._extract_headline(text),
             "email":     cls._extract_email(text),
             "phone":     cls._extract_phone(text),
+            "city":      cls._extract_city(text),
+            "country":   cls._extract_country(text),
+            "summary":   cls._extract_summary(text),
             "skills":    cls._extract_skills(text),
             "languages": cls._extract_languages(text),
             "sections":  cls._extract_sections(text),
         }
 
     # ── Private helpers ───────────────────────────────────────────────────────
+
+    @staticmethod
+    def _extract_headline(text: str) -> Optional[str]:
+        """
+        Extract headline from the 2nd non-empty line of the CV.
+        E.g. "Consultant SAP BASIS Senior | S/4HANA | ..."
+        """
+        lines = [l.strip() for l in text.splitlines() if l.strip()]
+        # Skip first line (name), return second non-empty line if it looks like a title
+        if len(lines) >= 2:
+            candidate = lines[1]
+            # Accept if it's reasonably short and not contact info
+            if len(candidate) < 200 and '@' not in candidate and not re.match(r'^\+?\d', candidate):
+                return candidate
+        return None
+
+    @staticmethod
+    def _extract_city(text: str) -> Optional[str]:
+        """
+        Extract city from patterns like "City, Country |" or "City | phone | email".
+        """
+        m = re.search(
+            r'^([A-ZÀ-Ÿa-zà-ÿ][A-ZÀ-Ÿa-zà-ÿ\s\-]+),\s*([A-ZÀ-Ÿa-zà-ÿ][A-ZÀ-Ÿa-zà-ÿ\s]+?)\s*[|,]',
+            text,
+            re.MULTILINE,
+        )
+        return m.group(1).strip() if m else None
+
+    @staticmethod
+    def _extract_country(text: str) -> Optional[str]:
+        """
+        Extract country from patterns like "City, Country |".
+        """
+        m = re.search(
+            r'^[A-ZÀ-Ÿa-zà-ÿ][\w\s\-]+,\s*([A-ZÀ-Ÿa-zà-ÿ][A-ZÀ-Ÿa-zà-ÿ\s]+?)\s*[|,\n]',
+            text,
+            re.MULTILINE,
+        )
+        return m.group(1).strip() if m else None
+
+    @staticmethod
+    def _extract_summary(text: str) -> Optional[str]:
+        """
+        Extract the profile summary section text.
+        """
+        # Find PROFIL / SUMMARY / ABOUT section header and grab text until next header
+        header_re = re.compile(
+            r'^(PROFIL|SUMMARY|PROFILE|ABOUT|PR[EÉ]SENTATION|OBJECTIF)\s*$',
+            re.MULTILINE | re.IGNORECASE,
+        )
+        next_header_re = re.compile(
+            r'^[A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ\s]{4,}\s*$',
+            re.MULTILINE,
+        )
+        m = header_re.search(text)
+        if not m:
+            return None
+        after = text[m.end():].strip()
+        m2 = next_header_re.search(after)
+        summary = after[:m2.start()].strip() if m2 else after[:800].strip()
+        return summary if len(summary) > 20 else None
 
     @staticmethod
     def _extract_email(text: str) -> Optional[str]:
@@ -218,13 +297,37 @@ class SpacyExtractor:
     @staticmethod
     def _extract_languages(text: str) -> List[Dict]:
         """
-        Detect human languages and adjacent proficiency keywords.
-        Searches within 40 chars after the language keyword for proficiency.
+        Detect human languages and proficiency.
+        Priority: structured bullet pattern "• Language : Level",
+        then keyword matching (preserves original language name from CV).
         """
-        text_lower = text.lower()
         found: List[Dict] = []
         seen: set = set()
 
+        # Pattern 1: "• Français : Courant" / "- English : Fluent"
+        bullet_re = re.compile(
+            r'[•\-\*]\s*([A-ZÀ-ŸA-Za-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ]+(?:\s+[A-Za-zÀ-ÿ]+)?)\s*:\s*([A-Za-zÀ-ÿ]+)',
+            re.MULTILINE,
+        )
+        # Only accept if the word before ":" is a known language keyword
+        all_lang_keys = set(HUMAN_LANGUAGES.keys())
+        for m in bullet_re.finditer(text):
+            name_raw  = m.group(1).strip()
+            level_raw = m.group(2).strip()
+            norm_name = _norm(name_raw)
+            if norm_name in all_lang_keys and norm_name not in seen:
+                seen.add(norm_name)
+                found.append({
+                    "name":        name_raw,   # keep original ("Français" not "French")
+                    "proficiency": level_raw,  # keep original ("Courant" not "Fluent")
+                    "confidence":  0.90,
+                })
+
+        if found:
+            return found
+
+        # Pattern 2: keyword scan (fallback)
+        text_lower = text.lower()
         for keyword, language in HUMAN_LANGUAGES.items():
             if keyword in text_lower and language not in seen:
                 seen.add(language)
@@ -237,11 +340,10 @@ class SpacyExtractor:
                             proficiency = label
                             break
                 found.append({
-                    "name": language,
+                    "name":        language,
                     "proficiency": proficiency,
-                    "confidence": 0.85,
+                    "confidence":  0.80,
                 })
-
         return found
 
     @staticmethod

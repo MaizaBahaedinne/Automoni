@@ -402,9 +402,13 @@ def _map_spacy_to_parsed_cv(spacy: dict) -> ParsedCV:
 
     return ParsedCV(
         profile = Profile(
-            name  = spacy.get("name"),
-            email = spacy.get("email"),
-            phone = spacy.get("phone"),
+            name     = spacy.get("name"),
+            headline = spacy.get("headline"),
+            email    = spacy.get("email"),
+            phone    = spacy.get("phone"),
+            city     = spacy.get("city"),
+            country  = spacy.get("country"),
+            summary  = spacy.get("summary"),
         ),
         skills = [
             Skill(name=s["name"], confidence=s.get("confidence", 0.80))
