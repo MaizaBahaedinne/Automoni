@@ -397,7 +397,7 @@ document.getElementById('purgeConfirmInput').addEventListener('input', function 
     <!-- Pagination -->
     <?php if ($pager): ?>
     <div class="d-flex justify-content-center p-3 flex-wrap gap-1">
-        <?= $pager->links('admin_apps', 'bootstrap_5') ?>
+        <?= $pager->links('admin_apps', 'default_full') ?>
     </div>
     <?php endif; ?>
 
