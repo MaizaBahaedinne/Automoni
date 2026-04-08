@@ -93,7 +93,7 @@
                                 </h6>
                                 <small style="color:var(--muted)"><?= esc($job->company_name) ?></small>
                             </div>
-                            <small style="color:var(--muted)"><?= date('d M Y', strtotime($job->created_at)) ?></small>
+                            <small style="color:var(--muted)"><?= date('d', strtotime($job->created_at)) . ' ' . lang('App.months.' . date('n', strtotime($job->created_at))) . ' ' . date('Y', strtotime($job->created_at)) ?></small>
                         </div>
                         <div class="mt-2 d-flex flex-wrap gap-1">
                             <span class="badge bg-primary"><?= esc($job->contract_type) ?></span>
@@ -108,9 +108,13 @@
                             <span class="badge bg-light text-dark border"><?= ucfirst(esc($job->experience_level)) ?></span>
                         </div>
                         <?php if (!empty($job->salary_min)): ?>
+                            <?php
+                            $salaryPeriodLabels = ['annual'=>'/an','monthly'=>'/mois','daily'=>'/jour','hourly'=>'/h'];
+                            $salaryPeriodLabel  = $salaryPeriodLabels[$job->salary_period ?? 'annual'] ?? '/an';
+                            ?>
                             <p class="text-success small mb-0 mt-1">
                                 <i class="bi bi-currency-euro"></i>
-                                <?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? ' – ' . number_format($job->salary_max) : '+' ?><?= lang('App.salary_per_year') ?>
+                                <?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? ' – ' . number_format($job->salary_max) : '+' ?> <?= esc($salaryPeriodLabel) ?>
                             </p>
                         <?php endif; ?>
                     </div>
