@@ -85,7 +85,11 @@ class JobController extends BaseController
         if (!$company) {
             return redirect()->to('/company/create')->with('error', 'Vous devez créer un profil entreprise d\'abord.');
         }
-        return view('jobs/create', ['title' => 'Publier une offre', 'company' => $company]);
+        return view('jobs/create', [
+            'title'   => 'Publier une offre',
+            'company' => $company,
+            'isEdit'  => false,
+        ]);
     }
 
     public function store(): RedirectResponse
@@ -337,7 +341,7 @@ class JobController extends BaseController
         // Certifications
         model(JobCertificationModel::class)->syncForJob(
             $jobId,
-            (array) ($this->request->getPost('certifications') ?? [])
+            (array) ($this->request->getPost('certs') ?? [])
         );
 
         // Pre-screening questions
