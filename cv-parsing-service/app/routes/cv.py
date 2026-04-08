@@ -254,77 +254,111 @@ def _split_blocks(text: str) -> list:
 
 def _parse_experience_from_section(text: str) -> list:
     """Heuristic parser for raw experience section text → list of dicts."""
+    all_lines = text.splitlines()
+
+    # Try structured format: "Title – Company (MM/YYYY – Présent)"
+    entry_indices = []
+    for i, line in enumerate(all_lines):
+        m = _ENTRY_LINE_RE.match(line.strip())
+        if m:
+            entry_indices.append((i, m))
+
+    if entry_indices:
+        results = []
+        for idx, (line_idx, m) in enumerate(entry_indices):
+            title      = m.group(1).strip()
+            company    = m.group(2).strip()
+            start_raw  = m.group(3).strip()
+            end_raw    = m.group(4).strip()
+            is_current = bool(re.search(r'pr[e\u00e9]sent|actuel|current|aujourd', end_raw, re.IGNORECASE))
+            next_idx   = entry_indices[idx + 1][0] if idx + 1 < len(entry_indices) else len(all_lines)
+            desc_lines = [
+                ln.strip().lstrip('\u2022\u00b7\- ')
+                for ln in all_lines[line_idx + 1:next_idx]
+                if ln.strip()
+            ]
+            results.append({
+                "job_title":    title,
+                "company_name": company,
+                "start_date":   start_raw,
+                "end_date":     "Present" if is_current else end_raw,
+                "description":  " ".join(desc_lines[:8])[:500],
+                "confidence":   0.82,
+            })
+        return results
+
+    # Fallback: scan blocks for any date range
     results = []
     for block in _split_blocks(text):
         lines = [l.strip() for l in block.splitlines() if l.strip()]
         if not lines:
             continue
-
-        entry = {
-            "job_title": None, "company_name": None,
-            "start_date": None, "end_date": None,
-            "description": None, "confidence": 0.60,
-        }
-
+        entry = {"job_title": None, "company_name": None,
+                 "start_date": None, "end_date": None,
+                 "description": None, "confidence": 0.60}
         remaining = []
         date_found = False
         for line in lines:
-            m = _DATE_RANGE_RE.search(line)
-            if m and not date_found:
-                entry["start_date"] = m.group(1)
-                entry["end_date"]   = m.group(2)
+            dm = _DATE_RANGE_RE.search(line)
+            if dm and not date_found:
+                entry["start_date"] = dm.group(1)
+                entry["end_date"]   = dm.group(2)
                 date_found = True
-                rest = _DATE_RANGE_RE.sub("", line).strip(" |-–—")
+                rest = _DATE_RANGE_RE.sub("", line).strip(" |\u2013\u2014-")
                 if rest:
                     remaining.append(rest)
             else:
                 remaining.append(line)
-
         if remaining:
             entry["job_title"] = remaining[0]
         if len(remaining) > 1:
             entry["company_name"] = remaining[1]
         if len(remaining) > 2:
             entry["description"] = " ".join(remaining[2:])[:500]
-
         if entry["job_title"] or entry["company_name"]:
             results.append(entry)
-
     return results
 
 
 def _parse_education_from_section(text: str) -> list:
     """Heuristic parser for raw education section text → list of dicts."""
     results = []
-    for block in _split_blocks(text):
-        lines = [l.strip() for l in block.splitlines() if l.strip()]
-        if not lines:
-            continue
+    # Pattern: "Degree – Institution (YYYY – YYYY)" or "Degree – Institution (YYYY)"
+    entry_re = re.compile(
+        r'^[\u2022\u00b7\-\s]*(.+?)\s*[\u2013\u2014\-]\s*(.+?)\s*'
+        r'\(((?:\d{1,2}[/\-])?\d{4})(?:\s*[\u2013\u2014\-]\s*((?:\d{1,2}[/\-])?\d{4}))?\)',
+        re.MULTILINE | re.IGNORECASE,
+    )
+    for m in entry_re.finditer(text):
+        degree   = m.group(1).strip()
+        school   = m.group(2).strip()
+        year1    = re.search(r'\d{4}', m.group(3)).group(0)
+        year2    = re.search(r'\d{4}', m.group(4)).group(0) if m.group(4) else None
+        grad_yr  = year2 or year1
+        results.append({
+            "institution":     school,
+            "degree":          degree,
+            "field_of_study":  None,
+            "graduation_year": grad_yr,
+            "confidence":      0.82,
+        })
+    if results:
+        return results
 
-        entry = {
-            "institution": None, "degree": None,
-            "field_of_study": None, "graduation_year": None,
-            "confidence": 0.65,
-        }
-
-        for line in lines:
-            ym = _YEAR_RE.search(line)
-            if ym and not entry["graduation_year"]:
-                entry["graduation_year"] = ym.group(0)
-
-            dm = _DEGREE_RE.search(line)
-            if dm and not entry["degree"]:
-                entry["degree"] = line.strip()
-
-        # Institution = first line that has no degree keyword and is not just a year
-        for line in lines:
-            if not _DEGREE_RE.search(line) and not re.fullmatch(r'\s*(19|20)\d{2}\s*', line):
-                entry["institution"] = line.strip()
-                break
-
-        if entry["institution"] or entry["degree"]:
-            results.append(entry)
-
+    # Fallback: line-by-line with degree keyword + year
+    degree_re = re.compile(
+        r'Dipl[o\u00f4]me|Licence|Ing[e\u00e9]nieur|Bachelor|Master|MBA|BTS|DUT|PhD|Doctorat|Certificat',
+        re.IGNORECASE,
+    )
+    for line in text.splitlines():
+        line = line.strip().lstrip('\u2022\u00b7- ')
+        ym = _YEAR_RE.search(line)
+        if degree_re.search(line) and ym:
+            results.append({
+                "institution": None, "degree": line,
+                "field_of_study": None, "graduation_year": ym.group(0),
+                "confidence": 0.65,
+            })
     return results
 
 

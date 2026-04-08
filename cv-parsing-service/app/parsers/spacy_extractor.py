@@ -8,10 +8,19 @@ and the fallback when Ollama is unavailable.
 """
 import re
 import logging
+import unicodedata
 import spacy
 from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+
+def _norm(s: str) -> str:
+    """Lowercase + strip accents for section header matching."""
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', s.lower())
+        if unicodedata.category(c) != 'Mn'
+    )
 
 # ── Technical skills dictionary ───────────────────────────────────────────────
 # Each entry is checked against the CV text (case-insensitive).
@@ -75,16 +84,16 @@ PROFICIENCY_KEYWORDS: Dict[str, str] = {
 # ── Section header keywords (for context extraction sent to Ollama) ────────────
 _SECTION_MAP: Dict[str, List[str]] = {
     "experience":     ["work experience", "professional experience", "employment history",
-                       "expérience professionnelle", "expériences professionnelles",
-                       "expériences", "postes occupés", "parcours professionnel",
+                       "experience professionnelle", "experiences professionnelles",
+                       "experiences", "postes occupes", "parcours professionnel",
                        "career history", "work history"],
     "education":      ["education", "academic background", "academic history",
-                       "formation", "formations", "études", "diplômes",
-                       "qualifications", "parcours académique", "scolarité"],
+                       "formation", "formations", "etudes", "diplomes",
+                       "qualifications", "parcours academique", "scolarite"],
     "certifications": ["certifications", "certificates", "licences",
-                       "diplômes professionnels", "certifications et formations"],
+                       "diplomes professionnels", "certifications et formations"],
     "summary":        ["summary", "profile", "objective", "about me", "about",
-                       "profil", "résumé", "présentation", "objectif", "à propos"],
+                       "profil", "resume", "presentation", "objectif", "a propos"],
 }
 
 
@@ -239,18 +248,20 @@ class SpacyExtractor:
     def _extract_sections(text: str) -> Dict:
         """
         Split CV text into named sections by detecting header lines.
-        The raw section text is passed to Ollama as contextual hints.
+        Uses accent-stripped comparison so "EXPERIENCE PROFESSIONNELLE" matches.
         """
         sections: Dict[str, str] = {k: "" for k in _SECTION_MAP}
         current: Optional[str] = None
 
         for line in text.split("\n"):
-            ll = line.strip().lower()
+            ll = _norm(line.strip())
+            matched = False
             for section, headers in _SECTION_MAP.items():
                 if any(h in ll for h in headers) and len(ll) < 60:
                     current = section
+                    matched = True
                     break
-            if current and line.strip():
+            if not matched and current and line.strip():
                 sections[current] += line + "\n"
 
         return sections
