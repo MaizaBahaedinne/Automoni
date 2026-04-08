@@ -358,112 +358,191 @@ class CvParser
     }
 
     /**
-     * Extract experiences: company + title + years (basic pattern matching).
+     * Extract experiences: supports formats like:
+     *   "Job Title – Company (04/2022 – Présent)"
+     *   "Job Title – Company (2019 – 2022)"
      */
     private function extractExperiences(string $text): array
     {
-        $experiences = [];
-        
-        // Look for sections like "EXPERIENCE" or "WORK HISTORY"
-        if (!preg_match('/(?:experience|work\s+history|career|employment)/i', $text)) {
+        // Isolate the experience section
+        $section = $this->extractSection($text, [
+            'experience professionnelle', 'expériences professionnelles', 'expériences',
+            'work experience', 'professional experience', 'employment', 'career',
+        ]);
+
+        if (empty($section)) {
             return [];
         }
 
-        // Split by years: 2020-2022, 2020-Present, etc.
-        $pattern = '/(\d{4})\s*[-–]\s*(?:(\d{4})|present|current)/i';
-        if (preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
-            foreach ($matches[0] as $idx => $match) {
-                // Extract context around the date
-                $offset = $match[1];
-                $contextStart = max(0, $offset - 200);
-                $contextEnd = min(strlen($text), $offset + 300);
-                $context = substr($text, $contextStart, $contextEnd - $contextStart);
+        $experiences = [];
+        // Pattern: anything – anything (MM/YYYY – MM/YYYY|Présent|Present|Actuel)
+        $dateGroup = '(?:\\d{1,2}\\/)?\\d{4}';
+        $endGroup  = '(?:\\d{1,2}\\/)?\\d{4}|[Pp]r[eé]sent|[Aa]ctuel(?:lement)?|[Cc]urrent|[Aa]ujourd\'hui';
+        $pattern   = '/^(.+?)\\s*[–—-]\\s*(.+?)\\s*\\(' . '(' . $dateGroup . ')' . '\\s*[–—-]\\s*' . '(' . $endGroup . ')' . '\\)/mu';
 
-                // Try to extract company and title from context
-                $lines = array_filter(array_map('trim', explode("\n", $context)));
-                $company = '';
-                $title = '';
-
-                foreach ($lines as $line) {
-                    if (strlen($line) > 5 && strlen($line) < 100) {
-                        if (empty($title)) {
-                            $title = $line;
-                        } elseif (empty($company)) {
-                            $company = $line;
-                        }
-                    }
-                }
-
-                if (!empty($title)) {
-                    $experiences[] = [
-                        'title'       => substr($title, 0, 255),
-                        'organization' => substr($company, 0, 255),
-                        'start_year'  => (int) $matches[1][$idx],
-                        'end_year'    => stripos($matches[0][$idx], 'present') !== false ? null : (int) $matches[2][$idx],
-                        'confidence'  => 0.75,
-                        'source'      => 'date_pattern',
-                    ];
-                }
-            }
+        if (!preg_match_all($pattern, $section, $m, PREG_SET_ORDER)) {
+            return [];
         }
 
-        return array_slice($experiences, 0, 20); // Limit to 20
+        // Collect description lines between entries
+        $entryPositions = [];
+        preg_match_all($pattern, $section, $allM, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+        $sectionLines = explode("\n", $section);
+
+        foreach ($m as $idx => $match) {
+            $title       = trim($match[1]);
+            $company     = trim($match[2]);
+            $startRaw    = trim($match[3]);
+            $endRaw      = trim($match[4]);
+
+            // Parse start/end years
+            $startYear = (int) preg_replace('/.*?(\d{4})/', '$1', $startRaw);
+            $isCurrent = preg_match('/present|actuel|current|aujourd/i', $endRaw);
+            $endYear   = $isCurrent ? null : (int) preg_replace('/.*?(\d{4})/', '$1', $endRaw);
+
+            // Collect bullet description lines after this entry header
+            $descLines = [];
+            $inEntry   = false;
+            foreach ($sectionLines as $line) {
+                $trimmed = trim($line);
+                if (stripos($trimmed, $title) !== false && stripos($trimmed, $company) !== false) {
+                    $inEntry = true;
+                    continue;
+                }
+                if ($inEntry) {
+                    if (empty($trimmed)) continue;
+                    // Stop at next entry (line that matches another entry pattern)
+                    if (preg_match('/\\((?:\\d{1,2}\\/)?\\d{4}\\s*[–—-]/u', $trimmed)) break;
+                    $descLines[] = ltrim($trimmed, '•·✓-– ');
+                }
+            }
+
+            $experiences[] = [
+                'title'        => substr($title, 0, 255),
+                'organization' => substr($company, 0, 255),
+                'start_year'   => $startYear ?: null,
+                'end_year'     => $endYear,
+                'is_current'   => (int) $isCurrent,
+                'description'  => substr(implode(' ', array_slice($descLines, 0, 8)), 0, 1000),
+                'confidence'   => 0.80,
+                'source'       => 'section_parse',
+            ];
+        }
+
+        return array_slice($experiences, 0, 20);
     }
 
     /**
-     * Extract education: degree, university, year.
+     * Extract education entries. Supports formats like:
+     *   "Diplôme d'Ingénieur Informatique – ESPRIT (2017 – 2020)"
+     *   "Master Computer Science – Paris Saclay (2018)"
      */
     private function extractEducation(string $text): array
     {
-        $education = [];
-        
-        // Keywords for education section
-        if (!preg_match('/(?:education|degree|university|studies)/i', $text)) {
+        $section = $this->extractSection($text, [
+            'formation', 'formations', 'études', 'education', 'academic',
+            'diplômes', 'qualifications', 'scolarité',
+        ]);
+
+        if (empty($section)) {
             return [];
         }
 
-        // Common degree patterns
-        $degreePatterns = [
-            'Bachelor|Bachelor\'s|B\.S\.|B\.A\.' => 'Bachelor',
-            'Master|Master\'s|M\.S\.|M\.A\.' => 'Master',
-            'PhD|Doctorate|Ph\.D\.' => 'Doctorate',
-            'Diploma|Certificate' => 'Certificate',
-        ];
+        $education = [];
+        $yearGroup = '(?:\\d{1,2}\\/)?\\d{4}';
 
-        $foundDegrees = [];
-        foreach ($degreePatterns as $pattern => $degreeType) {
-            if (preg_match_all('/' . $pattern . '/i', $text, $matches)) {
-                $foundDegrees[] = [
-                    'degree'     => $degreeType,
-                    'confidence' => 0.90,
+        // Pattern 1: Degree – Institution (YYYY – YYYY) or (YYYY)
+        $p1 = '/^[•·\\-\\s]*(.+?)\\s*[–—-]\\s*(.+?)\\s*\\((' . $yearGroup . ')(?:\\s*[–—-]\\s*(' . $yearGroup . '))?\\)/mu';
+        if (preg_match_all($p1, $section, $m, PREG_SET_ORDER)) {
+            foreach ($m as $match) {
+                $degree  = trim($match[1]);
+                $school  = trim($match[2]);
+                $year1   = (int) preg_replace('/.*?(\d{4})/', '$1', $match[3]);
+                $year2   = isset($match[4]) && $match[4] ? (int) preg_replace('/.*?(\d{4})/', '$1', $match[4]) : null;
+                $gradYear = $year2 ?: $year1;
+
+                $education[] = [
+                    'degree'        => substr($degree, 0, 255),
+                    'institution'   => substr($school, 0, 255),
+                    'field'         => '',
+                    'start_year'    => $year2 ? $year1 : null,
+                    'end_year'      => $gradYear,
+                    'year_graduated'=> $gradYear,
+                    'confidence'    => 0.82,
+                    'source'        => 'section_parse',
+                ];
+            }
+            return array_slice($education, 0, 10);
+        }
+
+        // Pattern 2: fallback — lines with a degree keyword and a 4-digit year
+        $degreeRe = '/Dipl[oô]me|Licence|Ing[eé]nieur|Bachelor|Master|MBA|BTS|DUT|PhD|Doctorat|Certificat/i';
+        foreach (explode("\n", $section) as $line) {
+            $line = ltrim(trim($line), '•·- ');
+            if (preg_match($degreeRe, $line) && preg_match('/(\d{4})/', $line, $ym)) {
+                $education[] = [
+                    'degree'        => substr($line, 0, 255),
+                    'institution'   => '',
+                    'field'         => '',
+                    'year_graduated'=> (int) $ym[1],
+                    'confidence'    => 0.65,
+                    'source'        => 'keyword_match',
                 ];
             }
         }
 
-        // University patterns
-        $universities = [
-            'Paris', 'Sorbonne', 'Stanford', 'MIT', 'Cambridge', 'Oxford',
-            'Harvard', 'Yale', 'Princeton', 'Columbia', 'University',
+        return array_slice($education, 0, 10);
+    }
+
+    /**
+     * Isolate a named section from CV text by detecting its header keyword.
+     * Returns the text between the matching header and the next section header.
+     */
+    private function extractSection(string $text, array $headers): string
+    {
+        // All known section starts (to detect where a section ends)
+        $allHeaders = [
+            'experience', 'expérience', 'formation', 'education', 'compétences',
+            'skills', 'langues', 'languages', 'certifi', 'projets', 'projects',
+            'profil', 'summary', 'contact', 'références', 'references',
         ];
 
-        foreach ($universities as $uni) {
-            if (stripos($text, $uni) !== false) {
-                // Find the closest degree to this university
-                if (!empty($foundDegrees)) {
-                    $education[] = [
-                        'degree'       => $foundDegrees[0]['degree'] ?? 'Degree',
-                        'institution'  => $uni,
-                        'field'        => '',
-                        'year'         => null,
-                        'confidence'   => 0.75,
-                        'source'       => 'pattern_match',
-                    ];
-                    break;
+        $lines   = explode("\n", $text);
+        $result  = [];
+        $inside  = false;
+
+        foreach ($lines as $line) {
+            $lower = mb_strtolower(trim($line));
+
+            // Check if this line is a header we're looking for
+            if (!$inside) {
+                foreach ($headers as $h) {
+                    if (strpos($lower, $h) !== false && mb_strlen($lower) < 60) {
+                        $inside = true;
+                        break;
+                    }
+                }
+                continue;
+            }
+
+            // Check if we've reached the next section
+            foreach ($allHeaders as $h) {
+                $isTarget = false;
+                foreach ($headers as $th) {
+                    if (strpos($h, $th) !== false || strpos($th, $h) !== false) {
+                        $isTarget = true;
+                        break;
+                    }
+                }
+                if (!$isTarget && strpos($lower, $h) !== false && mb_strlen($lower) < 60) {
+                    return implode("\n", $result);
                 }
             }
+
+            $result[] = $line;
         }
 
-        return $education;
+        return implode("\n", $result);
     }
 
     /**
