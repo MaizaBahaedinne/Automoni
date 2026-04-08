@@ -162,12 +162,11 @@
 # Enable CV Parsing integration
 # CV_PARSING_ENABLED = true
 
-# Base URL of Python CV Parsing mikicroservice
-# Make sure Python service is running before enabling
-# CV_PARSING_BASE_URL = http://localhost:8001
+# Base URL of Python CV Parsing microservice (must be 127.0.0.1:8001 on prod)
+# CV_PARSING_BASE_URL = http://127.0.0.1:8001
 
-# API Key for authentication with Python service
-# Should match the key in Python service config
+# API Key for authentication — must match API_KEY in cv-parsing-service/.env.production
+# REQUIRED: set this in your .env on the server or the service will return HTTP 401
 # CV_PARSING_API_KEY = your-secret-api-key-here
 
 # Request timeouts (seconds)
