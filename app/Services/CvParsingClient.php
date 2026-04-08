@@ -46,7 +46,7 @@ class CvParsingClient
         try {
             $url      = rtrim($this->basePath, '/') . '/api/parse-cv';
             $fileName = basename($filePath);
-            $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+            $mimeType = $this->guessMimeType($filePath);
 
             $ch = curl_init($url);
             curl_setopt_array($ch, [
@@ -106,10 +106,34 @@ class CvParsingClient
     }
 
     /**
+     * Guess MIME type from file extension — avoids finfo_file() failures on some servers.
+     */
+    private function guessMimeType(string $filePath): string
+    {
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $map = [
+            'pdf'  => 'application/pdf',
+            'doc'  => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png'  => 'image/png',
+        ];
+        if (isset($map[$ext])) {
+            return $map[$ext];
+        }
+        // Try finfo as a fallback, suppress warnings
+        if (function_exists('mime_content_type') && file_exists($filePath)) {
+            $mime = @mime_content_type($filePath);
+            if ($mime) {
+                return $mime;
+            }
+        }
+        return 'application/octet-stream';
+    }
+
+    /**
      * Check if parsing service is healthy
-     * Used for status checks and diagnostics
-     *
-     * @return bool True if service is responding, false otherwise
      */
     public function isHealthy(): bool
     {

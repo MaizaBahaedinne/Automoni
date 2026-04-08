@@ -8,6 +8,7 @@ Pipeline:
 """
 import logging
 import os
+import re
 import tempfile
 
 import requests
@@ -220,8 +221,140 @@ def _map_ollama_to_parsed_cv(ollama: dict, spacy: dict) -> ParsedCV:
     )
 
 
+# ── Heuristic section parsers (used when Ollama is unavailable) ──────────────
+
+_DATE_RANGE_RE = re.compile(
+    r'(\d{4}(?:-\d{2})?'                                   # start year (YYYY or YYYY-MM)
+    r'|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec'
+    r'|Janv?|F[ée]vr?|Mars|Avr|Juin|Juil?|[AÂ]o[uû]t|Sept?|Oct|Nov|D[ée]c)'
+    r'\.?\s*\d{4})'
+    r'\s*[-–—]\s*'
+    r'(\d{4}(?:-\d{2})?'
+    r'|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec'
+    r'|Janv?|F[ée]vr?|Mars|Avr|Juin|Juil?|[AÂ]o[uû]t|Sept?|Oct|Nov|D[ée]c)'
+    r'\.?\s*\d{4}'
+    r'|[Pp]resent|[Aa]ctuel(?:lement)?|[Cc]urrent|[Aa]ujourd\'hui)',
+    re.IGNORECASE,
+)
+
+_DEGREE_RE = re.compile(
+    r'\b(Bachelor|Master|PhD|Doctorat|Licence|BTS|DUT|MBA|MSc|BSc|'
+    r'Ma[îi]trise|Ing[eé]nieur|Diplo?me|DEA|DESS|HND|Associate|'
+    r'Certificat|Certificate|Baccalauréat|Bac\+\d)\b',
+    re.IGNORECASE,
+)
+
+_YEAR_RE = re.compile(r'\b(19|20)\d{2}\b')
+
+
+def _split_blocks(text: str) -> list:
+    """Split section text into entry blocks (separated by blank lines)."""
+    return [b.strip() for b in re.split(r'\n{2,}', text.strip()) if b.strip()]
+
+
+def _parse_experience_from_section(text: str) -> list:
+    """Heuristic parser for raw experience section text → list of dicts."""
+    results = []
+    for block in _split_blocks(text):
+        lines = [l.strip() for l in block.splitlines() if l.strip()]
+        if not lines:
+            continue
+
+        entry = {
+            "job_title": None, "company_name": None,
+            "start_date": None, "end_date": None,
+            "description": None, "confidence": 0.60,
+        }
+
+        remaining = []
+        date_found = False
+        for line in lines:
+            m = _DATE_RANGE_RE.search(line)
+            if m and not date_found:
+                entry["start_date"] = m.group(1)
+                entry["end_date"]   = m.group(2)
+                date_found = True
+                rest = _DATE_RANGE_RE.sub("", line).strip(" |-–—")
+                if rest:
+                    remaining.append(rest)
+            else:
+                remaining.append(line)
+
+        if remaining:
+            entry["job_title"] = remaining[0]
+        if len(remaining) > 1:
+            entry["company_name"] = remaining[1]
+        if len(remaining) > 2:
+            entry["description"] = " ".join(remaining[2:])[:500]
+
+        if entry["job_title"] or entry["company_name"]:
+            results.append(entry)
+
+    return results
+
+
+def _parse_education_from_section(text: str) -> list:
+    """Heuristic parser for raw education section text → list of dicts."""
+    results = []
+    for block in _split_blocks(text):
+        lines = [l.strip() for l in block.splitlines() if l.strip()]
+        if not lines:
+            continue
+
+        entry = {
+            "institution": None, "degree": None,
+            "field_of_study": None, "graduation_year": None,
+            "confidence": 0.65,
+        }
+
+        for line in lines:
+            ym = _YEAR_RE.search(line)
+            if ym and not entry["graduation_year"]:
+                entry["graduation_year"] = ym.group(0)
+
+            dm = _DEGREE_RE.search(line)
+            if dm and not entry["degree"]:
+                entry["degree"] = line.strip()
+
+        # Institution = first line that has no degree keyword and is not just a year
+        for line in lines:
+            if not _DEGREE_RE.search(line) and not re.fullmatch(r'\s*(19|20)\d{2}\s*', line):
+                entry["institution"] = line.strip()
+                break
+
+        if entry["institution"] or entry["degree"]:
+            results.append(entry)
+
+    return results
+
+
 def _map_spacy_to_parsed_cv(spacy: dict) -> ParsedCV:
     """Convert spaCy extracted data → ParsedCV (fallback when Ollama is down)."""
+    sections = spacy.get("sections", {})
+
+    experiences = [
+        Experience(
+            job_title    = e.get("job_title"),
+            company_name = e.get("company_name"),
+            start_date   = e.get("start_date"),
+            end_date     = e.get("end_date"),
+            description  = e.get("description"),
+            confidence   = e.get("confidence", 0.60),
+        )
+        for e in _parse_experience_from_section(sections.get("experience", ""))
+    ]
+
+    education = [
+        Education(
+            institution     = e.get("institution"),
+            degree          = e.get("degree"),
+            field_of_study  = e.get("field_of_study"),
+            graduation_year = e.get("graduation_year"),
+            confidence      = e.get("confidence", 0.65),
+        )
+        for e in _parse_education_from_section(sections.get("education", ""))
+    ]
+
     return ParsedCV(
         profile = Profile(
             name  = spacy.get("name"),
@@ -240,8 +373,8 @@ def _map_spacy_to_parsed_cv(spacy: dict) -> ParsedCV:
             )
             for l in (spacy.get("languages") or [])
         ],
-        experiences    = [],
-        education      = [],
+        experiences    = experiences,
+        education      = education,
         certifications = [],
     )
 
