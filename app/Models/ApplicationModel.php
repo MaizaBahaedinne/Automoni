@@ -37,7 +37,9 @@ class ApplicationModel extends Model
 
     public function getApplicationsForRecruiter(int $recruiterId): array
     {
-        return $this->select('applications.*, jobs.title as job_title, users.first_name, users.last_name, users.email')
+        return $this->select("applications.*, jobs.title as job_title,
+                              CONCAT(users.first_name, ' ', users.last_name) as candidate_name,
+                              users.first_name, users.last_name, users.email")
                     ->join('jobs', 'jobs.id = applications.job_id')
                     ->join('users', 'users.id = applications.user_id')
                     ->where('jobs.user_id', $recruiterId)
