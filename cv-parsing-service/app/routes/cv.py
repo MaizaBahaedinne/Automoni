@@ -246,6 +246,17 @@ _DEGREE_RE = re.compile(
 
 _YEAR_RE = re.compile(r'\b(19|20)\d{2}\b')
 
+# Matches "Job Title – Company (MM/YYYY – Présent)" on a single line.
+# Supports en-dash (–), em-dash (—) and hyphen (-).
+_ENTRY_LINE_RE = re.compile(
+    r'^(.*?)\s*[–—-]\s*(.*?)\s*\('
+    r'((?:\d{1,2}[/\-])?\d{4})'
+    r'\s*[–—-]\s*'
+    r'((?:\d{1,2}[/\-])?\d{4}|Pr[eé]sent|Actuel(?:lement)?|Current|Aujourd\'hui)'
+    r'\)',
+    re.IGNORECASE,
+)
+
 
 def _split_blocks(text: str) -> list:
     """Split section text into entry blocks (separated by blank lines)."""
