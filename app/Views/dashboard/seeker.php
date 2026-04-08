@@ -83,7 +83,7 @@
                                 </a>
                             </td>
                             <td class="text-muted"><?= esc($app->company_name ?? '—') ?></td>
-                            <td class="text-muted small"><?= date('d M Y', strtotime($app->created_at)) ?></td>
+                            <td class="text-muted small"><?= !empty($app->created_at) ? date('d M Y', strtotime($app->created_at)) : '—' ?></td>
                             <td>
                                 <?php
                                 $statusColors = [

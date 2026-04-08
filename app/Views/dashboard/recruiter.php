@@ -159,7 +159,7 @@
                         <tr>
                             <td class="fw-semibold"><?= esc($app->candidate_name ?? 'Candidate #' . $app->user_id) ?></td>
                             <td class="text-muted small"><?= esc($app->job_title ?? '—') ?></td>
-                            <td><small class="text-muted"><?= date('d M Y', strtotime($app->created_at)) ?></small></td>
+                            <td><small class="text-muted"><?= !empty($app->created_at) ? date('d M Y', strtotime($app->created_at)) : '—' ?></small></td>
                             <td>
                                 <?php
                                 $sc = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
