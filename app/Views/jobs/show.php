@@ -241,7 +241,7 @@
         </div>
 
         <!-- Recruiter actions -->
-        <?php if (session()->get('logged_in') && (int) session()->get('user_id') === (int) $job->user_id): ?>
+        <?php if (session()->get('logged_in') && session()->get('user_role') !== 'job_seeker' && (int) session()->get('user_id') === (int) $job->user_id): ?>
             <div class="d-flex gap-2">
                 <a href="<?= base_url('jobs/edit/' . $job->id) ?>" class="btn btn-outline-secondary btn-sm flex-fill">
                     <i class="bi bi-pencil me-1"></i><?= lang('App.btn_edit') ?>
@@ -322,7 +322,7 @@
                     <input class="form-check-input" type="radio"
                            name="answers[<?= $qi ?>][answer]" value="yes"
                            id="ans_<?= $qi ?>_yes"
-                           <?= !empty($q->is_eliminatory) ? 'required' : '' ?>>
+                           required>
                     <label class="form-check-label" for="ans_<?= $qi ?>_yes">Oui</label>
                   </div>
                   <div class="form-check">
@@ -335,7 +335,7 @@
               <?php else: ?>
                 <textarea name="answers[<?= $qi ?>][answer]" class="form-control form-control-sm" rows="2"
                           placeholder="Votre réponse…"
-                          <?= !empty($q->is_eliminatory) ? 'required' : '' ?>></textarea>
+                          required></textarea>
               <?php endif; ?>
               <input type="hidden" name="answers[<?= $qi ?>][question_id]" value="<?= (int)$q->id ?>">
             </div>
