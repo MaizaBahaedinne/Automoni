@@ -302,8 +302,8 @@ $platformLabels = [
             </div>
         <?php endif; ?>
 
-        <!-- Members -->
-        <?php if (!empty($members) || $can_manage): ?>
+        <!-- Members (visible to organization members only) -->
+        <?php if ($is_member && (!empty($members) || $can_manage)): ?>
             <div class="info-card">
                 <div class="info-card-header d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-people" style="color:var(--brand)"></i>&nbsp;Équipe</span>
@@ -339,5 +339,156 @@ $platformLabels = [
 
     </div>
 </div>
+
+<?php if ($can_manage): ?>
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content" style="border-radius:var(--radius);">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-semibold" id="addMemberModalLabel">Ajouter un membre</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <!-- Step 1: search -->
+                <div id="amStep1">
+                    <div class="mb-2">
+                        <input type="text" id="amSearchInput" class="form-control form-control-sm"
+                               placeholder="Nom ou email…" autocomplete="off">
+                    </div>
+                    <div id="amResults" class="list-group list-group-flush mb-1" style="max-height:200px;overflow-y:auto;"></div>
+                </div>
+                <!-- Step 2: confirm + role -->
+                <div id="amStep2" class="d-none">
+                    <div class="d-flex align-items-center gap-2 p-2 mb-2" style="background:var(--brand-light);border-radius:8px;">
+                        <div id="amUserAvatar"></div>
+                        <div>
+                            <div class="fw-semibold" id="amUserName" style="font-size:.875rem;"></div>
+                            <div id="amUserEmail" style="font-size:.75rem;color:var(--muted);"></div>
+                        </div>
+                    </div>
+                    <select id="amRoleSelect" class="form-select form-select-sm mb-3">
+                        <option value="viewer">Membre</option>
+                        <option value="manager">Gestionnaire</option>
+                        <option value="owner">Propriétaire</option>
+                    </select>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary flex-grow-1" id="amBackBtn">Retour</button>
+                        <button type="button" class="btn btn-sm btn-primary flex-grow-1" id="amConfirmBtn">Ajouter</button>
+                    </div>
+                    <div id="amError" class="text-danger mt-2" style="font-size:.8rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const ORG_ID   = <?= (int) $organization->id ?>;
+    const BASE     = '<?= base_url() ?>';
+    const CSRF_NAME = '<?= csrf_token() ?>';
+    let   CSRF_HASH = '<?= csrf_hash() ?>';
+    let   selectedUserId = null;
+    let   searchTimer = null;
+
+    const step1   = document.getElementById('amStep1');
+    const step2   = document.getElementById('amStep2');
+    const results = document.getElementById('amResults');
+    const input   = document.getElementById('amSearchInput');
+
+    // Search users as user types
+    input.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        const q = this.value.trim();
+        if (q.length < 2) { results.innerHTML = ''; return; }
+        searchTimer = setTimeout(() => fetchUsers(q), 300);
+    });
+
+    function fetchUsers(q) {
+        fetch(BASE + 'organizations/' + ORG_ID + '/members/search-users?q=' + encodeURIComponent(q), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            results.innerHTML = '';
+            if (!data.data || data.data.length === 0) {
+                results.innerHTML = '<div class="list-group-item py-1 text-muted" style="font-size:.8rem;">Aucun résultat</div>';
+                return;
+            }
+            data.data.forEach(u => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'list-group-item list-group-item-action py-1 px-2';
+                item.style.fontSize = '.8rem';
+                item.innerHTML = `<strong>${escHtml(u.first_name + ' ' + u.last_name)}</strong> <span class="text-muted">${escHtml(u.email)}</span>`;
+                item.addEventListener('click', () => selectUser(u));
+                results.appendChild(item);
+            });
+        })
+        .catch(() => {});
+    }
+
+    function selectUser(u) {
+        selectedUserId = u.id;
+        document.getElementById('amUserName').textContent  = u.first_name + ' ' + u.last_name;
+        document.getElementById('amUserEmail').textContent = u.email;
+        const avatarEl = document.getElementById('amUserAvatar');
+        if (u.avatar) {
+            avatarEl.innerHTML = `<img src="${BASE}uploads/${escHtml(u.avatar)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="">`;
+        } else {
+            avatarEl.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;">${escHtml(u.first_name.charAt(0).toUpperCase())}</div>`;
+        }
+        step1.classList.add('d-none');
+        step2.classList.remove('d-none');
+        document.getElementById('amError').textContent = '';
+    }
+
+    document.getElementById('amBackBtn').addEventListener('click', () => {
+        step2.classList.add('d-none');
+        step1.classList.remove('d-none');
+        selectedUserId = null;
+    });
+
+    document.getElementById('amConfirmBtn').addEventListener('click', () => {
+        if (!selectedUserId) return;
+        const role = document.getElementById('amRoleSelect').value;
+        const body = new URLSearchParams({ [CSRF_NAME]: CSRF_HASH, user_id: selectedUserId, role });
+
+        fetch(BASE + 'organizations/' + ORG_ID + '/members', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body
+        })
+        .then(r => r.json().then(d => ({ status: r.status, data: d })))
+        .then(({ status, data }) => {
+            if (data._token_name) { CSRF_HASH = data._token_hash; }
+            if (status === 201 || data.status === 'success') {
+                location.reload();
+            } else {
+                document.getElementById('amError').textContent = data.message || 'Erreur lors de l\'ajout.';
+            }
+        })
+        .catch(() => {
+            document.getElementById('amError').textContent = 'Erreur réseau.';
+        });
+    });
+
+    // Reset modal state on close
+    document.getElementById('addMemberModal').addEventListener('hidden.bs.modal', () => {
+        step1.classList.remove('d-none');
+        step2.classList.add('d-none');
+        input.value = '';
+        results.innerHTML = '';
+        selectedUserId = null;
+        document.getElementById('amError').textContent = '';
+    });
+
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+})();
+</script>
+<?php endif; ?>
 
 <?= $this->endSection() ?>

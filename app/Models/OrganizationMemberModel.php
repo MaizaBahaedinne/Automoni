@@ -23,11 +23,12 @@ class OrganizationMemberModel extends Model
      */
     public function getMembers(int $organizationId)
     {
-        return $this->select('om.*, u.first_name, u.last_name, u.email, u.avatar')
-                    ->from($this->table . ' as om')
+        return $this->db->table('organization_members as om')
+                    ->select('om.id, om.organization_id, om.user_id, om.role, om.joined_at, u.first_name, u.last_name, u.email, u.avatar')
                     ->join('users as u', 'u.id = om.user_id')
                     ->where('om.organization_id', $organizationId)
-                    ->findAll();
+                    ->get()
+                    ->getResult();
     }
 
     /**
