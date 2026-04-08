@@ -116,9 +116,22 @@
                                     'rejected'    => 'danger',
                                     'hired'       => 'primary',
                                 ];
+                                $statusLabels = [
+                                    'pending'     => 'En attente',
+                                    'reviewed'    => 'En cours',
+                                    'shortlisted' => 'Shortlisté',
+                                    'rejected'    => 'Refusé',
+                                    'hired'       => 'Recruté',
+                                ];
                                 $color = $statusColors[$app->status] ?? 'secondary';
                                 ?>
-                                <span class="badge bg-<?= $color ?>"><?= ucfirst(esc($app->status)) ?></span>
+                                <span class="badge bg-<?= $color ?>"><?= $statusLabels[$app->status] ?? ucfirst(esc($app->status)) ?></span>
+                                <?php if ($app->status === 'rejected' && !empty($app->rejection_reason)): ?>
+                                    <div class="mt-1 d-flex align-items-start gap-1" style="font-size:.75rem;color:#dc3545;">
+                                        <i class="bi bi-info-circle flex-shrink-0 mt-1"></i>
+                                        <span><?= esc($app->rejection_reason) ?></span>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>

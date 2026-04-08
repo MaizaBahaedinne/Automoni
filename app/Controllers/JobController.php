@@ -394,9 +394,15 @@ class JobController extends BaseController
             return redirect()->back()->with('error', 'Invalid status.');
         }
 
+        $rejectionReason = strip_tags(trim($this->request->getPost('rejection_reason') ?? ''));
+        if ($status === 'rejected' && $rejectionReason === '') {
+            return redirect()->back()->with('error', 'Veuillez indiquer un motif de refus.');
+        }
+
         $appModel->update($appId, [
-            'status'        => $status,
-            'recruiter_note' => strip_tags($this->request->getPost('recruiter_note') ?? ''),
+            'status'           => $status,
+            'recruiter_note'   => strip_tags($this->request->getPost('recruiter_note') ?? ''),
+            'rejection_reason' => $status === 'rejected' ? mb_substr($rejectionReason, 0, 1000) : null,
         ]);
 
         return redirect()->back()->with('success', 'Application status updated.');

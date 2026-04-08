@@ -2,45 +2,156 @@
 <?= $this->section('content') ?>
 
 <?php
-$statusColors = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
-$statusLabel  = ['pending'=>'En attente','reviewed'=>'En cours','shortlisted'=>'Shortlisté','rejected'=>'Refusé','hired'=>'Recruté'];
+$statusColors  = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
+$statusIcons   = ['pending'=>'bi-hourglass-split','reviewed'=>'bi-eye','shortlisted'=>'bi-star-fill','rejected'=>'bi-x-circle-fill','hired'=>'bi-check-circle-fill'];
+$statusLabel   = ['pending'=>'En attente','reviewed'=>'En cours d\'examen','shortlisted'=>'Shortlisté','rejected'=>'Refusé','hired'=>'Recruté'];
 $_syms  = ['EUR'=>'€','USD'=>'$','GBP'=>'£'];
 $_sym   = $_syms[$app->salary_currency ?? ''] ?? ($app->salary_currency ?? '');
 $_pmap  = ['annual'=>'/an','monthly'=>'/mois','daily'=>'/jour','hourly'=>'/h'];
 $_plbl  = $_pmap[$app->salary_period ?? 'annual'] ?? '/an';
 $scoreColor = $matchScore >= 75 ? '#22c55e' : ($matchScore >= 50 ? '#f59e0b' : ($matchScore >= 25 ? '#f97316' : '#ef4444'));
 $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($matchScore >= 25 ? 'Moyen' : 'Faible'));
+$curStatus  = $app->status ?? 'pending';
 ?>
 
-<!-- Top bar -->
-<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
-    <a href="<?= base_url('dashboard') ?>" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Dashboard
-    </a>
-    <nav aria-label="breadcrumb" class="flex-grow-1">
-        <ol class="breadcrumb mb-0 small">
-            <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Dashboard</a></li>
-            <li class="breadcrumb-item active">Candidature #<?= $app->id ?></li>
-        </ol>
-    </nav>
+<style>
+.app-status-btn{
+    display:inline-flex;align-items:center;gap:.4rem;
+    padding:.45rem 1rem;border-radius:50px;font-size:.8rem;font-weight:600;
+    border:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.app-status-btn:not(.active){background:#f1f5f9;color:#64748b;border-color:#e2e8f0;}
+.app-status-btn:not(.active):hover{background:#e2e8f0;color:#334155;}
+.app-status-btn.active-warning  {background:#fef9c3;color:#854d0e;border-color:#fde68a;}
+.app-status-btn.active-info     {background:#e0f2fe;color:#075985;border-color:#bae6fd;}
+.app-status-btn.active-success  {background:#d1fae5;color:#065f46;border-color:#6ee7b7;}
+.app-status-btn.active-danger   {background:#fee2e2;color:#991b1b;border-color:#fca5a5;}
+.app-status-btn.active-primary  {background:var(--brand-light);color:var(--brand-dark);border-color:var(--brand);}
+.section-divider{
+    display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;
+    font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+</style>
 
-    <!-- Status update form inline -->
-    <form action="<?= base_url('applications/' . $app->id . '/status') ?>" method="post" class="d-flex gap-2 align-items-center">
-        <?= csrf_field() ?>
-        <select name="status" class="form-select form-select-sm" style="width:160px;">
-            <?php foreach (['pending','reviewed','shortlisted','rejected','hired'] as $s): ?>
-                <option value="<?= $s ?>" <?= $app->status === $s ? 'selected' : '' ?>><?= $statusLabel[$s] ?></option>
-            <?php endforeach; ?>
-        </select>
-        <button class="btn btn-primary btn-sm"><i class="bi bi-check2 me-1"></i>Mettre à jour</button>
-    </form>
+<!-- ── Page header ─────────────────────────────────────────────────────────── -->
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="<?= base_url('dashboard') ?>" class="btn btn-sm btn-outline-secondary" title="Retour au dashboard">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div class="flex-grow-1">
+        <h2 class="fw-bold mb-0" style="font-size:1.3rem;">
+            <i class="bi bi-person-lines-fill me-2" style="color:var(--brand-dark);"></i>
+            <?= esc($app->first_name) ?> <?= esc($app->last_name) ?>
+        </h2>
+        <p class="text-muted mb-0" style="font-size:.8rem;">
+            Candidature pour <strong><?= esc($app->job_title) ?></strong>
+            · <?= esc($app->company_name) ?>
+            · Postulée le <?= !empty($app->applied_at) ? date('d/m/Y', strtotime($app->applied_at)) : '—' ?>
+        </p>
+    </div>
 </div>
 
+<!-- Flash messages -->
+<?php if ($error = session()->getFlashdata('error')): ?>
+<div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-exclamation-triangle-fill"></i><?= esc($error) ?>
+</div>
+<?php endif; ?>
+<?php if ($success = session()->getFlashdata('success')): ?>
+<div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-check-circle-fill"></i><?= esc($success) ?>
+</div>
+<?php endif; ?>
+
+<!-- ── Status update panel ──────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4" style="border-top:3px solid var(--brand) !important;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-sliders2" style="color:var(--brand-dark);font-size:1rem;"></i>
+            <span class="fw-bold" style="font-size:.9rem;">Décision du recruteur</span>
+            <span class="badge bg-<?= $statusColors[$curStatus] ?? 'secondary' ?> ms-auto px-3">
+                <i class="bi <?= $statusIcons[$curStatus] ?? 'bi-circle' ?> me-1"></i>
+                <?= $statusLabel[$curStatus] ?? ucfirst($curStatus) ?>
+            </span>
+        </div>
+
+        <form action="<?= base_url('applications/' . $app->id . '/status') ?>" method="post" id="statusForm">
+            <?= csrf_field() ?>
+            <input type="hidden" name="status" id="statusInput" value="<?= esc($curStatus) ?>">
+
+            <!-- Visual status picker -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <?php
+                $btnColorMap = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
+                foreach (['pending','reviewed','shortlisted','rejected','hired'] as $s):
+                    $isActive = $curStatus === $s;
+                    $cls = $isActive ? 'active active-' . $btnColorMap[$s] : '';
+                ?>
+                <button type="button"
+                        class="app-status-btn <?= $cls ?>"
+                        data-status="<?= $s ?>"
+                        onclick="pickStatus('<?= $s ?>')">
+                    <i class="bi <?= $statusIcons[$s] ?>"></i>
+                    <?= $statusLabel[$s] ?>
+                </button>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Rejection reason (shown only when "rejected" is picked) -->
+            <div id="rejectionBlock" style="<?= $curStatus === 'rejected' ? '' : 'display:none;' ?>">
+                <label class="form-label fw-semibold text-danger mb-1" style="font-size:.82rem;">
+                    <i class="bi bi-chat-square-text me-1"></i>Motif de refus
+                    <span class="fw-normal text-muted">(affiché au candidat dans son tableau de bord)</span>
+                </label>
+                <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="2"
+                          style="font-size:.875rem;"
+                          placeholder="Ex : Profil ne correspondant pas aux exigences requises pour ce poste…"><?= esc($app->rejection_reason ?? '') ?></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end mt-3">
+                <button class="btn btn-primary">
+                    <i class="bi bi-check2-circle me-1"></i>Enregistrer la décision
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const statusColors = {
+    pending:     'warning',
+    reviewed:    'info',
+    shortlisted: 'success',
+    rejected:    'danger',
+    hired:       'primary',
+};
+function pickStatus(val) {
+    document.getElementById('statusInput').value = val;
+    // Toggle rejection block
+    const block = document.getElementById('rejectionBlock');
+    const field = document.getElementById('rejectionReason');
+    const show  = val === 'rejected';
+    block.style.display = show ? '' : 'none';
+    field.required = show;
+    // Update button styles
+    document.querySelectorAll('.app-status-btn').forEach(btn => {
+        const s  = btn.dataset.status;
+        const col = statusColors[s];
+        btn.classList.remove('active', 'active-' + col);
+        if (s === val) btn.classList.add('active', 'active-' + col);
+    });
+}
+pickStatus(document.getElementById('statusInput').value);
+</script>
+
 <!-- Split layout -->
-<div class="row g-4" style="min-height:80vh;">
+<div class="row g-4">
 
     <!-- ─── LEFT: Candidate ──────────────────────────────────────────────── -->
     <div class="col-lg-7">
+
+        <div class="section-divider"><i class="bi bi-person-fill"></i>Profil du candidat</div>
 
         <!-- Candidate header card -->
         <div class="card border-0 shadow-sm mb-3">
@@ -70,10 +181,6 @@ $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($m
                             <?php endif; ?>
                         </div>
                     </div>
-                    <!-- Status badge -->
-                    <span class="badge bg-<?= $statusColors[$app->status] ?? 'secondary' ?> fs-6 px-3 py-2">
-                        <?= $statusLabel[$app->status] ?? ucfirst($app->status) ?>
-                    </span>
                 </div>
 
                 <!-- External links -->
@@ -359,6 +466,8 @@ $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($m
     <!-- ─── RIGHT: Job Offer ─────────────────────────────────────────────── -->
     <div class="col-lg-5">
         <div style="position:sticky;top:1.5rem;">
+
+            <div class="section-divider"><i class="bi bi-briefcase-fill"></i>Offre d'emploi</div>
 
             <!-- Job header card -->
             <div class="card border-0 shadow-sm mb-3">

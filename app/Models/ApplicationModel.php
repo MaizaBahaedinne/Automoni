@@ -12,7 +12,7 @@ class ApplicationModel extends Model
     protected $useTimestamps = false;
     protected $allowedFields = [
         'job_id', 'user_id', 'cover_letter', 'cv_file',
-        'status', 'recruiter_note', 'applied_at', 'updated_at',
+        'status', 'recruiter_note', 'rejection_reason', 'applied_at', 'updated_at',
     ];
 
     protected $beforeInsert = ['setAppliedAt'];
