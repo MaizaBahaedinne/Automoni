@@ -351,6 +351,24 @@ class JobController extends BaseController
             'cv_file'      => $cvFile,
         ]);
 
+        // Save prescreening answers
+        $appId   = $appModel->db->insertID();
+        $rawAnswers = $this->request->getPost('answers') ?? [];
+        if ($appId && is_array($rawAnswers)) {
+            $db = \Config\Database::connect();
+            foreach ($rawAnswers as $ans) {
+                $qId  = (int) ($ans['question_id'] ?? 0);
+                $text = trim((string) ($ans['answer'] ?? ''));
+                if ($qId > 0 && $text !== '') {
+                    $db->table('application_answers')->insert([
+                        'application_id' => $appId,
+                        'question_id'    => $qId,
+                        'answer_text'    => mb_substr($text, 0, 2000),
+                    ]);
+                }
+            }
+        }
+
         return redirect()->back()->with('success', 'Application submitted!');
     }
 
@@ -382,6 +400,27 @@ class JobController extends BaseController
         ]);
 
         return redirect()->back()->with('success', 'Application status updated.');
+    }
+
+    public function saveApplicationNote(int $appId): RedirectResponse
+    {
+        $appModel = model(ApplicationModel::class);
+        $app      = $appModel->find($appId);
+
+        if (!$app) {
+            return redirect()->back()->with('error', 'Application not found.');
+        }
+
+        $job = $this->jobModel->find($app->job_id);
+        if (!$job || (int) $job->user_id !== (int) session()->get('user_id')) {
+            return redirect()->back()->with('error', 'Access denied.');
+        }
+
+        $appModel->update($appId, [
+            'recruiter_note' => strip_tags($this->request->getPost('note') ?? ''),
+        ]);
+
+        return redirect()->back()->with('success', 'Note enregistrée.');
     }
 
     // ─── Private Helpers ─────────────────────────────────────────────────

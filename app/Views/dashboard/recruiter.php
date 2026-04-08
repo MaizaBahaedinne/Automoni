@@ -156,8 +156,14 @@
                     </thead>
                     <tbody>
                         <?php foreach (array_slice($applications, 0, 20) as $app): ?>
-                        <tr>
-                            <td class="fw-semibold"><?= esc($app->candidate_name ?? 'Candidate #' . $app->user_id) ?></td>
+                        <tr style="cursor:pointer;" onclick="window.location='<?= base_url('applications/' . $app->id) ?>'">
+                            <td class="fw-semibold">
+                                <a href="<?= base_url('applications/' . $app->id) ?>"
+                                   class="text-decoration-none text-dark d-flex align-items-center gap-2">
+                                    <i class="bi bi-person-circle text-muted"></i>
+                                    <?= esc($app->candidate_name ?? ($app->first_name ?? '') . ' ' . ($app->last_name ?? '') ?: 'Candidat #' . $app->user_id) ?>
+                                </a>
+                            </td>
                             <td class="text-muted small"><?= esc($app->job_title ?? '—') ?></td>
                             <td><small class="text-muted"><?= !empty($app->created_at) ? date('d M Y', strtotime($app->created_at)) : '—' ?></small></td>
                             <td>
