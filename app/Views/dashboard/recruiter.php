@@ -8,11 +8,16 @@
     </a>
 </div>
 
-<?php if (!$company): ?>
+<?php if (!$company && empty($orgs)): ?>
     <div class="alert alert-warning">
         <i class="bi bi-exclamation-triangle me-2"></i>
         <?= lang('App.no_company_warning') ?>
         <a href="<?= base_url('company/create') ?>" class="btn btn-warning btn-sm ms-2"><?= lang('App.create_company_btn') ?></a>
+    </div>
+<?php elseif (!$company && !empty($orgs)): ?>
+    <div class="alert alert-info d-flex align-items-center gap-2 mb-3 py-2">
+        <i class="bi bi-buildings-fill" style="font-size:1.1rem;"></i>
+        <span style="font-size:.875rem;">Vous gérez <strong><?= count($orgs) ?></strong> organisation(s). Créez un <a href="<?= base_url('company/create') ?>">profil entreprise</a> pour publier des offres d'emploi.</span>
     </div>
 <?php endif; ?>
 
@@ -47,6 +52,54 @@
         </div>
     </div>
 </div>
+
+<!-- My Organizations -->
+<?php if (!empty($orgs)): ?>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0"><i class="bi bi-buildings me-2 text-primary"></i>Mes organisations <span class="badge bg-primary ms-1"><?= count($orgs) ?></span></h5>
+        <a href="<?= base_url('organizations/create') ?>" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-plus me-1"></i>Nouvelle
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+        <?php foreach ($orgs as $org): ?>
+            <div class="col-sm-6 col-lg-4">
+                <div class="d-flex align-items-center gap-3 p-3"
+                     style="background:var(--bg);border:1px solid var(--border);border-radius:10px;">
+                    <?php if (!empty($org->logo)): ?>
+                        <img src="<?= base_url('uploads/' . esc($org->logo)) ?>"
+                             style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;" alt="">
+                    <?php else: ?>
+                        <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--brand-dark),#7c3aed);
+                                    color:#fff;font-size:1.1rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <?= strtoupper(substr($org->name, 0, 1)) ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="flex-grow-1 min-width-0">
+                        <div class="fw-semibold text-truncate" style="font-size:.875rem;"><?= esc($org->name) ?></div>
+                        <?php if (!empty($org->city)): ?>
+                        <div class="text-muted" style="font-size:.75rem;"><i class="bi bi-geo-alt me-1"></i><?= esc($org->city) ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                        <a href="<?= base_url('organizations/' . $org->id) ?>"
+                           class="btn btn-outline-secondary btn-sm px-2" title="Voir" style="font-size:.7rem;">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="<?= base_url('organizations/' . $org->id . '/edit') ?>"
+                           class="btn btn-outline-primary btn-sm px-2" title="Modifier" style="font-size:.7rem;">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- My Jobs -->
 <div class="card border-0 shadow-sm mb-4">

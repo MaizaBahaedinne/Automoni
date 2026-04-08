@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\{JobModel, ApplicationModel, ProfileModel, CompanyModel};
+use App\Models\{JobModel, ApplicationModel, ProfileModel, CompanyModel, OrganizationModel};
 use CodeIgniter\Controller;
 
 class DashboardController extends BaseController
@@ -44,6 +44,7 @@ class DashboardController extends BaseController
         $applicationModel = model(ApplicationModel::class);
 
         $company      = $companyModel->getByUserId($userId);
+        $orgs         = model(OrganizationModel::class)->getManagedByUser($userId);
         $jobs         = $company
                             ? model(JobModel::class)->where('company_id', $company->id)->orderBy('created_at', 'DESC')->findAll()
                             : [];
@@ -52,6 +53,7 @@ class DashboardController extends BaseController
         return view('dashboard/recruiter', [
             'title'        => 'Recruiter Dashboard',
             'company'      => $company,
+            'orgs'         => $orgs,
             'jobs'         => $jobs,
             'applications' => $applications,
         ]);
