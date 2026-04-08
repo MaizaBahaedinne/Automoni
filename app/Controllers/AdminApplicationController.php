@@ -48,6 +48,26 @@ class AdminApplicationController extends BaseController
     }
 
     /**
+     * POST /admin/applications/purge
+     * Deletes all applications from the database (test/dev use only).
+     * Requires an extra confirmation token to prevent accidental clicks.
+     */
+    public function purge(): RedirectResponse
+    {
+        $token = $this->request->getPost('confirm_token');
+        if ($token !== 'PURGE_CONFIRMED') {
+            return redirect()->back()->with('error', 'Token de confirmation invalide.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('applications')->truncate();
+
+        log_message('warning', '[AdminApplicationController::purge] Toutes les candidatures ont été supprimées par user_id=' . session()->get('user_id'));
+
+        return redirect()->to(base_url('admin/applications'))->with('success', 'Toutes les candidatures ont été purgées.');
+    }
+
+    /**
      * POST /admin/applications/(:num)/status
      * Updates the status of a single application (AJAX or form).
      */

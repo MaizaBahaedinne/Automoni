@@ -61,7 +61,57 @@ $total = $counts['total'];
         <a href="<?= base_url('admin/404-logs') ?>" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-signpost-split me-1"></i>Erreurs 404
         </a>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#purgeFModal">
+            <i class="bi bi-trash3-fill me-1"></i>Purger les candidatures
+        </button>
     </div>
+</div>
+
+<!-- ── Purge confirmation modal ──────────────────────────────────────────── -->
+<div class="modal fade" id="purgeFModal" tabindex="-1" aria-labelledby="purgeFLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger fw-bold" id="purgeFLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Purger toutes les candidatures
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-3">
+                    <strong>⚠ Action irréversible</strong> — cette opération supprime <strong>toutes</strong> les candidatures de la base de données.
+                </div>
+                <p class="text-muted" style="font-size:.9rem;">
+                    Utilisez cette fonction <strong>uniquement pour les tests</strong>.
+                    Les offres d'emploi et les profils utilisateurs ne seront pas affectés.
+                </p>
+                <form action="<?= base_url('admin/applications/purge') ?>" method="post" id="purgeForm">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="confirm_token" value="PURGE_CONFIRMED">
+                    <label class="form-label fw-semibold" style="font-size:.85rem;">
+                        Tapez <code>PURGE</code> pour confirmer :
+                    </label>
+                    <input type="text" id="purgeConfirmInput" class="form-control form-control-sm mb-3"
+                           placeholder="PURGE" autocomplete="off">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" id="purgeSubmitBtn" class="btn btn-sm btn-danger" disabled>
+                            <i class="bi bi-trash3-fill me-1"></i>Confirmer la purge
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('purgeConfirmInput').addEventListener('input', function () {
+    document.getElementById('purgeSubmitBtn').disabled = this.value.trim() !== 'PURGE';
+});
+</script>
+
+<div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4" style="display:none"><!-- layout spacer placeholder -->
 </div>
 
 <!-- ── Stats strip ─────────────────────────────────────────────────────────── -->
