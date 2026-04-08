@@ -10,23 +10,20 @@ namespace App\Services;
  */
 class CvParsingClient
 {
-    private $client;
     private string $basePath;
     private string $apiKey;
     private bool $enabled;
+    private int $timeout;
+    private int $connectTimeout;
 
     public function __construct()
     {
-        $this->basePath = config('CvParsing')->basePath;
-        $this->apiKey = config('CvParsing')->apiKey;
-        $this->enabled = config('CvParsing')->enabled;
-
-        // Use CodeIgniter's native CURLRequest service
-        $this->client = \Config\Services::curlrequest([
-            'timeout' => (int) config('CvParsing')->timeout,
-            'connect_timeout' => (int) config('CvParsing')->connectTimeout,
-            'verify' => false, // For local dev - enable in production
-        ]);
+        $cfg                  = config('CvParsing');
+        $this->basePath       = $cfg->basePath;
+        $this->apiKey         = $cfg->apiKey;
+        $this->enabled        = $cfg->enabled;
+        $this->timeout        = (int) $cfg->timeout;
+        $this->connectTimeout = (int) $cfg->connectTimeout;
     }
 
     /**
@@ -47,25 +44,29 @@ class CvParsingClient
         }
 
         try {
-            $fileContent = file_get_contents($filePath);
+            $url      = rtrim($this->basePath, '/') . '/api/parse-cv';
             $fileName = basename($filePath);
+            $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
 
-            // Make multipart request to Python service endpoint
-            $response = $this->client->request('POST', $this->basePath . '/api/parse-cv', [
-                'multipart' => [
-                    [
-                        'name' => 'file',
-                        'contents' => $fileContent,
-                        'filename' => $fileName,
-                    ],
-                ],
-                'headers' => [
-                    'X-API-Key' => $this->apiKey,
-                ],
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => ['file' => new \CURLFile($filePath, $mimeType, $fileName)],
+                CURLOPT_HTTPHEADER     => ['X-Api-Key: ' . $this->apiKey],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => $this->timeout ?? 60,
+                CURLOPT_CONNECTTIMEOUT => $this->connectTimeout ?? 10,
+                CURLOPT_SSL_VERIFYPEER => false,
             ]);
 
-            $statusCode = $response->getStatusCode();
-            $body = $response->getBody();
+            $body       = curl_exec($ch);
+            $statusCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError  = curl_error($ch);
+            curl_close($ch);
+
+            if ($curlError) {
+                throw new \Exception('cURL error: ' . $curlError);
+            }
 
             if ($statusCode !== 200) {
                 log_message('error', "CV Parsing service returned HTTP {$statusCode}: {$body}");
@@ -113,12 +114,17 @@ class CvParsingClient
     public function isHealthy(): bool
     {
         try {
-            $response = $this->client->request('GET', $this->basePath . '/health', [
-                'timeout' => 5,
-                'connect_timeout' => 3,
+            $ch = curl_init(rtrim($this->basePath, '/') . '/health');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 5,
+                CURLOPT_CONNECTTIMEOUT => 3,
+                CURLOPT_SSL_VERIFYPEER => false,
             ]);
-
-            return $response->getStatusCode() === 200;
+            curl_exec($ch);
+            $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            return $code === 200;
         } catch (\Exception $e) {
             log_message('warning', 'CV Parsing service health check failed: ' . $e->getMessage());
             return false;
