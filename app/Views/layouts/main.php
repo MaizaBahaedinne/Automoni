@@ -534,6 +534,30 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
                         <li><a class="dropdown-item" href="<?= base_url('admin/logs') ?>"><i class="bi bi-file-earmark-text me-2" style="color:#6366f1;"></i>Logs CI4</a></li>
                         <li><a class="dropdown-item" href="<?= base_url('admin/deploy') ?>"><i class="bi bi-cloud-arrow-down me-2" style="color:#22c55e;"></i>Déploiement</a></li>
                         <?php endif; ?>
+                        <?php if (session()->get('user_role') === 'admin' || session()->get('user_real_role') === 'admin'): ?>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <div class="px-3 pb-1 pt-0 text-uppercase" style="font-size:.65rem;font-weight:700;color:#f59e0b;letter-spacing:.06em;">
+                                <i class="bi bi-eye me-1"></i>Simuler un rôle
+                            </div>
+                        </li>
+                        <li>
+                            <div class="px-3 pb-2 d-flex gap-1 flex-wrap">
+                                <?php
+                                $activeRole = session()->get('user_role');
+                                $simRoles = ['job_seeker' => 'Chercheur', 'recruiter' => 'Recruteur', 'admin' => 'Admin'];
+                                foreach ($simRoles as $r => $lbl):
+                                    $isActive = $activeRole === $r;
+                                ?>
+                                <a href="<?= base_url('admin/switch-role/' . $r) ?>"
+                                   class="btn btn-xs <?= $isActive ? 'btn-warning' : 'btn-outline-secondary' ?>"
+                                   style="font-size:.7rem;padding:2px 9px;border-radius:20px;font-weight:600;">
+                                    <?= $lbl ?>
+                                </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </li>
+                        <?php endif; ?>
                         <li><hr class="dropdown-divider">
                         <!-- Language switcher -->
                         <li>
@@ -636,6 +660,26 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             <a class="mobile-sheet-item" href="<?= base_url('admin/logs') ?>"><i class="bi bi-file-earmark-text" style="color:#6366f1;"></i>Logs CI4</a>
             <a class="mobile-sheet-item" href="<?= base_url('admin/deploy') ?>"><i class="bi bi-cloud-arrow-down" style="color:#22c55e;"></i>Déploiement</a>
             <?php endif; ?>
+            <?php if (session()->get('user_role') === 'admin' || session()->get('user_real_role') === 'admin'): ?>
+            <div class="px-4 pt-3 pb-1 border-top"
+                 style="font-size:.65rem;font-weight:700;text-transform:uppercase;
+                        color:#f59e0b;letter-spacing:.06em;">
+                <i class="bi bi-eye me-1"></i>Simuler un rôle
+            </div>
+            <div class="px-4 pb-2 d-flex gap-2 flex-wrap">
+                <?php
+                $activeRole = session()->get('user_role');
+                foreach (['job_seeker' => 'Chercheur', 'recruiter' => 'Recruteur', 'admin' => 'Admin'] as $r => $lbl):
+                    $isActive = $activeRole === $r;
+                ?>
+                <a href="<?= base_url('admin/switch-role/' . $r) ?>"
+                   class="btn btn-sm <?= $isActive ? 'btn-warning' : 'btn-outline-secondary' ?>"
+                   style="font-size:.75rem;border-radius:20px;font-weight:600;">
+                    <?= $lbl ?>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
             <div class="px-4 py-2 d-flex align-items-center gap-2 border-top mt-1">
                 <small class="text-muted"><i class="bi bi-translate me-1"></i></small>
                 <a href="<?= base_url('lang/en') ?>" class="lang-btn <?= $locale === 'en' ? 'active' : '' ?>">EN</a>
@@ -682,6 +726,22 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
 <!-- ── Page content ───────────────────────────────────────────────────────── -->
 <main>
     <div class="container">
+        <?php if (session()->get('user_real_role') === 'admin' && session()->get('user_role') !== 'admin'): ?>
+        <?php $simLabel = session()->get('user_role') === 'job_seeker' ? 'Chercheur d\'emploi' : 'Recruteur'; ?>
+        <div class="d-flex align-items-center gap-3 mt-2 mb-3 px-3 py-2"
+             style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;font-size:.84rem;">
+            <i class="bi bi-eye-fill" style="color:#d97706;font-size:1.1rem;"></i>
+            <span>
+                Simulation active — vous voyez l'interface
+                <strong style="color:#92400e;"><?= esc($simLabel) ?></strong>
+            </span>
+            <a href="<?= base_url('admin/switch-role/admin') ?>"
+               class="btn btn-sm ms-auto fw-bold"
+               style="background:#f59e0b;border-color:#f59e0b;color:#1e1e1e;border-radius:20px;font-size:.75rem;">
+                <i class="bi bi-arrow-left-circle me-1"></i>Revenir Admin
+            </a>
+        </div>
+        <?php endif; ?>
         <?= $this->renderSection('content') ?>
     </div>
 </main>
