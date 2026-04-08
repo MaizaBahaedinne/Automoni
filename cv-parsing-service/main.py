@@ -52,8 +52,7 @@ async def startup_event():
     logger.info(f"Max file size: {config.MAX_FILE_SIZE_MB}MB")
     logger.info(f"Ollama: {config.OLLAMA_BASE_URL}")
     logger.info(f"Model: {config.OLLAMA_MODEL}")
-    logger.info(f"CORS Origins: {cors_origins_URL}")
-    logger.info(f"Model: {config.OLLAMA_MODEL}")
+    logger.info(f"CORS Origins: {cors_origins}")
 
 
 @app.on_event("shutdown")
