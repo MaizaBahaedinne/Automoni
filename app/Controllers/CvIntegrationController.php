@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\{ProfileModel, SkillModel, ExperienceModel, EducationModel,
     LanguageModel, CertificationModel};
 use App\Services\CvParsingClient;
+use App\Libraries\CvParser;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
@@ -70,20 +71,39 @@ class CvIntegrationController extends BaseController
             // Save temporarily
             $tempPath = $this->savePlainUpload($file);
 
-            // Parse with Python service
-            $parseResult = $this->parsingClient->parseCv($tempPath);
+            // Try Python service — fall back to PHP parser if unavailable
+            $usedFallback = false;
+            try {
+                $parseResult = $this->parsingClient->parseCv($tempPath);
+                $data = $parseResult['data'] ?? [];
+            } catch (\Exception $e) {
+                $msg = $e->getMessage();
+                if (
+                    strpos($msg, 'unavailable') !== false ||
+                    strpos($msg, 'disabled') !== false ||
+                    strpos($msg, 'Connection refused') !== false ||
+                    strpos($msg, 'Failed to connect') !== false ||
+                    strpos($msg, 'timed out') !== false
+                ) {
+                    log_message('warning', 'Python CV service unavailable, using PHP fallback parser');
+                    $usedFallback = true;
+                    $data = $this->fallbackParseCv($tempPath, $file->getMimeType());
+                } else {
+                    throw $e;
+                }
+            }
 
             // Store in session (temporary)
-            session()->set('cv_parse_result', $parseResult);
+            session()->set('cv_parse_result', ['data' => $data]);
 
-            // Log
-            log_message('info', "CV parsed successfully for user {$this->userId}");
+            log_message('info', "CV parsed for user {$this->userId}" . ($usedFallback ? ' (PHP fallback)' : ''));
 
-            // Return with data
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'CV parsed successfully',
-                'data' => $parseResult['data'] ?? [],
+                'message' => $usedFallback
+                    ? 'CV analysé (mode basique — service IA indisponible)'
+                    : 'CV parsed successfully',
+                'data' => $data,
             ]);
 
         } catch (\Exception $e) {
@@ -314,5 +334,43 @@ class CvIntegrationController extends BaseController
             return null;
         }
         return "{$year}-01-01";
+    }
+
+    /**
+     * Fallback CV parser using the PHP CvParser library.
+     * Normalises output to match the Python service response shape so
+     * the view JS can consume it identically.
+     */
+    private function fallbackParseCv(string $tempPath, string $mimeType): array
+    {
+        $parser = new CvParser();
+        $raw    = $parser->parseDetailed($tempPath, $mimeType);
+
+        return [
+            'profile' => [
+                'first_name'  => '',
+                'last_name'   => '',
+                'name'        => '',
+                'headline'    => $raw['headline']['value'] ?? '',
+                'email'       => $raw['email']['value'] ?? null,
+                'phone'       => $raw['phone']['value'] ?? null,
+                'city'        => null,
+                'country'     => null,
+                'summary'     => $raw['summary']['value'] ?? '',
+                'confidences' => [
+                    'first_name' => ['score' => 0.0],
+                    'last_name'  => ['score' => 0.0],
+                    'headline'   => ['score' => (float) ($raw['headline']['confidence'] ?? 0)],
+                    'email'      => ['score' => (float) ($raw['email']['confidence'] ?? 0)],
+                    'phone'      => ['score' => (float) ($raw['phone']['confidence'] ?? 0)],
+                    'summary'    => ['score' => (float) ($raw['summary']['confidence'] ?? 0)],
+                ],
+            ],
+            'skills'         => $raw['skills'] ?? [],
+            'languages'      => $raw['languages'] ?? [],
+            'experiences'    => $raw['experiences'] ?? [],
+            'education'      => $raw['education'] ?? [],
+            'certifications' => [],
+        ];
     }
 }
