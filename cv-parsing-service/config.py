@@ -33,7 +33,9 @@ MIME_TYPES = {
 
 # Logging
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
-LOG_FILE = os.path.join('logs', 'cv_parsing.log')
+# Default log file to home dir so it works without write access to the project dir
+_default_log = os.path.join(os.path.expanduser('~'), 'cv_parsing.log')
+LOG_FILE = os.getenv('LOG_FILE', _default_log)
 
 # Environment
 ENV = os.getenv('ENV', 'development')
