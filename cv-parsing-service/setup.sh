@@ -30,9 +30,19 @@ echo "3️⃣  Installing Python dependencies..."
 pip3 install -r requirements.txt > /dev/null
 echo "✅ Dependencies installed"
 
+# Download spaCy language model
+echo ""
+echo "4️⃣  Downloading spaCy language model (en_core_web_sm)..."
+if python3 -c "import spacy; spacy.load('en_core_web_sm')" 2>/dev/null; then
+    echo "✅ spaCy model already installed"
+else
+    python3 -m spacy download en_core_web_sm
+    echo "✅ spaCy model downloaded"
+fi
+
 # Check Tesseract
 echo ""
-echo "4️⃣  Checking Tesseract OCR..."
+echo "5️⃣  Checking Tesseract OCR..."
 if command -v tesseract &> /dev/null; then
     tesseract --version | head -1
     echo "✅ Tesseract found"
@@ -40,6 +50,17 @@ else
     echo "⚠️  Tesseract not found (needed for image parsing):"
     echo "   macOS: brew install tesseract"
     echo "   Ubuntu: sudo apt-get install tesseract-ocr"
+fi
+
+# Check Ollama
+echo ""
+echo "6️⃣  Checking Ollama..."
+if command -v ollama &> /dev/null; then
+    echo "✅ Ollama found"
+    echo "   Make sure to pull a model: ollama pull mistral"
+else
+    echo "⚠️  Ollama not found. Install from https://ollama.ai"
+    echo "   Service will still work in basic mode (spaCy only)"
 fi
 
 # Ready to start
