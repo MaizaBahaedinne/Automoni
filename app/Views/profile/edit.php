@@ -2235,8 +2235,4 @@ if (expIsCurrent) {
 })();
 </script>
 
-<!-- Smart Profile Fill Script -->
-<script>
-
-
 <?= $this->endSection() ?>
