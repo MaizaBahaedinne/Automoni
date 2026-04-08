@@ -74,14 +74,17 @@ PROFICIENCY_KEYWORDS: Dict[str, str] = {
 
 # ── Section header keywords (for context extraction sent to Ollama) ────────────
 _SECTION_MAP: Dict[str, List[str]] = {
-    "experience":     ["work experience", "professional experience", "employment",
-                       "expérience professionnelle", "expériences", "postes occupés"],
-    "education":      ["education", "academic background", "formation",
-                       "études", "diplômes", "qualifications"],
+    "experience":     ["work experience", "professional experience", "employment history",
+                       "expérience professionnelle", "expériences professionnelles",
+                       "expériences", "postes occupés", "parcours professionnel",
+                       "career history", "work history"],
+    "education":      ["education", "academic background", "academic history",
+                       "formation", "formations", "études", "diplômes",
+                       "qualifications", "parcours académique", "scolarité"],
     "certifications": ["certifications", "certificates", "licences",
-                       "diplômes professionnels"],
-    "summary":        ["summary", "profile", "objective", "about",
-                       "profil", "résumé", "présentation"],
+                       "diplômes professionnels", "certifications et formations"],
+    "summary":        ["summary", "profile", "objective", "about me", "about",
+                       "profil", "résumé", "présentation", "objectif", "à propos"],
 }
 
 
