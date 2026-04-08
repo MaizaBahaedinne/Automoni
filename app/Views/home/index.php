@@ -520,7 +520,7 @@
             <div class="feed-post-footer">
                 <span class="feed-badge cdi"><?= esc($job->contract_type) ?></span>
                 <?php if (!empty($job->remote) && $job->remote !== 'onsite'): ?><span class="feed-badge remote"><?= ucfirst(esc($job->remote)) ?></span><?php endif; ?>
-                <?php if (!empty($job->salary_min)): ?><span class="feed-badge salary"><i class="bi bi-cash me-1"></i><?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?> <?= esc($job->salary_currency ?? 'MAD') ?>/an</span><?php endif; ?>
+                <?php if (!empty($job->salary_min)): ?><?php $_sp=['annual'=>'/an','monthly'=>'/mois','daily'=>'/jour','hourly'=>'/h']; ?><span class="feed-badge salary"><i class="bi bi-cash me-1"></i><?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?> <?= esc($job->salary_currency ?? 'MAD') ?><?= $_sp[$job->salary_period ?? 'annual'] ?? '/an' ?></span><?php endif; ?>
                 <a href="<?= base_url('jobs/' . esc($job->slug)) ?>" class="ms-auto" style="font-size:12.5px;color:#0A66C2;text-decoration:none;font-weight:500;">Voir l&rsquo;offre &#8594;</a>
             </div>
         </div>
@@ -645,7 +645,7 @@
             <div class="feed-post-footer">
                 <span class="feed-badge cdi"><?= esc($job->contract_type) ?></span>
                 <?php if (!empty($job->remote) && $job->remote !== 'onsite'): ?><span class="feed-badge remote"><?= ucfirst(esc($job->remote)) ?></span><?php endif; ?>
-                <?php if (!empty($job->salary_min)): ?><span class="feed-badge salary"><i class="bi bi-cash me-1"></i><?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?> <?= esc($job->salary_currency ?? 'MAD') ?>/an</span><?php endif; ?>
+                <?php if (!empty($job->salary_min)): ?><?php $_sp=['annual'=>'/an','monthly'=>'/mois','daily'=>'/jour','hourly'=>'/h']; ?><span class="feed-badge salary"><i class="bi bi-cash me-1"></i><?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?> <?= esc($job->salary_currency ?? 'MAD') ?><?= $_sp[$job->salary_period ?? 'annual'] ?? '/an' ?></span><?php endif; ?>
                 <a href="<?= base_url('jobs/' . esc($job->slug)) ?>" class="ms-auto" style="font-size:12.5px;color:#0A66C2;text-decoration:none;font-weight:500;">Voir l&rsquo;offre &#8594;</a>
             </div>
         </div>
@@ -1107,10 +1107,10 @@ input[type="radio"]:checked + .announce-pill-btn { border-color: currentColor; f
                 <span class="feed-badge remote"><?= ucfirst(esc($job->remote)) ?></span>
                 <?php endif; ?>
             </div>
-            <?php if (!empty($job->salary_min)): ?>
+            <?php if (!empty($job->salary_min)): ?><?php $_sp=['annual'=>'/an','monthly'=>'/mois','daily'=>'/jour','hourly'=>'/h']; ?>
             <div class="mt-2 fw-semibold" style="color:#15803d;font-size:.82rem;">
                 <i class="bi bi-cash me-1"></i>
-                <?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?>&nbsp;<?= esc($job->salary_currency ?? 'MAD') ?>/an
+                <?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? '&ndash;'.number_format($job->salary_max) : '+' ?>&nbsp;<?= esc($job->salary_currency ?? 'MAD') ?><?= $_sp[$job->salary_period ?? 'annual'] ?? '/an' ?>
             </div>
             <?php endif; ?>
         </a>
