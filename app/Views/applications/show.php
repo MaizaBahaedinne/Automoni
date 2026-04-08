@@ -102,8 +102,11 @@ $curStatus  = $app->status ?? 'pending';
             <div id="rejectionBlock" style="<?= $curStatus === 'rejected' ? '' : 'display:none;' ?>">
                 <label class="form-label fw-semibold text-danger mb-1" style="font-size:.82rem;">
                     <i class="bi bi-chat-square-text me-1"></i>Motif de refus
-                    <span class="fw-normal text-muted">(affiché au candidat dans son tableau de bord)</span>
                 </label>
+                <p class="text-muted mb-2 d-flex align-items-center gap-1" style="font-size:.78rem;">
+                    <i class="bi bi-eye-fill"></i>
+                    Le candidat pourra voir ce motif dans son tableau de bord.
+                </p>
                 <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="2"
                           style="font-size:.875rem;"
                           placeholder="Ex : Profil ne correspondant pas aux exigences requises pour ce poste…"><?= esc($app->rejection_reason ?? '') ?></textarea>
