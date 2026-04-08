@@ -44,7 +44,7 @@ $defaultSteps = !empty($steps) ? $steps : [
 
 <!-- Page header -->
 <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="<?= base_url($isEdit ? 'jobs/' . ($job->slug ?? $job->id) : 'dashboard') ?>" class="btn btn-sm btn-outline-secondary">
+    <a href="<?= base_url($isEdit ? 'jobs/' . ($job->slug ?? $job->id) : 'jobs') ?>" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left"></i>
     </a>
     <div>
@@ -532,7 +532,7 @@ $defaultSteps = !empty($steps) ? $steps : [
                 <i class="bi bi-<?= $isEdit ? 'check2-circle' : 'send' ?> me-2"></i>
                 <?= $isEdit ? 'Enregistrer les modifications' : 'Publier l\'offre' ?>
             </button>
-            <a href="<?= base_url($isEdit ? 'jobs/' . ($job->slug ?? $job->id) : 'dashboard') ?>" class="btn btn-outline-secondary btn-sm">Annuler</a>
+            <a href="<?= base_url($isEdit ? 'jobs/' . ($job->slug ?? $job->id) : 'jobs') ?>" class="btn btn-outline-secondary btn-sm">Annuler</a>
         </div>
     </div>
 </div>
