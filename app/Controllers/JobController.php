@@ -4,7 +4,8 @@ namespace App\Controllers;
 
 use App\Models\{
     JobModel, CompanyModel, ApplicationModel, JobAlertModel, UserModel,
-    JobLanguageModel, JobCertificationModel, JobPrescreeningModel, JobRecruitmentStepModel
+    JobLanguageModel, JobCertificationModel, JobPrescreeningModel, JobRecruitmentStepModel,
+    SkillModel, LanguageModel, ExperienceModel
 };
 use App\Libraries\AlertMailer;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -64,16 +65,83 @@ class JobController extends BaseController
         // Fetch related data
         $db        = \Config\Database::connect();
         $jobSkills = $db->table('job_skills')->where('job_id', $job->id)->get()->getResultArray();
+        $languages = model(JobLanguageModel::class)->getByJob($job->id);
+
+        // ── Profile match score (job_seeker only) ─────────────────────────────
+        $matchScore   = null;
+        $matchDetails = [];
+
+        if ($userId && session()->get('user_role') === 'job_seeker') {
+            $userSkills = array_map(
+                fn($s) => strtolower(trim($s->skill_name)),
+                model(SkillModel::class)->getByUserId($userId)
+            );
+            $userLangs = array_map(
+                fn($l) => strtolower(trim($l->name)),
+                model(LanguageModel::class)->getByUserId($userId)
+            );
+            $userExps = model(ExperienceModel::class)->getByUserId($userId);
+
+            // Total years of experience
+            $totalExpMonths = 0;
+            foreach ($userExps as $exp) {
+                $start = strtotime(($exp->start_date ?? '') . '-01');
+                $end   = (!empty($exp->is_current) || empty($exp->end_date))
+                         ? time()
+                         : strtotime($exp->end_date . '-01');
+                if ($start && $end > $start) {
+                    $totalExpMonths += ($end - $start) / (30 * 24 * 3600);
+                }
+            }
+            $totalExpYears = $totalExpMonths / 12;
+
+            // Skills score (50 pts)
+            $jobSkillNames = array_map(fn($s) => strtolower(trim($s['skill_name'])), $jobSkills);
+            $skillsTotal   = count($jobSkillNames);
+            $skillsMatched = 0;
+            foreach ($jobSkillNames as $jsk) {
+                if (in_array($jsk, $userSkills, true)) {
+                    $skillsMatched++;
+                }
+            }
+            $skillsScore = $skillsTotal > 0 ? round(($skillsMatched / $skillsTotal) * 50) : 25;
+
+            // Experience score (30 pts)
+            $minYears = (int) ($job->min_experience_years ?? 0);
+            $expScore = $minYears === 0
+                ? 30
+                : min(30, (int) round(($totalExpYears / $minYears) * 30));
+
+            // Languages score (20 pts)
+            $requiredLangs = array_filter($languages, fn($l) => !empty($l->is_required));
+            $langsTotal    = count($requiredLangs);
+            $langsMatched  = 0;
+            foreach ($requiredLangs as $rl) {
+                if (in_array(strtolower(trim($rl->language)), $userLangs, true)) {
+                    $langsMatched++;
+                }
+            }
+            $langsScore = $langsTotal > 0 ? round(($langsMatched / $langsTotal) * 20) : 20;
+
+            $matchScore   = $skillsScore + $expScore + $langsScore;
+            $matchDetails = [
+                'skills' => ['score' => $skillsScore, 'max' => 50, 'matched' => $skillsMatched, 'total' => $skillsTotal],
+                'exp'    => ['score' => $expScore,    'max' => 30, 'years'   => round($totalExpYears, 1), 'required' => $minYears],
+                'langs'  => ['score' => $langsScore,  'max' => 20, 'matched' => $langsMatched, 'total' => $langsTotal],
+            ];
+        }
 
         return view('jobs/show', [
-            'title'      => $job->title,
-            'job'        => $job,
-            'hasApplied' => $hasApplied,
-            'jobSkills'  => $jobSkills,
-            'languages'  => model(JobLanguageModel::class)->getByJob($job->id),
-            'certs'      => model(JobCertificationModel::class)->getByJob($job->id),
-            'questions'  => model(JobPrescreeningModel::class)->getByJob($job->id),
-            'steps'      => model(JobRecruitmentStepModel::class)->getByJob($job->id),
+            'title'        => $job->title,
+            'job'          => $job,
+            'hasApplied'   => $hasApplied,
+            'jobSkills'    => $jobSkills,
+            'languages'    => $languages,
+            'certs'        => model(JobCertificationModel::class)->getByJob($job->id),
+            'questions'    => model(JobPrescreeningModel::class)->getByJob($job->id),
+            'steps'        => model(JobRecruitmentStepModel::class)->getByJob($job->id),
+            'matchScore'   => $matchScore,
+            'matchDetails' => $matchDetails,
         ]);
     }
 

@@ -208,6 +208,78 @@
             </div>
         </div>
 
+        <!-- Match Score (job seekers only) -->
+        <?php if ($matchScore !== null): ?>
+        <?php
+            $scoreColor = $matchScore >= 75 ? '#22c55e' : ($matchScore >= 50 ? '#f59e0b' : ($matchScore >= 25 ? '#f97316' : '#ef4444'));
+            $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($matchScore >= 25 ? 'Moyen' : 'Faible'));
+        ?>
+        <div class="card border-0 shadow-sm mb-3" style="border-left:4px solid <?= $scoreColor ?> !important;">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-stars" style="color:<?= $scoreColor ?>;"></i>
+                    Correspondance profil
+                </h6>
+                <!-- Circular score -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="position:relative;width:72px;height:72px;flex-shrink:0;">
+                        <svg width="72" height="72" viewBox="0 0 72 72">
+                            <circle cx="36" cy="36" r="30" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+                            <circle cx="36" cy="36" r="30" fill="none"
+                                    stroke="<?= $scoreColor ?>" stroke-width="8"
+                                    stroke-dasharray="<?= round(2 * M_PI * 30 * $matchScore / 100, 1) ?> 188.5"
+                                    stroke-linecap="round"
+                                    transform="rotate(-90 36 36)"/>
+                        </svg>
+                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                                    font-weight:900;font-size:1rem;color:<?= $scoreColor ?>;">
+                            <?= $matchScore ?>%
+                        </div>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="color:<?= $scoreColor ?>;font-size:1rem;"><?= $scoreLabel ?></div>
+                        <div class="text-muted" style="font-size:.75rem;">Score de votre profil<br>par rapport à ce poste</div>
+                    </div>
+                </div>
+                <!-- Breakdown -->
+                <div class="d-flex flex-column gap-2" style="font-size:.78rem;">
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold"><i class="bi bi-tools me-1 text-muted"></i>Compétences</span>
+                            <span><?= $matchDetails['skills']['matched'] ?>/<?= $matchDetails['skills']['total'] ?: '—' ?></span>
+                        </div>
+                        <div class="progress" style="height:5px;border-radius:3px;">
+                            <div class="progress-bar" style="width:<?= $matchDetails['skills']['max'] > 0 ? round($matchDetails['skills']['score'] / $matchDetails['skills']['max'] * 100) : 50 ?>%;background:<?= $scoreColor ?>;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold"><i class="bi bi-briefcase me-1 text-muted"></i>Expérience</span>
+                            <span><?= $matchDetails['exp']['years'] ?> an<?= $matchDetails['exp']['years'] != 1 ? 's' : '' ?><?= $matchDetails['exp']['required'] > 0 ? ' / ' . $matchDetails['exp']['required'] . ' requis' : '' ?></span>
+                        </div>
+                        <div class="progress" style="height:5px;border-radius:3px;">
+                            <div class="progress-bar" style="width:<?= round($matchDetails['exp']['score'] / $matchDetails['exp']['max'] * 100) ?>%;background:<?= $scoreColor ?>;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold"><i class="bi bi-translate me-1 text-muted"></i>Langues</span>
+                            <span><?= $matchDetails['langs']['matched'] ?>/<?= $matchDetails['langs']['total'] ?: '—' ?></span>
+                        </div>
+                        <div class="progress" style="height:5px;border-radius:3px;">
+                            <div class="progress-bar" style="width:<?= $matchDetails['langs']['max'] > 0 ? round($matchDetails['langs']['score'] / $matchDetails['langs']['max'] * 100) : 100 ?>%;background:<?= $scoreColor ?>;"></div>
+                        </div>
+                    </div>
+                </div>
+                <?php if ($matchScore < 60): ?>
+                <a href="<?= base_url('profile/edit') ?>" class="btn btn-sm btn-outline-primary w-100 mt-3" style="font-size:.78rem;">
+                    <i class="bi bi-pencil-square me-1"></i>Améliorer mon profil
+                </a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Company Info -->
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body p-4">
