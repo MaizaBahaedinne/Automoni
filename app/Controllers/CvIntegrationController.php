@@ -68,6 +68,18 @@ class CvIntegrationController extends BaseController
             // Validate file
             $this->validateCvFile($file);
 
+            // Capture MIME type BEFORE move (temp file will be deleted after move)
+            $ext = strtolower($file->getClientExtension());
+            $mimeMap = [
+                'pdf'  => 'application/pdf',
+                'doc'  => 'application/msword',
+                'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png'  => 'image/png',
+            ];
+            $clientMime = $mimeMap[$ext] ?? ($file->getClientMimeType() ?: 'application/octet-stream');
+
             // Save temporarily
             $tempPath = $this->savePlainUpload($file);
 
@@ -87,7 +99,7 @@ class CvIntegrationController extends BaseController
                 ) {
                     log_message('warning', 'Python CV service unavailable, using PHP fallback parser');
                     $usedFallback = true;
-                    $data = $this->fallbackParseCv($tempPath, $file->getMimeType());
+                    $data = $this->fallbackParseCv($tempPath, $clientMime);
                 } else {
                     throw $e;
                 }
