@@ -2,18 +2,15 @@
 
 namespace App\Services;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\RequestException;
-
 /**
  * CV Parsing Client
- * Communicates with external Python microservice for CV parsing
+ * 
+ * Communicates with external Python microservice for CV parsing.
+ * Uses CodeIgniter's native CURLRequest - no external dependencies needed.
  */
 class CvParsingClient
 {
-    private Client $client;
+    private $client;
     private string $basePath;
     private string $apiKey;
     private bool $enabled;
@@ -24,7 +21,8 @@ class CvParsingClient
         $this->apiKey = config('CvParsing')->apiKey;
         $this->enabled = config('CvParsing')->enabled;
 
-        $this->client = new Client([
+        // Use CodeIgniter's native CURLRequest service
+        $this->client = \Config\Services::curlrequest([
             'timeout' => (int) config('CvParsing')->timeout,
             'connect_timeout' => (int) config('CvParsing')->connectTimeout,
             'verify' => false, // For local dev - enable in production
@@ -52,52 +50,74 @@ class CvParsingClient
             $fileContent = file_get_contents($filePath);
             $fileName = basename($filePath);
 
-            // Create multipart form data
-            $response = $this->client->post(
-                $this->basePath . '/api/parse-cv',
-                [
-                    'multipart' => [
-                        [
-                            'name' => 'file',
-                            'contents' => $fileContent,
-                            'filename' => $fileName,
-                        ],
+            // Make multipart request to Python service endpoint
+            $response = $this->client->request('POST', $this->basePath . '/api/parse-cv', [
+                'multipart' => [
+                    [
+                        'name' => 'file',
+                        'contents' => $fileContent,
+                        'filename' => $fileName,
                     ],
-                    'headers' => [
-                        'X-API-Key' => $this->apiKey,
-                    ],
-                ]
-            );
+                ],
+                'headers' => [
+                    'X-API-Key' => $this->apiKey,
+                ],
+            ]);
 
-            $body = json_decode($response->getBody(), true);
+            $statusCode = $response->getStatusCode();
+            $body = $response->getBody();
 
-            if (!isset($body['success']) || !$body['success']) {
-                throw new \Exception($body['error'] ?? 'Parsing failed');
+            if ($statusCode !== 200) {
+                log_message('error', "CV Parsing service returned HTTP {$statusCode}: {$body}");
+                throw new \Exception("Service error (HTTP {$statusCode})");
             }
 
-            return $body;
+            $data = json_decode($body, true);
 
-        } catch (ConnectException $e) {
-            log_message('error', 'Cannot reach CV Parsing service at ' . $this->basePath);
-            throw new \Exception('CV Parsing service unavailable. Please try again later.');
-        } catch (RequestException $e) {
-            $message = $e->getResponse()?->getBody()?->getContents() ?? $e->getMessage();
-            log_message('error', 'CV Parsing error: ' . $message);
-            throw new \Exception('Error parsing CV: ' . $message);
-        } catch (GuzzleException $e) {
-            log_message('error', 'Guzzle error: ' . $e->getMessage());
-            throw new \Exception('Network error. Please try again.');
+            if ($data === null) {
+                log_message('error', "Invalid JSON from CV Parsing service: {$body}");
+                throw new \Exception('Invalid response from parsing service');
+            }
+
+            if (!isset($data['success']) || !$data['success']) {
+                throw new \Exception($data['error'] ?? 'CV parsing failed');
+            }
+
+            log_message('info', "CV parsing successful: {$filePath}");
+            return $data;
+
+        } catch (\Exception $e) {
+            $message = $e->getMessage();
+            
+            // Log the error
+            log_message('error', "CV Parsing error: {$message}");
+            
+            // Return user-friendly error messages
+            if (strpos($message, 'Connection refused') !== false || 
+                strpos($message, 'Failed to connect') !== false) {
+                throw new \Exception('CV Parsing service is unavailable. Please try again later.');
+            } elseif (strpos($message, 'timed out') !== false) {
+                throw new \Exception('CV Parsing took too long. Please try with a smaller file.');
+            }
+            
+            throw new \Exception($message);
         }
     }
 
     /**
      * Check if parsing service is healthy
-     * Used for status checks
+     * Used for status checks and diagnostics
+     *
+     * @return bool True if service is responding, false otherwise
      */
     public function isHealthy(): bool
     {
         try {
-            $response = $this->client->get($this->basePath . '/health');
+            $response = $this->client->request('GET', $this->basePath . '/health', [
+                'timeout' => 5,
+                'connect_timeout' => 3,
+            ]);
+
             return $response->getStatusCode() === 200;
         } catch (\Exception $e) {
             log_message('warning', 'CV Parsing service health check failed: ' . $e->getMessage());
