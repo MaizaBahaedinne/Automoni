@@ -8,6 +8,7 @@ class JobModel extends Model
 {
     protected $table          = 'jobs';
     protected $primaryKey     = 'id';
+    protected $returnType     = 'object';
     protected $useSoftDeletes = true;
     protected $useTimestamps  = true;
     protected $allowedFields  = [

@@ -8,6 +8,7 @@ class ApplicationModel extends Model
 {
     protected $table         = 'applications';
     protected $primaryKey    = 'id';
+    protected $returnType    = 'object';
     protected $useTimestamps = false;
     protected $allowedFields = [
         'job_id', 'user_id', 'cover_letter', 'cv_file',

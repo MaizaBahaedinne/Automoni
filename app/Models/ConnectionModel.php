@@ -8,6 +8,7 @@ class ConnectionModel extends Model
 {
     protected $table         = 'user_connections';
     protected $primaryKey    = 'id';
+    protected $returnType    = 'object';
     protected $useTimestamps = true;
     protected $allowedFields = ['requester_id', 'receiver_id', 'status'];
 

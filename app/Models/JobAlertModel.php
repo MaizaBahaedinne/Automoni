@@ -8,6 +8,7 @@ class JobAlertModel extends Model
 {
     protected $table         = 'job_alerts';
     protected $primaryKey    = 'id';
+    protected $returnType    = 'object';
     protected $useTimestamps = true;
     protected $allowedFields = [
         'user_id', 'keywords', 'location', 'contract_type',
