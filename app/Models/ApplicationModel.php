@@ -51,7 +51,7 @@ class ApplicationModel extends Model
                     ->join('jobs', 'jobs.id = applications.job_id')
                     ->join('companies', 'companies.id = jobs.company_id')
                     ->where('applications.user_id', $userId)
-                    ->orderBy('applications.created_at', 'DESC')
+                    ->orderBy('applications.applied_at', 'DESC')
                     ->findAll();
     }
 

@@ -88,8 +88,8 @@
                             </td>
                             <td class="text-muted"><?= esc($app->company_name ?? '—') ?></td>
                             <td class="text-muted small">
-                                <?php if (!empty($app->created_at)): ?>
-                                    <?= date('d', strtotime($app->created_at)) . ' ' . lang('App.months.' . date('n', strtotime($app->created_at))) . ' ' . date('Y', strtotime($app->created_at)) ?>
+                                <?php if (!empty($app->applied_at)): ?>
+                                    <?= date('d', strtotime($app->applied_at)) . ' ' . lang('App.months.' . date('n', strtotime($app->applied_at))) . ' ' . date('Y', strtotime($app->applied_at)) ?>
                                 <?php else: ?>—<?php endif; ?>
                             </td>
                             <td class="small">
