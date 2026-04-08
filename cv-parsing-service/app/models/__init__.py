@@ -1,6 +1,6 @@
 """
 Pydantic models for API request/response
 """
-from .schemas import CVParseRequest, CVParseResponse, ParsedCV
+from .schemas import CVParseResponse, ParsedCV
 
-__all__ = ['CVParseRequest', 'CVParseResponse', 'ParsedCV']
+__all__ = ['CVParseResponse', 'ParsedCV']
