@@ -105,7 +105,7 @@ $curStatus  = $app->status ?? 'pending';
                 </label>
                 <p class="text-muted mb-2 d-flex align-items-center gap-1" style="font-size:.78rem;">
                     <i class="bi bi-eye-fill"></i>
-                    Le candidat pourra voir ce motif dans son tableau de bord.
+                    Le candidat pourra voir ce motif.
                 </p>
                 <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="2"
                           style="font-size:.875rem;"
