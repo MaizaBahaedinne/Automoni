@@ -112,6 +112,29 @@ class AuthController extends BaseController
         return redirect()->to($redirect)->with('success', 'Welcome back, ' . $user->first_name . '!');
     }
 
+    // ─── Admin: Switch role for testing ──────────────────────────────────────
+
+    public function switchRole(string $role): RedirectResponse
+    {
+        // Only real admins may use this feature
+        $realRole = session()->get('user_real_role') ?? session()->get('user_role');
+        if ($realRole !== 'admin') {
+            return redirect()->to('/dashboard')->with('error', 'Accès refusé.');
+        }
+
+        $allowed = ['admin', 'recruiter', 'job_seeker'];
+        if (!in_array($role, $allowed, true)) {
+            return redirect()->back()->with('error', 'Rôle invalide.');
+        }
+
+        // Persist the original admin role so we can always restore it
+        session()->set('user_real_role', 'admin');
+        session()->set('user_role', $role);
+
+        $labels = ['admin' => 'Admin', 'recruiter' => 'Recruteur', 'job_seeker' => 'Chercheur d\'emploi'];
+        return redirect()->to('/dashboard')->with('success', 'Mode simulation : ' . $labels[$role]);
+    }
+
     // ─── Logout ──────────────────────────────────────────────────────────────
 
     public function logout(): RedirectResponse
