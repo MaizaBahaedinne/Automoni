@@ -1,0 +1,11 @@
+# Production requirements - compatible with requirements.txt
+# Add these to your base requirements.txt for production
+
+# Production ASGI Server (better than Uvicorn alone)
+gunicorn==21.2.0
+
+# Process management
+supervisor==4.2.5
+
+# Monitoring
+prometheus-client==0.19.0

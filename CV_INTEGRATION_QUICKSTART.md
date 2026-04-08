@@ -41,6 +41,8 @@ ollama pull mistral
 # Takes 2-3 min first time (4GB download)
 ```
 
+**For production deployment**, see [DEPLOYMENT.md](cv-parsing-service/DEPLOYMENT.md)
+
 #### **Step 2: Start Services**
 
 ```bash
