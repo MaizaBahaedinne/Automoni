@@ -396,7 +396,7 @@ class JobController extends BaseController
 
         $rejectionReason = strip_tags(trim($this->request->getPost('rejection_reason') ?? ''));
         if ($status === 'rejected' && $rejectionReason === '') {
-            return redirect()->back()->with('error', 'Veuillez indiquer un motif de refus.');
+            return redirect()->to(base_url('applications/' . $appId))->with('error', 'Veuillez indiquer un motif de refus.');
         }
 
         $appModel->update($appId, [
@@ -405,7 +405,7 @@ class JobController extends BaseController
             'rejection_reason' => $status === 'rejected' ? mb_substr($rejectionReason, 0, 1000) : null,
         ]);
 
-        return redirect()->back()->with('success', 'Application status updated.');
+        return redirect()->to(base_url('applications/' . $appId))->with('success', 'Statut mis à jour avec succès.');
     }
 
     public function saveApplicationNote(int $appId): RedirectResponse
@@ -426,7 +426,7 @@ class JobController extends BaseController
             'recruiter_note' => strip_tags($this->request->getPost('note') ?? ''),
         ]);
 
-        return redirect()->back()->with('success', 'Note enregistrée.');
+        return redirect()->to(base_url('applications/' . $appId))->with('success', 'Note enregistrée.');
     }
 
     // ─── Private Helpers ─────────────────────────────────────────────────

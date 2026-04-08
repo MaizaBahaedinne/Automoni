@@ -394,7 +394,12 @@ pickStatus(document.getElementById('statusInput').value);
                     <div class="d-flex gap-3">
                         <?php if (!empty($exp->org_logo)): ?>
                             <img src="<?= base_url('uploads/' . esc($exp->org_logo)) ?>"
-                                 style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;border:1px solid var(--border);" alt="">
+                                 style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;border:1px solid var(--border);"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="">
+                            <div style="display:none;width:36px;height:36px;border-radius:6px;background:var(--brand-light);
+                                        align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-building" style="color:var(--brand);font-size:.9rem;"></i>
+                            </div>
                         <?php else: ?>
                             <div style="width:36px;height:36px;border-radius:6px;background:var(--brand-light);
                                         display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -478,7 +483,12 @@ pickStatus(document.getElementById('statusInput').value);
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <?php if (!empty($app->company_logo)): ?>
                             <img src="<?= base_url('uploads/logos/' . esc($app->company_logo)) ?>"
-                                 style="width:52px;height:52px;object-fit:cover;border-radius:10px;" alt="">
+                                 style="width:52px;height:52px;object-fit:cover;border-radius:10px;"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="">
+                            <div style="display:none;width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--brand-dark),#7c3aed);
+                                        color:#fff;font-size:1.2rem;font-weight:800;align-items:center;justify-content:center;">
+                                <?= strtoupper(substr($app->company_name ?? 'J', 0, 1)) ?>
+                            </div>
                         <?php else: ?>
                             <div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--brand-dark),#7c3aed);
                                         color:#fff;font-size:1.2rem;font-weight:800;display:flex;align-items:center;justify-content:center;">
