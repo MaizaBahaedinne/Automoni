@@ -65,19 +65,22 @@
                 <!-- Salary -->
                 <?php if (!empty($job->salary_min) || !empty($job->salary_max)): ?>
                     <?php if (!empty($job->salary_public) || (!isset($job->salary_public))): ?>
+                    <?php
+                    $_curr  = $job->salary_currency ?? '';
+                    $_syms  = ['EUR'=>'€','USD'=>'$','GBP'=>'£'];
+                    $_sym   = $_syms[$_curr] ?? $_curr;
+                    $_pmap  = ['annual'=>'/ an','monthly'=>'/ mois','daily'=>'/ jour','hourly'=>'/ heure'];
+                    $_plbl  = $_pmap[$job->salary_period ?? 'annual'] ?? '/ an';
+                    ?>
                     <p class="text-success fw-semibold mb-3">
-                        <i class="bi bi-currency-euro"></i>
                         <?php if (!empty($job->salary_min)): ?>
                             <?= number_format($job->salary_min) ?>
                             <?= !empty($job->salary_max) ? ' – ' . number_format($job->salary_max) : '+' ?>
                         <?php elseif (!empty($job->salary_max)): ?>
                             jusqu'à <?= number_format($job->salary_max) ?>
                         <?php endif; ?>
-                        <?= esc($job->salary_currency ?? 'EUR') ?>
-                        <?php
-                        $periods = ['annual'=>'/ an','monthly'=>'/ mois','daily'=>'/ jour','hourly'=>'/ heure'];
-                        echo $periods[$job->salary_period ?? 'annual'] ?? '/ an';
-                        ?>
+                        <span class="fw-bold"><?= esc($_sym) ?></span>
+                        <span class="text-muted fw-normal" style="font-size:.85em;"><?= $_plbl ?></span>
                         <?php if (!empty($job->salary_variable)): ?>
                             <span class="text-muted fw-normal" style="font-size:.85em;">
                                 + variable<?= !empty($job->salary_bonus_pct) ? ' (' . esc($job->salary_bonus_pct) . '%)' : '' ?>

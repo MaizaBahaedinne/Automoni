@@ -109,12 +109,13 @@
                         </div>
                         <?php if (!empty($job->salary_min)): ?>
                             <?php
+                            $_syms = ['EUR'=>'€','USD'=>'$','GBP'=>'£'];
+                            $_sym  = $_syms[$job->salary_currency ?? ''] ?? ($job->salary_currency ?? '');
                             $salaryPeriodLabels = ['annual'=>'/an','monthly'=>'/mois','daily'=>'/jour','hourly'=>'/h'];
                             $salaryPeriodLabel  = $salaryPeriodLabels[$job->salary_period ?? 'annual'] ?? '/an';
                             ?>
                             <p class="text-success small mb-0 mt-1">
-                                <i class="bi bi-currency-euro"></i>
-                                <?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? ' – ' . number_format($job->salary_max) : '+' ?> <?= esc($salaryPeriodLabel) ?>
+                                <?= number_format($job->salary_min) ?><?= !empty($job->salary_max) ? ' – ' . number_format($job->salary_max) : '+' ?> <strong><?= esc($_sym) ?></strong> <span class="text-muted"><?= esc($salaryPeriodLabel) ?></span>
                             </p>
                         <?php endif; ?>
                     </div>
