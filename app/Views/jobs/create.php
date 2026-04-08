@@ -44,7 +44,7 @@ $defaultSteps = !empty($steps) ? $steps : [
 
 <!-- Page header -->
 <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="<?= base_url('dashboard') ?>" class="btn btn-sm btn-outline-secondary">
+    <a href="<?= base_url($isEdit ? 'jobs/' . ($job->slug ?? $job->id) : 'jobs') ?>" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left"></i>
     </a>
     <div>
@@ -532,7 +532,7 @@ $defaultSteps = !empty($steps) ? $steps : [
                 <i class="bi bi-<?= $isEdit ? 'check2-circle' : 'send' ?> me-2"></i>
                 <?= $isEdit ? 'Enregistrer les modifications' : 'Publier l\'offre' ?>
             </button>
-            <a href="<?= base_url('dashboard') ?>" class="btn btn-outline-secondary btn-sm">Annuler</a>
+            <a href="<?= base_url($isEdit ? 'jobs/' . ($job->slug ?? $job->id) : 'jobs') ?>" class="btn btn-outline-secondary btn-sm">Annuler</a>
         </div>
     </div>
 </div>
@@ -640,6 +640,25 @@ function toggleExpected(sel){
     const wrap=sel.closest('.row').querySelector('.expected-wrap');
     if(wrap) wrap.style.display=sel.value==='text'?'none':'';
 }
+</script>
+
+<!-- Scroll to top button -->
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Haut de page"
+        style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:1050;
+               width:42px;height:42px;border-radius:50%;border:none;
+               background:var(--brand-dark);color:#fff;font-size:1.1rem;
+               box-shadow:var(--shadow);cursor:pointer;transition:opacity .2s;">
+    <i class="bi bi-arrow-up"></i>
+</button>
+<script>
+(function(){
+    const btn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', function(){
+        btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+    });
+})();
 </script>
 
 <?= $this->endSection() ?>

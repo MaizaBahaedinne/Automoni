@@ -356,4 +356,11 @@ return [
     'msg_success'             => 'Profil mis à jour avec succès!',
     'msg_error'               => 'Une erreur est survenue.',
     'placeholder_eg'          => 'ex.',
+
+    // ── Months ───────────────────────────────────────────────────────────────
+    'months' => [
+        1  => 'janv.', 2  => 'févr.', 3  => 'mars',  4  => 'avr.',
+        5  => 'mai',   6  => 'juin',  7  => 'juil.', 8  => 'août',
+        9  => 'sept.', 10 => 'oct.',  11 => 'nov.',  12 => 'déc.',
+    ],
 ];
