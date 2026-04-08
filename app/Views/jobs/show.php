@@ -75,8 +75,8 @@
                         <?php endif; ?>
                         <?= esc($job->salary_currency ?? 'EUR') ?>
                         <?php
-                        $periods = ['year'=>'/ an','month'=>'/ mois','day'=>'/ jour','hour'=>'/ heure'];
-                        echo isset($periods[$job->salary_period ?? '']) ? $periods[$job->salary_period] : '/ an';
+                        $periods = ['annual'=>'/ an','monthly'=>'/ mois','daily'=>'/ jour','hourly'=>'/ heure'];
+                        echo $periods[$job->salary_period ?? 'annual'] ?? '/ an';
                         ?>
                         <?php if (!empty($job->salary_variable)): ?>
                             <span class="text-muted fw-normal" style="font-size:.85em;">
@@ -305,9 +305,9 @@
                     <small class="text-muted d-block"><i class="bi bi-people me-1"></i><?= (int)$job->num_positions ?> postes ouverts</small>
                 <?php endif; ?>
                 <small class="text-muted d-block"><i class="bi bi-eye me-1"></i><?= (int) $job->views ?> <?= lang('App.job_views') ?></small>
-                <small class="text-muted d-block"><i class="bi bi-calendar me-1"></i><?= lang('App.job_posted') ?> <?= !empty($job->created_at) ? date('d M Y', strtotime($job->created_at)) : '—' ?></small>
+                <small class="text-muted d-block"><i class="bi bi-calendar me-1"></i><?= lang('App.job_posted') ?> <?= !empty($job->created_at) ? date('d', strtotime($job->created_at)) . ' ' . lang('App.months.' . date('n', strtotime($job->created_at))) . ' ' . date('Y', strtotime($job->created_at)) : '—' ?></small>
                 <?php if (!empty($job->expires_at)): ?>
-                    <small class="text-muted d-block"><i class="bi bi-alarm me-1"></i><?= lang('App.job_expires') ?> <?= date('d M Y', strtotime($job->expires_at)) ?></small>
+                    <small class="text-muted d-block"><i class="bi bi-alarm me-1"></i><?= lang('App.job_expires') ?> <?= date('d', strtotime($job->expires_at)) . ' ' . lang('App.months.' . date('n', strtotime($job->expires_at))) . ' ' . date('Y', strtotime($job->expires_at)) ?></small>
                 <?php endif; ?>
             </div>
         </div>
