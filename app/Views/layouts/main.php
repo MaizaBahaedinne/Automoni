@@ -520,7 +520,7 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
                         <?php endif; ?>
                         <?php if (in_array(session()->get('user_role'), ['recruiter', 'admin'])): ?>
                         <li><a class="dropdown-item" href="<?= base_url('jobs/create') ?>"><i class="bi bi-plus-circle me-2"></i><?= lang('App.nav_post_job') ?></a></li>
-                        <li><a class="dropdown-item" href="<?= base_url('company/edit') ?>"><i class="bi bi-building me-2"></i><?= lang('App.nav_company') ?></a></li>
+                        <li><a class="dropdown-item" href="<?= base_url('company') ?>"><i class="bi bi-building me-2"></i><?= lang('App.nav_company') ?></a></li>
                         <?php endif; ?>
                         <?php if (session()->get('user_role') === 'admin'): ?>
                         <li><hr class="dropdown-divider"></li>
@@ -647,7 +647,7 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
             <?php endif; ?>
             <?php if (in_array(session()->get('user_role'), ['recruiter', 'admin'])): ?>
             <a class="mobile-sheet-item" href="<?= base_url('jobs/create') ?>"><i class="bi bi-plus-circle"></i><?= lang('App.nav_post_job') ?></a>
-            <a class="mobile-sheet-item" href="<?= base_url('company/edit') ?>"><i class="bi bi-building"></i><?= lang('App.nav_company') ?></a>
+            <a class="mobile-sheet-item" href="<?= base_url('company') ?>"><i class="bi bi-building"></i><?= lang('App.nav_company') ?></a>
             <?php endif; ?>
             <?php if (session()->get('user_role') === 'admin'): ?>
             <div class="px-4 pt-3 pb-1 border-top"

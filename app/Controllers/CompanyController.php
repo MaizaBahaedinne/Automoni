@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\{CompanyModel, JobModel};
+use App\Models\{CompanyModel, JobModel, OrganizationModel};
 use CodeIgniter\HTTP\RedirectResponse;
 
 class CompanyController extends BaseController
@@ -14,6 +14,18 @@ class CompanyController extends BaseController
     {
         $this->companyModel = model(CompanyModel::class);
         $this->userId       = (int) session()->get('user_id');
+    }
+
+    public function myDashboard(): string
+    {
+        $company = $this->companyModel->getByUserId($this->userId);
+        $orgs    = model(OrganizationModel::class)->getManagedByUser($this->userId);
+
+        return view('company/dashboard', [
+            'title'   => 'Mon espace recruteur',
+            'company' => $company,
+            'orgs'    => $orgs,
+        ]);
     }
 
     public function create(): string|RedirectResponse

@@ -152,6 +152,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 $routes->group('', ['filter' => 'role:recruiter,admin'], static function ($routes) {
 
     // Company
+    $routes->get ('company',        'CompanyController::myDashboard');
     $routes->get ('company/create', 'CompanyController::create');
     $routes->post('company/store',  'CompanyController::store');
     $routes->get ('company/edit',   'CompanyController::edit');
