@@ -33,8 +33,10 @@ $routes->post('register', 'AuthController::register');
 $routes->get ('logout',   'AuthController::logout');
 
 // ─── Jobs (public read) ───────────────────────────────────────────────────────
-$routes->get('jobs',           'JobController::index');
-$routes->get('jobs/(:segment)', 'JobController::show/$1');
+$routes->get('jobs',                  'JobController::index');
+// NOTE: jobs/(:segment) must come AFTER all literal jobs/* routes to avoid
+// "create", "store", "edit" being swallowed by the segment catch-all.
+// It is declared at the bottom of this file.
 
 // ─── Company (public) ─────────────────────────────────────────────────────────
 $routes->get('companies/(:segment)', 'CompanyController::show/$1');
@@ -179,3 +181,7 @@ $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
 if (ENVIRONMENT === 'development') {
     $routes->get('debug/test-cv-parser',  'ProfileController::testCvParser');  
 }
+
+// ─── Jobs slug catch-all (MUST be last jobs/* route) ─────────────────────────
+// Declared here so literal routes like jobs/create, jobs/edit/(:num) take priority.
+$routes->get('jobs/(:segment)', 'JobController::show/$1');
