@@ -139,10 +139,11 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->delete('organizations/(:num)',         'OrganizationController::delete/$1');
 
     // ─── Organization Members (owner/manager only, handled in controller)  ────
-    $routes->get ('organizations/(:num)/members',              'OrganizationMemberController::index/$1');
-    $routes->post('organizations/(:num)/members',              'OrganizationMemberController::add/$1');
-    $routes->post('organizations/(:num)/members/(:num)/role',  'OrganizationMemberController::updateRole/$1/$2');
-    $routes->delete('organizations/(:num)/members/(:num)',     'OrganizationMemberController::remove/$1/$2');
+    $routes->get ('organizations/(:num)/members',                    'OrganizationMemberController::index/$1');
+    $routes->get ('organizations/(:num)/members/search-users',       'OrganizationMemberController::searchUsers/$1');
+    $routes->post('organizations/(:num)/members',                    'OrganizationMemberController::add/$1');
+    $routes->post('organizations/(:num)/members/(:num)/role',        'OrganizationMemberController::updateRole/$1/$2');
+    $routes->delete('organizations/(:num)/members/(:num)',           'OrganizationMemberController::remove/$1/$2');
 
     // Admin role switcher (any authenticated user whose real role is admin)
     $routes->get('admin/switch-role/(:segment)', 'AuthController::switchRole/$1');

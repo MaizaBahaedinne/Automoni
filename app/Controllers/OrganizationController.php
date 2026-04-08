@@ -193,6 +193,7 @@ class OrganizationController extends BaseController
             'partners' => $partnerModel->getPartners($id),
             'can_edit' => $this->organizationService->canEdit($id, $this->userId),
             'can_manage' => $this->organizationService->canManageMembers($id, $this->userId),
+            'is_member' => $this->userId ? $this->memberModel->isMember($id, $this->userId) : false,
         ]);
     }
 

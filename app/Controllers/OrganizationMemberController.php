@@ -137,4 +137,33 @@ class OrganizationMemberController extends BaseController
             'message' => 'Member removed',
         ]);
     }
+
+    /**
+     * GET /organizations/:id/members/search-users?q=email
+     * Search users by email (owner only, for add-member modal)
+     */
+    public function searchUsers(int $id)
+    {
+        if (!$this->memberModel->hasPermission($id, $this->userId, 'owner')) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        }
+
+        $q = trim($this->request->getGet('q') ?? '');
+        if (strlen($q) < 2) {
+            return $this->response->setJSON(['status' => 'success', 'data' => []]);
+        }
+
+        $users = db_connect()
+            ->table('users')
+            ->select('id, first_name, last_name, email, avatar')
+            ->like('email', $q)
+            ->orLike('first_name', $q)
+            ->orLike('last_name', $q)
+            ->where('deleted_at IS NULL')
+            ->limit(8)
+            ->get()
+            ->getResult();
+
+        return $this->response->setJSON(['status' => 'success', 'data' => $users]);
+    }
 }
