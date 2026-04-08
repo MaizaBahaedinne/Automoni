@@ -21,6 +21,7 @@ class JobModel extends Model
         'direct_manager', 'min_experience_years', 'education_level', 'education_field',
         'mission_context', 'salary_period', 'salary_public', 'salary_variable',
         'salary_bonus_pct', 'recruitment_notes', 'internal_only', 'visibility_level',
+        'require_cv', 'require_cover_letter',
     ];
 
     protected $validationRules = [

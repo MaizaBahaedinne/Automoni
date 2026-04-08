@@ -482,6 +482,32 @@ $defaultSteps = !empty($steps) ? $steps : [
     </div>
 </div>
 
+<!-- Documents requis -->
+<div class="jf-section">
+    <div class="jf-section-header"><i class="bi bi-file-earmark-arrow-up-fill"></i> Documents requis</div>
+    <div class="jf-section-body">
+        <p class="text-muted mb-3" style="font-size:.78rem;">Indiquez les documents que le candidat doit fournir lors de sa candidature.</p>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="require_cv" value="1"
+                   id="requireCv" <?= $chk('require_cv') || (!$isEdit && !old('require_cv')) ? 'checked' : '' ?>>
+            <label class="form-check-label d-flex align-items-center gap-2" for="requireCv" style="font-size:.82rem;">
+                <i class="bi bi-file-earmark-person-fill" style="color:var(--brand-dark);"></i>
+                CV <span class="badge-required">Recommandé</span>
+            </label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="require_cover_letter" value="1"
+                   id="requireCoverLetter" <?= $chk('require_cover_letter') ? 'checked' : '' ?>>
+            <label class="form-check-label d-flex align-items-center gap-2" for="requireCoverLetter" style="font-size:.82rem;">
+                <i class="bi bi-envelope-paper-fill" style="color:#6366f1;"></i>
+                Lettre de motivation
+            </label>
+        </div>
+    </div>
+</div>
+
 <!-- Publication -->
 <div class="jf-section">
     <div class="jf-section-header"><i class="bi bi-send-fill"></i> Publication</div>

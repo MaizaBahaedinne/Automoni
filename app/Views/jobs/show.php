@@ -216,12 +216,26 @@
                     <form action="<?= base_url('jobs/' . $job->id . '/apply') ?>" method="post" enctype="multipart/form-data">
                         <?= csrf_field() ?>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold small"><?= lang('App.cv_optional') ?></label>
+                            <label class="form-label fw-semibold small d-flex align-items-center gap-1">
+                                <?= lang('App.cv_optional') ?>
+                                <?php if (!empty($job->require_cover_letter)): ?>
+                                    <span class="badge text-bg-danger" style="font-size:.65rem;">Obligatoire</span>
+                                <?php else: ?>
+                                    <span class="badge text-bg-secondary" style="font-size:.65rem;">Optionnelle</span>
+                                <?php endif; ?>
+                            </label>
                             <textarea name="cover_letter" class="form-control" rows="4"
                                       placeholder="<?= lang('App.cover_letter_ph') ?>"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold small"><?= lang('App.cv_optional') ?></label>
+                            <label class="form-label fw-semibold small d-flex align-items-center gap-1">
+                                <?= lang('App.cv_optional') ?>
+                                <?php if (!empty($job->require_cv)): ?>
+                                    <span class="badge text-bg-danger" style="font-size:.65rem;">Obligatoire</span>
+                                <?php else: ?>
+                                    <span class="badge text-bg-secondary" style="font-size:.65rem;">Optionnel</span>
+                                <?php endif; ?>
+                            </label>
                             <input type="file" name="cv_file" class="form-control" accept=".pdf,.doc,.docx">
                             <div class="form-text"><?= lang('App.cv_hint') ?></div>
                         </div>

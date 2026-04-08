@@ -130,10 +130,12 @@ class JobController extends BaseController
                 'company_id'       => $company->id,
                 'user_id'          => $userId,
                 'status'           => 'active',
-                'salary_public'    => (int) ($this->request->getPost('salary_public')    ?? 0),
-                'salary_variable'  => (int) ($this->request->getPost('salary_variable')  ?? 0),
-                'salary_bonus_pct' => $this->request->getPost('salary_bonus_pct') ?: null,
-                'internal_only'    => (int) ($this->request->getPost('internal_only')    ?? 0),
+                'salary_public'         => (int) ($this->request->getPost('salary_public')         ?? 0),
+                'salary_variable'       => (int) ($this->request->getPost('salary_variable')       ?? 0),
+                'salary_bonus_pct'      => $this->request->getPost('salary_bonus_pct') ?: null,
+                'internal_only'         => (int) ($this->request->getPost('internal_only')         ?? 0),
+                'require_cv'            => (int) ($this->request->getPost('require_cv')            ?? 0),
+                'require_cover_letter'  => (int) ($this->request->getPost('require_cover_letter')  ?? 0),
             ]
         );
 
@@ -195,10 +197,12 @@ class JobController extends BaseController
                 'recruitment_notes', 'visibility_level',
             ]),
             [
-                'salary_public'    => (int) ($this->request->getPost('salary_public')    ?? 0),
-                'salary_variable'  => (int) ($this->request->getPost('salary_variable')  ?? 0),
-                'salary_bonus_pct' => $this->request->getPost('salary_bonus_pct') ?: null,
-                'internal_only'    => (int) ($this->request->getPost('internal_only')    ?? 0),
+                'salary_public'         => (int) ($this->request->getPost('salary_public')         ?? 0),
+                'salary_variable'       => (int) ($this->request->getPost('salary_variable')       ?? 0),
+                'salary_bonus_pct'      => $this->request->getPost('salary_bonus_pct') ?: null,
+                'internal_only'         => (int) ($this->request->getPost('internal_only')         ?? 0),
+                'require_cv'            => (int) ($this->request->getPost('require_cv')            ?? 0),
+                'require_cover_letter'  => (int) ($this->request->getPost('require_cover_letter')  ?? 0),
             ]
         );
         $this->jobModel->update($id, $data);
@@ -224,6 +228,11 @@ class JobController extends BaseController
 
         if ($appModel->hasApplied($userId, $jobId)) {
             return redirect()->back()->with('error', 'You have already applied to this job.');
+        }
+
+        $job = $this->jobModel->find($jobId);
+        if (!$job) {
+            return redirect()->back()->with('error', 'Offre introuvable.');
         }
 
         $rules = [
@@ -257,6 +266,14 @@ class JobController extends BaseController
             if ($profile) {
                 $cvFile = $profile->cv_file;
             }
+        }
+
+        // Enforce recruiter document requirements
+        if (!empty($job->require_cv) && empty($cvFile)) {
+            return redirect()->back()->with('error', 'Le CV est obligatoire pour postuler à cette offre.');
+        }
+        if (!empty($job->require_cover_letter) && empty(trim((string) $this->request->getPost('cover_letter')))) {
+            return redirect()->back()->with('error', 'La lettre de motivation est obligatoire pour postuler à cette offre.');
         }
 
         $appModel->insert([
