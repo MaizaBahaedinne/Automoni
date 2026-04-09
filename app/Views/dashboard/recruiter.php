@@ -213,3 +213,5 @@ $statusLabels = ['pending'=>'En attente','reviewed'=>'En cours','shortlisted'=>'
         <?php endif; ?>
     </div>
 </div>
+
+<?= $this->endSection() ?>
