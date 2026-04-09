@@ -157,6 +157,7 @@ class OrganizationModel extends Model
             JOIN organization_members om ON om.organization_id = o.id
             WHERE om.user_id = ?
               AND om.role IN ('owner', 'manager')
+              AND om.is_active = 1
               AND o.deleted_at IS NULL
             ORDER BY o.name ASC
         ";

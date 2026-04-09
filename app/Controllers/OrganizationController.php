@@ -180,6 +180,12 @@ class OrganizationController extends BaseController
         $certModel = model('OrganizationCertificationModel');
         $partnerModel = model('OrganizationPartnerModel');
 
+        $orgJobs = model(\App\Models\JobModel::class)
+                        ->where('organization_id', $id)
+                        ->where('status', 'active')
+                        ->orderBy('created_at', 'DESC')
+                        ->findAll();
+
         return view('organizations/show', [
             'title' => $organization->name,
             'organization' => $organization,
@@ -191,6 +197,7 @@ class OrganizationController extends BaseController
             'social_links' => $socialModel->getLinks($id),
             'certifications' => $certModel->getCertifications($id),
             'partners' => $partnerModel->getPartners($id),
+            'org_jobs' => $orgJobs,
             'can_edit' => $this->organizationService->canEdit($id, $this->userId),
             'can_manage' => $this->organizationService->canManageMembers($id, $this->userId),
             'is_member' => $this->userId ? $this->memberModel->isMember($id, $this->userId) : false,

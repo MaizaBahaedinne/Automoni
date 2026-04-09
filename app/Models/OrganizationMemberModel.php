@@ -59,6 +59,7 @@ class OrganizationMemberModel extends Model
         $member = $this->select('role')
                        ->where('organization_id', $organizationId)
                        ->where('user_id', $userId)
+                       ->where('is_active', 1)
                        ->first();
         return $member ? $member->role : null;
     }
@@ -70,6 +71,7 @@ class OrganizationMemberModel extends Model
     {
         return (bool) $this->where('organization_id', $organizationId)
                            ->where('user_id', $userId)
+                           ->where('is_active', 1)
                            ->first();
     }
 

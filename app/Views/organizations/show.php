@@ -230,6 +230,62 @@ $platformLabels = [
             </div>
         <?php endif; ?>
 
+        <!-- Job offers -->
+        <?php $org_jobs = $org_jobs ?? []; ?>
+        <div class="info-card">
+            <div class="info-card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-briefcase" style="color:var(--brand)"></i>&nbsp;Offres d'emploi
+                    <?php if (!empty($org_jobs)): ?>
+                        <span class="badge ms-1" style="background:var(--brand-light);color:var(--brand-dark);font-size:.7rem;"><?= count($org_jobs) ?></span>
+                    <?php endif; ?>
+                </span>
+                <?php if ($can_edit): ?>
+                    <a href="<?= base_url('jobs/create') ?>" class="btn btn-outline-primary btn-sm px-2 py-0" style="font-size:.75rem;">
+                        <i class="bi bi-plus-lg"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <?php if (empty($org_jobs)): ?>
+                <div class="info-card-body text-muted" style="font-size:.875rem;">
+                    Aucune offre active pour le moment.
+                </div>
+            <?php else: ?>
+                <div class="p-0">
+                    <?php
+                    $contractLabels = ['CDI'=>'CDI','CDD'=>'CDD','Freelance'=>'Freelance','Internship'=>'Stage','PartTime'=>'Temps partiel'];
+                    $remoteLabels   = ['onsite'=>'Sur site','remote'=>'Télétravail','hybrid'=>'Hybride'];
+                    ?>
+                    <?php foreach ($org_jobs as $jb): ?>
+                        <a href="<?= base_url('jobs/' . esc($jb->slug)) ?>"
+                           class="d-flex align-items-start gap-3 px-3 py-3 text-decoration-none text-dark sidebar-link"
+                           style="border-bottom:1px solid var(--border);">
+                            <div class="flex-grow-1" style="min-width:0;">
+                                <div class="fw-semibold lh-sm mb-1" style="font-size:.9rem;"><?= esc($jb->title) ?></div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span class="badge" style="background:var(--brand-light);color:var(--brand-dark);font-size:.65rem;">
+                                        <?= esc($contractLabels[$jb->contract_type] ?? $jb->contract_type) ?>
+                                    </span>
+                                    <?php if (!empty($jb->remote)): ?>
+                                    <span class="badge bg-light text-muted border" style="font-size:.65rem;">
+                                        <?= esc($remoteLabels[$jb->remote] ?? $jb->remote) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($jb->location)): ?>
+                                    <span class="text-muted" style="font-size:.72rem;">
+                                        <i class="bi bi-geo-alt me-1"></i><?= esc($jb->location) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 text-muted" style="font-size:.72rem;white-space:nowrap;">
+                                <?= !empty($jb->created_at) ? date('d M Y', strtotime($jb->created_at)) : '' ?>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
     </div>
 
     <!-- Right sidebar -->
