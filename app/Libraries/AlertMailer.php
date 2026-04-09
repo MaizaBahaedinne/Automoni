@@ -25,7 +25,10 @@ class AlertMailer
             $this->mailer->Port       = (int) $config->SMTPPort;
         }
 
-        $this->mailer->setFrom($config->fromEmail ?? 'noreply@persomy.com', $config->fromName ?? 'Persomy');
+        $this->mailer->setFrom(
+            !empty($config->fromEmail) ? $config->fromEmail : 'noreply@persomy.com',
+            !empty($config->fromName)  ? $config->fromName  : 'Persomy'
+        );
         $this->mailer->isHTML(true);
         $this->mailer->CharSet = 'UTF-8';
     }
