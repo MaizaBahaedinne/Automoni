@@ -64,6 +64,138 @@ $curStatus  = $app->status ?? 'pending';
 </div>
 <?php endif; ?>
 
+<?php
+// Pre-compute interview values for modal pre-fill
+$_iv = $interview ?? null;
+$_ivDatetime = '';
+if ($_iv && !empty($_iv->scheduled_at)) {
+    // Convert "2026-04-09 14:30:00" → "2026-04-09T14:30" for datetime-local input
+    $_ivDatetime = substr(str_replace(' ', 'T', $_iv->scheduled_at), 0, 16);
+}
+?>
+
+<!-- ─── Interview modal ────────────────────────────────────────────────────── -->
+<div class="modal fade" id="interviewModal" tabindex="-1" aria-labelledby="interviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius:var(--radius);">
+            <form action="<?= base_url('applications/' . $app->id . '/interview') ?>" method="post">
+                <?= csrf_field() ?>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="interviewModalLabel">
+                        <i class="bi bi-calendar-check me-2" style="color:var(--brand-dark);"></i>
+                        <?= $_iv ? 'Modifier l\'entretien' : 'Planifier un entretien' ?>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+
+                    <!-- Type: onsite / remote -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Type d'entretien</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="interview_type" id="typeOnsite"
+                                       value="onsite" onchange="toggleInterviewType('onsite')"
+                                    <?= (!$_iv || $_iv->type === 'onsite') ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="typeOnsite">
+                                    <i class="bi bi-building me-1"></i>Présentiel
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="interview_type" id="typeRemote"
+                                       value="remote" onchange="toggleInterviewType('remote')"
+                                    <?= ($_iv && $_iv->type === 'remote') ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="typeRemote">
+                                    <i class="bi bi-camera-video me-1"></i>Visioconférence
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date & time -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-7">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">Date et heure</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_at"
+                                   value="<?= esc($_ivDatetime) ?>" required>
+                        </div>
+                        <div class="col-sm-5">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">Durée</label>
+                            <select class="form-select" name="duration_min" required>
+                                <?php foreach ([30,45,60,90,120] as $dur): ?>
+                                <option value="<?= $dur ?>"<?= ($_iv && (int)$_iv->duration_min === $dur) ? ' selected' : ($dur === 60 && !$_iv ? ' selected' : '') ?>>
+                                    <?= $dur ?> min
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Location / link -->
+                    <div class="mb-3" id="locationWrapper">
+                        <label class="form-label fw-semibold" id="locationLabel" style="font-size:.85rem;">
+                            <i class="bi bi-geo-alt me-1"></i>Lieu (adresse)
+                        </label>
+                        <input type="text" class="form-control" name="location" id="locationInput"
+                               placeholder="Ex: 15 rue de la Paix, Paris"
+                               value="<?= esc($_iv->location ?? '') ?>"
+                               maxlength="500">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">
+                            <i class="bi bi-chat-left-text me-1"></i>Notes / instructions (optionnel)
+                        </label>
+                        <textarea class="form-control" name="notes" rows="3" maxlength="2000"
+                                  placeholder="Instructions de connexion, documents à apporter…"><?= esc($_iv->notes ?? '') ?></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-calendar-check me-1"></i><?= $_iv ? 'Mettre à jour' : 'Planifier' ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<?php if ($_iv): ?>
+<!-- ─── Scheduled interview banner ────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4" style="border-left:4px solid #22c55e !important;">
+    <div class="card-body p-3 d-flex align-items-start gap-3">
+        <div style="width:40px;height:40px;border-radius:10px;background:#d1fae5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-calendar-check-fill" style="color:#065f46;font-size:1.1rem;"></i>
+        </div>
+        <div class="flex-grow-1">
+            <p class="fw-bold mb-1" style="font-size:.88rem;">Entretien planifié</p>
+            <p class="text-muted mb-0" style="font-size:.82rem;">
+                <i class="bi bi-<?= $_iv->type === 'remote' ? 'camera-video' : 'building' ?> me-1"></i>
+                <?= $_iv->type === 'remote' ? 'Visioconférence' : 'Présentiel' ?>
+                &nbsp;·&nbsp;
+                <i class="bi bi-clock me-1"></i>
+                <?= date('d/m/Y à H:i', strtotime($_iv->scheduled_at)) ?>
+                &nbsp;·&nbsp;
+                <?= (int)$_iv->duration_min ?> min
+                <?php if (!empty($_iv->location)): ?>
+                &nbsp;·&nbsp;<i class="bi bi-<?= $_iv->type === 'remote' ? 'link-45deg' : 'geo-alt' ?> me-1"></i><?= esc($_iv->location) ?>
+                <?php endif; ?>
+            </p>
+            <?php if (!empty($_iv->notes)): ?>
+            <p class="text-muted mb-0 mt-1" style="font-size:.8rem;"><i class="bi bi-chat-left-text me-1"></i><?= esc($_iv->notes) ?></p>
+            <?php endif; ?>
+        </div>
+        <button type="button" class="btn btn-outline-success btn-sm"
+                onclick="new bootstrap.Modal(document.getElementById('interviewModal')).show()">
+            <i class="bi bi-pencil me-1"></i>Modifier
+        </button>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- ── Status update panel ──────────────────────────────────────────────────── -->
 <div class="card border-0 shadow-sm mb-4" style="border-top:3px solid var(--brand) !important;">
     <div class="card-body p-4">
@@ -163,6 +295,10 @@ function pickStatus(val) {
     const show  = val === 'rejected';
     block.style.display = show ? '' : 'none';
     document.getElementById('rejectionReason').required = show;
+    // Open interview modal when shortlisted is chosen
+    if (val === 'shortlisted') {
+        new bootstrap.Modal(document.getElementById('interviewModal')).show();
+    }
     // Update button styles
     document.querySelectorAll('.app-status-btn').forEach(btn => {
         const s  = btn.dataset.status;
@@ -182,6 +318,22 @@ function toggleOtherReason(val) {
         hidden.value = val;
     }
 }
+function toggleInterviewType(type) {
+    const lbl   = document.getElementById('locationLabel');
+    const input = document.getElementById('locationInput');
+    if (type === 'remote') {
+        lbl.innerHTML   = '<i class="bi bi-link-45deg me-1"></i>Lien de connexion';
+        input.placeholder = 'Ex: https://meet.google.com/xyz';
+    } else {
+        lbl.innerHTML   = '<i class="bi bi-geo-alt me-1"></i>Lieu (adresse)';
+        input.placeholder = 'Ex: 15 rue de la Paix, Paris';
+    }
+}
+// Init location label on load
+(function () {
+    const checked = document.querySelector('input[name="interview_type"]:checked');
+    if (checked) toggleInterviewType(checked.value);
+})();
 pickStatus(document.getElementById('statusInput').value);
 </script>
 

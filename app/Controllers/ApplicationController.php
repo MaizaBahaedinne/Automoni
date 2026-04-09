@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Models\{
     ProfileModel, SkillModel, ExperienceModel, LanguageModel,
-    JobPrescreeningModel, JobLanguageModel, EducationModel
+    JobPrescreeningModel, JobLanguageModel, EducationModel, InterviewModel
 };
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -155,6 +155,66 @@ class ApplicationController extends BaseController
             'jobLangs'     => $jobLangs,
             'matchScore'   => $matchScore,
             'matchDetails' => $matchDetails,
+            'interview'    => model(InterviewModel::class)->getByApplication($appId),
         ]);
+    }
+
+    /**
+     * POST applications/(:num)/interview
+     * Create or update the scheduled interview for this application.
+     */
+    public function scheduleInterview(int $appId): RedirectResponse
+    {
+        $recruiterId = (int) session()->get('user_id');
+        $userRole    = session()->get('user_role');
+
+        $db  = \Config\Database::connect();
+        $app = $db->table('applications')
+            ->select('applications.id, jobs.user_id AS job_recruiter_id')
+            ->join('jobs', 'jobs.id = applications.job_id')
+            ->where('applications.id', $appId)
+            ->get()->getRowObject();
+
+        if (!$app || ((int) $app->job_recruiter_id !== $recruiterId && $userRole !== 'admin')) {
+            return redirect()->to('dashboard')->with('error', 'Accès non autorisé.');
+        }
+
+        $rules = [
+            'interview_type' => 'required|in_list[onsite,remote]',
+            'scheduled_at'   => 'required',
+            'duration_min'   => 'required|integer|greater_than[0]',
+            'location'       => 'permit_empty|max_length[500]',
+            'notes'          => 'permit_empty|max_length[2000]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->to(base_url('applications/' . $appId))
+                             ->with('error', implode(' ', $this->validator->getErrors()));
+        }
+
+        $interviewModel = model(InterviewModel::class);
+        // datetime-local format: "2026-04-09T14:30" → "2026-04-09 14:30:00"
+        $scheduledAt = str_replace('T', ' ', $this->request->getPost('scheduled_at')) . ':00';
+
+        $data = [
+            'application_id' => $appId,
+            'recruiter_id'   => $recruiterId,
+            'type'           => $this->request->getPost('interview_type'),
+            'scheduled_at'   => $scheduledAt,
+            'duration_min'   => (int) $this->request->getPost('duration_min'),
+            'location'       => $this->request->getPost('location') ?: null,
+            'notes'          => $this->request->getPost('notes') ?: null,
+            'status'         => 'scheduled',
+        ];
+
+        $existing = $interviewModel->getByApplication($appId);
+        if ($existing) {
+            $interviewModel->update($existing->id, $data);
+        } else {
+            $interviewModel->insert($data);
+        }
+
+        return redirect()->to(base_url('applications/' . $appId))
+                         ->with('success', 'Entretien planifié avec succès.');
     }
 }

@@ -168,9 +168,10 @@ $routes->group('', ['filter' => 'role:recruiter,admin'], static function ($route
     $routes->post('jobs/delete/(:num)',   'JobController::delete/$1');
 
     // Application management
-    $routes->get ('applications/(:num)',        'ApplicationController::show/$1');
-    $routes->post('applications/(:num)/status', 'JobController::updateApplicationStatus/$1');
-    $routes->post('applications/(:num)/note',   'JobController::saveApplicationNote/$1');
+    $routes->get ('applications/(:num)',           'ApplicationController::show/$1');
+    $routes->post('applications/(:num)/status',    'JobController::updateApplicationStatus/$1');
+    $routes->post('applications/(:num)/note',      'JobController::saveApplicationNote/$1');
+    $routes->post('applications/(:num)/interview', 'ApplicationController::scheduleInterview/$1');
 });
 
 // ─── Protected — admin only ───────────────────────────────────────────────────
