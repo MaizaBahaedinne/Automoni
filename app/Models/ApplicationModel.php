@@ -40,7 +40,11 @@ class ApplicationModel extends Model
         // Returns applications for:
         //  1. Jobs posted directly by this recruiter
         //  2. Jobs posted by any member of organizations managed by this recruiter
-        // Also resolves the organization name via a correlated sub-select.
+        //
+        // org_name / org_id are only resolved for case 2 (org-member jobs).
+        // For the recruiter's OWN jobs there is no organization_id on the jobs table,
+        // so we cannot reliably determine the org — returning NULL avoids showing
+        // a wrong org name (the alphabetically-first one from a self-join).
         $sql = "
             SELECT DISTINCT
                 a.*,
@@ -52,9 +56,12 @@ class ApplicationModel extends Model
                     FROM organization_members om_job
                     JOIN organization_members om_me
                          ON om_me.organization_id = om_job.organization_id
-                        AND om_me.user_id = ?
+                        AND om_me.user_id         = ?
+                        AND om_me.role IN ('owner', 'manager')
                     JOIN organizations org ON org.id = om_job.organization_id
+                                          AND org.deleted_at IS NULL
                     WHERE om_job.user_id = j.user_id
+                      AND om_job.user_id != ?
                     ORDER BY org.name
                     LIMIT 1
                 ) AS org_name,
@@ -63,9 +70,12 @@ class ApplicationModel extends Model
                     FROM organization_members om_job2
                     JOIN organization_members om_me2
                          ON om_me2.organization_id = om_job2.organization_id
-                        AND om_me2.user_id = ?
+                        AND om_me2.user_id         = ?
+                        AND om_me2.role IN ('owner', 'manager')
                     JOIN organizations org2 ON org2.id = om_job2.organization_id
+                                           AND org2.deleted_at IS NULL
                     WHERE om_job2.user_id = j.user_id
+                      AND om_job2.user_id != ?
                     ORDER BY org2.name
                     LIMIT 1
                 ) AS org_id
@@ -86,7 +96,8 @@ class ApplicationModel extends Model
         ";
 
         $query = $this->db->query($sql, [
-            $recruiterId, $recruiterId,   // correlated sub-selects
+            $recruiterId, $recruiterId,   // org_name sub-select
+            $recruiterId, $recruiterId,   // org_id sub-select
             $recruiterId, $recruiterId,   // WHERE clause
         ]);
 
