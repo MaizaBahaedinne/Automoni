@@ -148,6 +148,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
     // Admin role switcher (any authenticated user whose real role is admin)
     $routes->get('admin/switch-role/(:segment)', 'AuthController::switchRole/$1');
+
+    // Notifications
+    $routes->get ('notifications',              'NotificationController::index');
+    $routes->post('notifications/(:num)/read',  'NotificationController::markRead/$1');
 });
 
 // ─── Protected — recruiters only ──────────────────────────────────────────────

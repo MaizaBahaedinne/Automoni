@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Models\{
     ProfileModel, SkillModel, ExperienceModel, LanguageModel,
     JobPrescreeningModel, JobLanguageModel, EducationModel, InterviewModel,
-    ApplicationModel, JobModel, OrganizationModel
+    ApplicationModel, JobModel, OrganizationModel, NotificationModel
 };
 use App\Libraries\AlertMailer;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -267,7 +267,7 @@ class ApplicationController extends BaseController
         // Notify the candidate by email
         $db        = \Config\Database::connect();
         $candidate = $db->table('users')
-            ->select('first_name, last_name, email')
+            ->select('id, first_name, last_name, email')
             ->where('id', $appRow->user_id)
             ->get()->getRowObject();
 
@@ -275,6 +275,17 @@ class ApplicationController extends BaseController
             $interview     = $interviewModel->getByApplication($appId);
             $recruiterName = session()->get('user_name') ?? 'Le recruteur';
             (new AlertMailer())->sendInterviewNotification($candidate, $interview, $appRow->job_title, $recruiterName);
+
+            // In-app notification for the candidate
+            $typeLabel = $interview->type === 'remote' ? 'Visioconférence' : 'Présentiel';
+            $dateStr   = date('d/m/Y à H:i', strtotime($interview->scheduled_at));
+            model(NotificationModel::class)->createForUser(
+                (int) $candidate->id,
+                'interview',
+                'Entretien planifié — ' . $appRow->job_title,
+                $typeLabel . ' · ' . $dateStr . ' · ' . (int) $interview->duration_min . ' min',
+                base_url('dashboard')
+            );
         }
 
         return redirect()->to(base_url('applications/' . $appId))

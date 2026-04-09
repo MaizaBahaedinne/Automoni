@@ -59,6 +59,40 @@
 </div>
 
 <!-- My Applications -->
+<?php
+// Unread interview notifications
+$_seekerNotifs = [];
+try {
+    $_seekerNotifs = array_filter(
+        model(\App\Models\NotificationModel::class)->getRecent((int) session()->get('user_id'), 10),
+        fn($n) => !$n->is_read
+    );
+} catch (\Throwable $_e) {}
+?>
+<?php if (!empty($_seekerNotifs)): ?>
+<div class="mb-4">
+    <?php foreach ($_seekerNotifs as $_n): ?>
+    <div class="d-flex align-items-start gap-3 p-3 mb-2"
+         style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:var(--radius);">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--brand);
+                    display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-calendar-check-fill text-white" style="font-size:.9rem;"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="fw-semibold" style="font-size:.875rem;"><?= esc($_n->title) ?></div>
+            <?php if (!empty($_n->body)): ?>
+            <div class="text-muted" style="font-size:.8rem;"><?= esc($_n->body) ?></div>
+            <?php endif; ?>
+            <div class="text-muted" style="font-size:.72rem;"><?= date('d/m/Y à H:i', strtotime($_n->created_at)) ?></div>
+        </div>
+        <form action="<?= base_url('notifications/' . $_n->id . '/read') ?>" method="post" class="d-flex align-items-start">
+            <?= csrf_field() ?>
+            <button type="submit" class="btn-close" style="font-size:.65rem;" title="Marquer comme lu"></button>
+        </form>
+    </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0"><?= lang('App.my_applications') ?></h5>
