@@ -141,7 +141,11 @@
 </div>
 
 <!-- Recent Applications -->
-<?php $multiOrg = count($orgs) > 1; ?>
+<?php
+$multiOrg     = count($orgs) > 1;
+$statusColors = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
+$statusLabels = ['pending'=>'En attente','reviewed'=>'En cours','shortlisted'=>'Shortlisté','rejected'=>'Refusé','hired'=>'Recruté'];
+?>
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0"><?= lang('App.recent_applications') ?></h5>
@@ -164,7 +168,6 @@
                             <?php endif; ?>
                             <th><?= lang('App.col_date') ?></th>
                             <th><?= lang('App.col_status') ?></th>
-                            <th><?= lang('App.col_actions') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -192,26 +195,15 @@
                                 <?php endif; ?>
                             </td>
                             <?php endif; ?>
-                            <td><small class="text-muted"><?= !empty($app->applied_at) ? date('d M Y', strtotime($app->applied_at)) : '—' ?></small></td>
                             <td>
-                                <?php
-                                $sc = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
-                                ?>
-                                <span class="badge bg-<?= $sc[$app->status] ?? 'secondary' ?>"><?= ucfirst(esc($app->status)) ?></span>
+                                <small class="text-muted">
+                                    <?= !empty($app->applied_at) ? date('d/m/Y', strtotime($app->applied_at)) : '—' ?>
+                                </small>
                             </td>
                             <td>
-                                <form action="<?= base_url('applications/' . $app->id . '/status') ?>" method="post" class="d-flex gap-1"
-                                      onclick="event.stopPropagation()">
-                                    <?= csrf_field() ?>
-                                    <select name="status" class="form-select form-select-sm" style="width:130px;">
-                                        <?php foreach (['pending','reviewed','shortlisted','rejected','hired'] as $s): ?>
-                                            <option value="<?= $s ?>" <?= $app->status === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-check"></i>
-                                    </button>
-                                </form>
+                                <span class="badge bg-<?= $statusColors[$app->status] ?? 'secondary' ?>" style="font-size:.75rem;padding:.3em .7em;border-radius:50px;">
+                                    <?= $statusLabels[$app->status] ?? ucfirst(esc($app->status)) ?>
+                                </span>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -221,5 +213,3 @@
         <?php endif; ?>
     </div>
 </div>
-
-<?= $this->endSection() ?>
