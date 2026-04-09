@@ -10,7 +10,7 @@ class OrganizationMemberModel extends Model
     protected $primaryKey       = 'id';
     protected $returnType       = 'object';
     protected $useTimestamps    = true;
-    protected $allowedFields    = ['organization_id', 'user_id', 'role', 'joined_at'];
+    protected $allowedFields    = ['organization_id', 'user_id', 'role', 'is_active', 'joined_at'];
 
     protected $validationRules  = [
         'organization_id' => 'required|integer|greater_than[0]',
@@ -24,11 +24,31 @@ class OrganizationMemberModel extends Model
     public function getMembers(int $organizationId)
     {
         return $this->db->table('organization_members as om')
-                    ->select('om.id, om.organization_id, om.user_id, om.role, om.joined_at, u.first_name, u.last_name, u.email, u.avatar')
+                    ->select('om.id, om.organization_id, om.user_id, om.role, om.is_active, om.joined_at, u.first_name, u.last_name, u.email, u.avatar')
                     ->join('users as u', 'u.id = om.user_id')
                     ->where('om.organization_id', $organizationId)
+                    ->orderBy('om.is_active', 'DESC')
+                    ->orderBy('om.joined_at', 'ASC')
                     ->get()
                     ->getResult();
+    }
+
+    /**
+     * Toggle is_active for a member
+     */
+    public function toggleActive(int $organizationId, int $userId): ?bool
+    {
+        $member = $this->where('organization_id', $organizationId)
+                       ->where('user_id', $userId)
+                       ->first();
+        if (!$member) {
+            return null;
+        }
+        $newState = $member->is_active ? 0 : 1;
+        $this->where('organization_id', $organizationId)
+             ->where('user_id', $userId)
+             ->update(['is_active' => $newState]);
+        return (bool) $newState;
     }
 
     /**

@@ -317,7 +317,10 @@ $platformLabels = [
                 <?php if (!empty($members)): ?>
                     <div class="p-0">
                         <?php foreach ($members as $member): ?>
-                            <div class="d-flex align-items-center gap-2 px-3 py-2" style="border-bottom:1px solid var(--border);">
+                            <?php $inactive = isset($member->is_active) && !$member->is_active; ?>
+                            <div class="d-flex align-items-center gap-2 px-3 py-2 org-member-row<?= $inactive ? ' opacity-50' : '' ?>"
+                                 id="member-row-<?= (int)$member->user_id ?>"
+                                 style="border-bottom:1px solid var(--border);">
                                 <?php if (!empty($member->avatar)): ?>
                                     <img src="<?= base_url(esc($member->avatar)) ?>" alt="" class="member-avatar">
                                 <?php else: ?>
@@ -329,6 +332,27 @@ $platformLabels = [
                                 </div>
                                 <?php if (!empty($member->role)): ?>
                                     <span class="badge flex-shrink-0" style="background:var(--brand-light);color:var(--brand-dark);font-size:.65rem;"><?= esc($member->role) ?></span>
+                                <?php endif; ?>
+                                <?php if ($inactive): ?>
+                                    <span class="badge bg-secondary flex-shrink-0" style="font-size:.65rem;">inactif</span>
+                                <?php endif; ?>
+                                <?php if ($can_manage && $member->user_id !== session()->get('user_id')): ?>
+                                <div class="d-flex gap-1 flex-shrink-0 ms-1">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-<?= $inactive ? 'success' : 'warning' ?> py-0 px-1"
+                                            style="font-size:.7rem;"
+                                            title="<?= $inactive ? 'Réactiver' : 'Désactiver' ?>"
+                                            onclick="toggleMember(<?= (int)$member->user_id ?>, this)">
+                                        <i class="bi bi-<?= $inactive ? 'person-check' : 'person-dash' ?>"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger py-0 px-1"
+                                            style="font-size:.7rem;"
+                                            title="Retirer de l'organisation"
+                                            onclick="removeMember(<?= (int)$member->user_id ?>, '<?= esc($member->first_name . ' ' . $member->last_name) ?>')">
+                                        <i class="bi bi-person-x"></i>
+                                    </button>
+                                </div>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
@@ -488,6 +512,66 @@ $platformLabels = [
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 })();
+</script>
+<?php endif; ?>
+
+<?php if ($can_manage): ?>
+<script>
+const ORG_ID   = <?= (int) $organization->id ?>;
+const CSRF_N   = '<?= csrf_token() ?>';
+const CSRF_H   = '<?= csrf_hash() ?>';
+const BASE_URL = '<?= base_url() ?>';
+
+function orgFetch(url, method, onSuccess) {
+    fetch(url, {
+        method,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: CSRF_N + '=' + encodeURIComponent(CSRF_H),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') { onSuccess(data); }
+        else { alert(data.message || 'Erreur'); }
+    })
+    .catch(() => alert('Erreur réseau.'));
+}
+
+function toggleMember(userId, btn) {
+    orgFetch(BASE_URL + 'organizations/' + ORG_ID + '/members/' + userId + '/toggle', 'POST', function(data) {
+        const row = document.getElementById('member-row-' + userId);
+        if (!row) return;
+        const active = data.is_active;
+        row.classList.toggle('opacity-50', !active);
+        // Update badge
+        let badge = row.querySelector('.badge.bg-secondary');
+        if (!active) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge bg-secondary flex-shrink-0';
+                badge.style.fontSize = '.65rem';
+                badge.textContent = 'inactif';
+                row.querySelector('.d-flex.gap-1').before(badge);
+            }
+        } else {
+            if (badge) badge.remove();
+        }
+        // Swap button
+        btn.className = 'btn btn-sm btn-outline-' + (active ? 'warning' : 'success') + ' py-0 px-1';
+        btn.title     = active ? 'Désactiver' : 'Réactiver';
+        btn.querySelector('i').className = 'bi bi-' + (active ? 'person-dash' : 'person-check');
+    });
+}
+
+function removeMember(userId, name) {
+    if (!confirm('Retirer ' + name + ' de l\'organisation ?')) return;
+    orgFetch(BASE_URL + 'organizations/' + ORG_ID + '/members/' + userId, 'DELETE', function() {
+        const row = document.getElementById('member-row-' + userId);
+        if (row) row.remove();
+    });
+}
 </script>
 <?php endif; ?>
 
