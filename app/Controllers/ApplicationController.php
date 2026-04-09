@@ -4,12 +4,58 @@ namespace App\Controllers;
 
 use App\Models\{
     ProfileModel, SkillModel, ExperienceModel, LanguageModel,
-    JobPrescreeningModel, JobLanguageModel, EducationModel, InterviewModel
+    JobPrescreeningModel, JobLanguageModel, EducationModel, InterviewModel,
+    ApplicationModel, JobModel, OrganizationModel
 };
 use CodeIgniter\HTTP\RedirectResponse;
 
 class ApplicationController extends BaseController
 {
+    /**
+     * GET applications
+     * Full list of applications for the recruiter with filters.
+     */
+    public function indexRecruiter(): string|RedirectResponse
+    {
+        $recruiterId = (int) session()->get('user_id');
+        $userRole    = session()->get('user_role');
+        if (!in_array($userRole, ['recruiter', 'admin'], true)) {
+            return redirect()->to('dashboard');
+        }
+
+        $filters = [
+            'org_id' => $this->request->getGet('org_id'),
+            'job_id' => $this->request->getGet('job_id'),
+            'status' => $this->request->getGet('status'),
+            'q'      => trim($this->request->getGet('q') ?? ''),
+        ];
+
+        $applications = model(ApplicationModel::class)->getAllForRecruiter($recruiterId, $filters);
+        $orgs         = model(OrganizationModel::class)->getManagedByUser($recruiterId);
+
+        // Build the jobs list for the filter dropdown (scoped to recruiter's orgs + own jobs)
+        $db   = \Config\Database::connect();
+        $jobs = $db->query("
+            SELECT DISTINCT j.id, j.title
+            FROM jobs j
+            LEFT JOIN organization_members om
+                ON om.organization_id = j.organization_id
+                AND om.user_id = ?
+                AND om.is_active = 1
+                AND om.role IN ('owner','manager')
+            WHERE j.user_id = ? OR om.user_id IS NOT NULL
+            ORDER BY j.title ASC
+        ", [$recruiterId, $recruiterId])->getResultObject();
+
+        return view('applications/index_recruiter', [
+            'title'        => 'Toutes les candidatures',
+            'applications' => $applications,
+            'orgs'         => $orgs,
+            'jobs'         => $jobs,
+            'filters'      => $filters,
+        ]);
+    }
+
     /**
      * Recruiter view: split-screen candidate detail page.
      * GET applications/(:num)

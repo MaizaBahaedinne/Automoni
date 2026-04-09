@@ -82,6 +82,73 @@ class ApplicationModel extends Model
     }
 
     /**
+     * All applications for a recruiter, with optional filters.
+     * Filters: org_id (int), job_id (int), status (string), q (search string).
+     */
+    public function getAllForRecruiter(int $recruiterId, array $filters = []): array
+    {
+        $conditions = [];
+        $bindings   = [];
+
+        // Scope: jobs owned by this recruiter OR jobs in orgs they manage
+        $conditions[] = "(
+            j.user_id = ?
+            OR j.user_id IN (
+                SELECT om_j.user_id
+                FROM organization_members om_me
+                JOIN organization_members om_j
+                     ON om_j.organization_id = om_me.organization_id
+                WHERE om_me.user_id = ?
+                  AND om_me.role IN ('owner', 'manager')
+                  AND om_me.is_active = 1
+            )
+        )";
+        $bindings[] = $recruiterId;
+        $bindings[] = $recruiterId;
+
+        if (!empty($filters['org_id'])) {
+            $conditions[] = 'j.organization_id = ?';
+            $bindings[]   = (int) $filters['org_id'];
+        }
+        if (!empty($filters['job_id'])) {
+            $conditions[] = 'a.job_id = ?';
+            $bindings[]   = (int) $filters['job_id'];
+        }
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
+            $conditions[] = 'a.status = ?';
+            $bindings[]   = $filters['status'];
+        }
+        if (!empty($filters['q'])) {
+            $conditions[] = "(CONCAT(u.first_name, ' ', u.last_name) LIKE ? OR u.email LIKE ?)";
+            $like         = '%' . $filters['q'] . '%';
+            $bindings[]   = $like;
+            $bindings[]   = $like;
+        }
+
+        $where = implode(' AND ', $conditions);
+
+        $sql = "
+            SELECT DISTINCT
+                a.*,
+                j.id             AS job_id_ref,
+                j.title          AS job_title,
+                CONCAT(u.first_name, ' ', u.last_name) AS candidate_name,
+                u.first_name, u.last_name, u.email, u.avatar,
+                org.name         AS org_name,
+                org.id           AS org_id
+            FROM applications a
+            JOIN jobs j   ON j.id = a.job_id
+            JOIN users u  ON u.id = a.user_id AND u.deleted_at IS NULL
+            LEFT JOIN organizations org ON org.id = j.organization_id AND org.deleted_at IS NULL
+            WHERE {$where}
+            ORDER BY a.applied_at DESC
+        ";
+
+        $query = $this->db->query($sql, $bindings);
+        return $query ? $query->getResultObject() : [];
+    }
+
+    /**
      * All applications for the admin dashboard — with optional filters.
      */
     public function getAllForAdmin(?string $status, ?string $search, ?string $from, ?string $to, int $perPage = 40): array

@@ -143,8 +143,11 @@
 <!-- Recent Applications -->
 <?php $multiOrg = count($orgs) > 1; ?>
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-0">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0"><?= lang('App.recent_applications') ?></h5>
+        <a href="<?= base_url('applications') ?>" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-list-ul me-1"></i>Voir toutes
+        </a>
     </div>
     <div class="card-body p-0">
         <?php if (empty($applications)): ?>
