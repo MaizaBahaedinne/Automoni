@@ -99,13 +99,44 @@ $curStatus  = $app->status ?? 'pending';
             </div>
 
             <!-- Rejection reason (shown only when "rejected" is picked) -->
+            <?php
+            $presetReasons = [
+                'Profil ne correspondant pas aux exigences du poste',
+                "Niveau d'expérience insuffisant",
+                'Compétences techniques requises non maîtrisées',
+                'Prétentions salariales hors budget',
+                'Poste pourvu en interne',
+                'Offre annulée',
+            ];
+            $savedReason  = $app->rejection_reason ?? '';
+            $isPreset     = in_array($savedReason, $presetReasons, true);
+            $selectValue  = $isPreset ? $savedReason : ($savedReason !== '' ? '__other__' : '');
+            $otherVisible = ($selectValue === '__other__');
+            ?>
             <div id="rejectionBlock" style="<?= $curStatus === 'rejected' ? '' : 'display:none;' ?>">
                 <label class="form-label fw-semibold text-danger mb-1" style="font-size:.82rem;">
                     <i class="bi bi-chat-square-text me-1"></i>Motif de refus
                 </label>
-                <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="2"
-                          style="font-size:.875rem;"
-                          placeholder="Ex : Profil ne correspondant pas aux exigences requises pour ce poste…"><?= esc($app->rejection_reason ?? '') ?></textarea>
+
+                <select id="rejectionSelect" class="form-select mb-2" style="font-size:.875rem;"
+                        onchange="toggleOtherReason(this.value)">
+                    <option value="">— Sélectionner un motif —</option>
+                    <?php foreach ($presetReasons as $pr): ?>
+                        <option value="<?= esc($pr) ?>"<?= $selectValue === $pr ? ' selected' : '' ?>><?= esc($pr) ?></option>
+                    <?php endforeach; ?>
+                    <option value="__other__"<?= $otherVisible ? ' selected' : '' ?>>Autre (préciser…)</option>
+                </select>
+
+                <!-- Hidden field always submitted — kept in sync by JS -->
+                <input type="hidden" name="rejection_reason" id="rejectionReason"
+                       value="<?= esc($savedReason) ?>">
+
+                <!-- Free-text shown only when "Autre" is selected -->
+                <textarea id="rejectionOtherText" class="form-control" rows="2"
+                          style="font-size:.875rem;<?= $otherVisible ? '' : 'display:none;' ?>"
+                          placeholder="Précisez le motif de refus…"
+                          oninput="document.getElementById('rejectionReason').value = this.value"
+                ><?= $otherVisible ? esc($savedReason) : '' ?></textarea>
             </div>
 
             <div class="d-flex justify-content-end mt-3">
@@ -129,10 +160,9 @@ function pickStatus(val) {
     document.getElementById('statusInput').value = val;
     // Toggle rejection block
     const block = document.getElementById('rejectionBlock');
-    const field = document.getElementById('rejectionReason');
     const show  = val === 'rejected';
     block.style.display = show ? '' : 'none';
-    field.required = show;
+    document.getElementById('rejectionReason').required = show;
     // Update button styles
     document.querySelectorAll('.app-status-btn').forEach(btn => {
         const s  = btn.dataset.status;
@@ -140,6 +170,17 @@ function pickStatus(val) {
         btn.classList.remove('active', 'active-' + col);
         if (s === val) btn.classList.add('active', 'active-' + col);
     });
+}
+function toggleOtherReason(val) {
+    const otherBlock = document.getElementById('rejectionOtherText');
+    const hidden     = document.getElementById('rejectionReason');
+    if (val === '__other__') {
+        otherBlock.style.display = '';
+        hidden.value = otherBlock.value;
+    } else {
+        otherBlock.style.display = 'none';
+        hidden.value = val;
+    }
 }
 pickStatus(document.getElementById('statusInput').value);
 </script>
