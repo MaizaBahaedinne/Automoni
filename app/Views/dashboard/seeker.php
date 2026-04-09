@@ -83,7 +83,7 @@ try {
             <?php if (!empty($_n->body)): ?>
             <div class="text-muted" style="font-size:.8rem;"><?= esc($_n->body) ?></div>
             <?php endif; ?>
-            <div class="text-muted" style="font-size:.72rem;"><?= date('d/m/Y à H:i', strtotime($_n->created_at)) ?></div>
+            <div class="text-muted" style="font-size:.72rem;"><?= date('d/m/Y', strtotime($_n->created_at)) . ' ' . lang('App.at_time') . ' ' . date('H:i', strtotime($_n->created_at)) ?></div>
         </div>
         <div class="d-flex align-items-center gap-2">
             <?php
@@ -203,7 +203,7 @@ try {
 <?php
 $_ivType  = $_iv->type === 'remote' ? 'Visioconférence' : 'Présentiel';
 $_ivIcon  = $_iv->type === 'remote' ? 'camera-video' : 'building';
-$_ivDate  = date('l d F Y', strtotime($_iv->scheduled_at));
+$_ivDate  = date('d', strtotime($_iv->scheduled_at)) . ' ' . lang('App.months.' . date('n', strtotime($_iv->scheduled_at))) . ' ' . date('Y', strtotime($_iv->scheduled_at));
 $_ivTime  = date('H:i', strtotime($_iv->scheduled_at));
 $_ivDur   = (int) $_iv->duration_min;
 $_ivLoc   = $_iv->location ?? null;

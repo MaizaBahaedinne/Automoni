@@ -37,7 +37,7 @@ class AlertMailer
     {
         try {
             $typeLabel = $interview->type === 'remote' ? 'Visioconférence' : 'Présentiel';
-            $date      = date('l d F Y à H:i', strtotime($interview->scheduled_at));
+            $date      = date('d', strtotime($interview->scheduled_at)) . ' ' . lang('App.months.' . date('n', strtotime($interview->scheduled_at))) . ' ' . date('Y', strtotime($interview->scheduled_at)) . ' ' . lang('App.at_time') . ' ' . date('H:i', strtotime($interview->scheduled_at));
             $duration  = (int) $interview->duration_min;
             $location  = !empty($interview->location) ? esc($interview->location) : '—';
             $notes     = !empty($interview->notes)    ? '<p style="margin:8px 0 0;font-size:13px;color:#374151;"><strong>Notes :</strong> ' . esc($interview->notes) . '</p>' : '';

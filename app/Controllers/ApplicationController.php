@@ -278,7 +278,7 @@ class ApplicationController extends BaseController
 
             // In-app notification for the candidate
             $typeLabel = $interview->type === 'remote' ? 'Visioconférence' : 'Présentiel';
-            $dateStr   = date('d/m/Y à H:i', strtotime($interview->scheduled_at));
+            $dateStr   = date('d', strtotime($interview->scheduled_at)) . ' ' . lang('App.months.' . date('n', strtotime($interview->scheduled_at))) . ' ' . date('Y', strtotime($interview->scheduled_at)) . ' ' . lang('App.at_time') . ' ' . date('H:i', strtotime($interview->scheduled_at));
             model(NotificationModel::class)->createForUser(
                 (int) $candidate->id,
                 'interview',

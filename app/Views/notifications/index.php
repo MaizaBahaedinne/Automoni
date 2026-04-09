@@ -37,7 +37,7 @@
             <div class="text-muted" style="font-size:.8rem;"><?= esc($n->body) ?></div>
             <?php endif; ?>
             <div class="text-muted mt-1" style="font-size:.72rem;">
-                <i class="bi bi-clock me-1"></i><?= date('d/m/Y à H:i', strtotime($n->created_at)) ?>
+                <i class="bi bi-clock me-1"></i><?= date('d/m/Y', strtotime($n->created_at)) . ' ' . lang('App.at_time') . ' ' . date('H:i', strtotime($n->created_at)) ?>
             </div>
         </div>
 

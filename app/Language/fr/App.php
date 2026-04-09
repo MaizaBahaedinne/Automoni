@@ -357,6 +357,8 @@ return [
     'msg_error'               => 'Une erreur est survenue.',
     'placeholder_eg'          => 'ex.',
 
+    'at_time' => 'à',
+
     // ── Months ───────────────────────────────────────────────────────────────
     'months' => [
         1  => 'janv.', 2  => 'févr.', 3  => 'mars',  4  => 'avr.',

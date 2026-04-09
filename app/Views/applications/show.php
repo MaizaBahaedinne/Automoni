@@ -177,7 +177,7 @@ if ($_iv && !empty($_iv->scheduled_at)) {
                 <?= $_iv->type === 'remote' ? 'Visioconférence' : 'Présentiel' ?>
                 &nbsp;·&nbsp;
                 <i class="bi bi-clock me-1"></i>
-                <?= date('d/m/Y à H:i', strtotime($_iv->scheduled_at)) ?>
+                <?= date('d', strtotime($_iv->scheduled_at)) . ' ' . lang('App.months.' . date('n', strtotime($_iv->scheduled_at))) . ' ' . date('Y', strtotime($_iv->scheduled_at)) . ' ' . lang('App.at_time') . ' ' . date('H:i', strtotime($_iv->scheduled_at)) ?>
                 &nbsp;·&nbsp;
                 <?= (int)$_iv->duration_min ?> min
                 <?php if (!empty($_iv->location)): ?>
