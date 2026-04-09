@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\{JobModel, ApplicationModel, ProfileModel, CompanyModel, OrganizationModel};
+use App\Models\{JobModel, ApplicationModel, ProfileModel, CompanyModel, OrganizationModel, InterviewModel};
 use CodeIgniter\Controller;
 
 class DashboardController extends BaseController
@@ -29,11 +29,23 @@ class DashboardController extends BaseController
         $applications = $applicationModel->getApplicationsForUser($userId);
         $recommended  = $jobModel->getRecommended($userId, 6);
 
+        // Map application_id => interview for shortlisted apps
+        $interviewMap = [];
+        foreach ($applications as $app) {
+            if ($app->status === 'shortlisted') {
+                $iv = model(InterviewModel::class)->getByApplication((int) $app->id);
+                if ($iv) {
+                    $interviewMap[$app->id] = $iv;
+                }
+            }
+        }
+
         return view('dashboard/seeker', [
             'title'        => 'My Dashboard',
             'profile'      => $profile,
             'applications' => $applications,
             'recommended'  => $recommended,
+            'interviewMap' => $interviewMap,
         ]);
     }
 

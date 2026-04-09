@@ -284,7 +284,7 @@ class ApplicationController extends BaseController
                 'interview',
                 'Entretien planifié — ' . $appRow->job_title,
                 $typeLabel . ' · ' . $dateStr . ' · ' . (int) $interview->duration_min . ' min',
-                base_url('dashboard')
+                base_url('dashboard#interview-' . $appId)
             );
         }
 
