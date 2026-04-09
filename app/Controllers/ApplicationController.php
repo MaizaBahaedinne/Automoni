@@ -280,4 +280,20 @@ class ApplicationController extends BaseController
         return redirect()->to(base_url('applications/' . $appId))
                          ->with('success', 'Entretien planifié avec succès.');
     }
+
+    /**
+     * POST admin/interviews/purge
+     * Delete ALL interviews (admin only — enforced by route filter + controller check).
+     */
+    public function purgeInterviews(): RedirectResponse
+    {
+        if (session()->get('user_role') !== 'admin') {
+            return redirect()->to('dashboard')->with('error', 'Accès non autorisé.');
+        }
+
+        \Config\Database::connect()->table('interviews')->truncate();
+
+        return redirect()->to(base_url('applications'))
+                         ->with('success', 'Tous les entretiens ont été supprimés.');
+    }
 }

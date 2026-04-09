@@ -28,7 +28,45 @@ $f            = $filters ?? [];
             <?= count($applications) ?> candidature<?= count($applications) !== 1 ? 's' : '' ?> au total
         </p>
     </div>
+    <?php if (session()->get('user_role') === 'admin'): ?>
+    <button type="button" class="btn btn-sm btn-outline-danger"
+            data-bs-toggle="modal" data-bs-target="#purgeInterviewsModal">
+        <i class="bi bi-trash3 me-1"></i>Purger les entretiens
+    </button>
+    <?php endif; ?>
 </div>
+
+<!-- Purge confirmation modal (admin only) -->
+<?php if (session()->get('user_role') === 'admin'): ?>
+<div class="modal fade" id="purgeInterviewsModal" tabindex="-1" aria-labelledby="purgeInterviewsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:var(--radius);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-danger" id="purgeInterviewsLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmer la purge
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <p class="mb-0">
+                    Cette action va <strong>supprimer définitivement tous les entretiens</strong>
+                    (planifiés, terminés et annulés) de la base de données.<br>
+                    <span class="text-danger fw-semibold">Cette opération est irréversible.</span>
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                <form action="<?= base_url('admin/interviews/purge') ?>" method="post" class="d-inline">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash3 me-1"></i>Oui, tout supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Flash -->
 <?php if ($error = session()->getFlashdata('error')): ?>

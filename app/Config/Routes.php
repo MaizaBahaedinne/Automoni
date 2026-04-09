@@ -186,6 +186,7 @@ $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
     $routes->get ('admin/applications',                    'AdminApplicationController::index');
     $routes->post('admin/applications/purge',              'AdminApplicationController::purge');
     $routes->post('admin/applications/(:num)/status',      'AdminApplicationController::updateStatus/$1');
+    $routes->post('admin/interviews/purge',                'ApplicationController::purgeInterviews');
 });
 
 // ─── DEBUG (temp) ─────────────────────────────────────────────────────────────
