@@ -86,14 +86,17 @@ $defaultSteps = !empty($steps) ? $steps : [
                    placeholder="ex : SAP BASIS Administrator Senior" required>
         </div>
 
-        <?php if (!empty($orgs)): ?>
+        <?php if (count($orgs) === 1): ?>
+        <!-- Single org: auto-assign silently -->
+        <input type="hidden" name="organization_id" value="<?= $orgs[0]->id ?>">
+        <?php elseif (count($orgs) > 1): ?>
         <div class="mb-3">
             <label class="jf-label">
                 <i class="bi bi-buildings me-1"></i>Organisation
-                <span class="badge-optional">Optionnel</span>
+                <span class="badge-required">Obligatoire</span>
             </label>
-            <select name="organization_id" class="form-select form-select-sm">
-                <option value="">— Aucune organisation —</option>
+            <select name="organization_id" class="form-select form-select-sm" required>
+                <option value="">— Sélectionner une organisation —</option>
                 <?php foreach ($orgs as $org):
                     $selected = (int)$v('organization_id', 0) === (int)$org->id ? 'selected' : '';
                 ?>
