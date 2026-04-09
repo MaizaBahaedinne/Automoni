@@ -37,51 +37,22 @@ class ApplicationModel extends Model
 
     public function getApplicationsForRecruiter(int $recruiterId): array
     {
-        // Returns applications for:
-        //  1. Jobs posted directly by this recruiter
-        //  2. Jobs posted by any member of organizations managed by this recruiter
-        //
-        // org_name / org_id are only resolved for case 2 (org-member jobs).
-        // For the recruiter's OWN jobs there is no organization_id on the jobs table,
-        // so we cannot reliably determine the org — returning NULL avoids showing
-        // a wrong org name (the alphabetically-first one from a self-join).
+        // Returns applications for jobs posted directly by this recruiter OR
+        // by any member of an organization the recruiter manages.
+        // org_name / org_id come from jobs.organization_id (set at job creation).
         $sql = "
             SELECT DISTINCT
                 a.*,
-                j.title AS job_title,
+                j.title          AS job_title,
+                j.organization_id AS job_org_id,
                 CONCAT(u.first_name, ' ', u.last_name) AS candidate_name,
                 u.first_name, u.last_name, u.email, u.avatar,
-                (
-                    SELECT org.name
-                    FROM organization_members om_job
-                    JOIN organization_members om_me
-                         ON om_me.organization_id = om_job.organization_id
-                        AND om_me.user_id         = ?
-                        AND om_me.role IN ('owner', 'manager')
-                    JOIN organizations org ON org.id = om_job.organization_id
-                                          AND org.deleted_at IS NULL
-                    WHERE om_job.user_id = j.user_id
-                      AND om_job.user_id != ?
-                    ORDER BY org.name
-                    LIMIT 1
-                ) AS org_name,
-                (
-                    SELECT org2.id
-                    FROM organization_members om_job2
-                    JOIN organization_members om_me2
-                         ON om_me2.organization_id = om_job2.organization_id
-                        AND om_me2.user_id         = ?
-                        AND om_me2.role IN ('owner', 'manager')
-                    JOIN organizations org2 ON org2.id = om_job2.organization_id
-                                           AND org2.deleted_at IS NULL
-                    WHERE om_job2.user_id = j.user_id
-                      AND om_job2.user_id != ?
-                    ORDER BY org2.name
-                    LIMIT 1
-                ) AS org_id
+                org.name         AS org_name,
+                org.id           AS org_id
             FROM applications a
-            JOIN jobs j ON j.id = a.job_id
-            JOIN users u ON u.id = a.user_id AND u.deleted_at IS NULL
+            JOIN jobs j   ON j.id  = a.job_id
+            JOIN users u  ON u.id  = a.user_id AND u.deleted_at IS NULL
+            LEFT JOIN organizations org ON org.id = j.organization_id AND org.deleted_at IS NULL
             WHERE
                 j.user_id = ?
                 OR j.user_id IN (
@@ -95,11 +66,7 @@ class ApplicationModel extends Model
             ORDER BY a.applied_at DESC
         ";
 
-        $query = $this->db->query($sql, [
-            $recruiterId, $recruiterId,   // org_name sub-select
-            $recruiterId, $recruiterId,   // org_id sub-select
-            $recruiterId, $recruiterId,   // WHERE clause
-        ]);
+        $query = $this->db->query($sql, [$recruiterId, $recruiterId]);
 
         return $query ? $query->getResultObject() : [];
     }

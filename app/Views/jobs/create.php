@@ -4,6 +4,7 @@
 <?php
 $isEdit = $isEdit ?? false;
 $job    = $job    ?? null;
+$orgs   = $orgs   ?? [];
 $v      = fn(string $f, $def = '') => old($f) !== null ? old($f) : ($job->$f ?? $def);
 $chk    = fn(string $f) => old($f) !== null ? (bool)old($f) : (bool)($job->$f ?? false);
 
@@ -84,6 +85,23 @@ $defaultSteps = !empty($steps) ? $steps : [
             <input type="text" name="title" class="form-control" value="<?= esc($v('title')) ?>"
                    placeholder="ex : SAP BASIS Administrator Senior" required>
         </div>
+
+        <?php if (!empty($orgs)): ?>
+        <div class="mb-3">
+            <label class="jf-label">
+                <i class="bi bi-buildings me-1"></i>Organisation
+                <span class="badge-optional">Optionnel</span>
+            </label>
+            <select name="organization_id" class="form-select form-select-sm">
+                <option value="">— Aucune organisation —</option>
+                <?php foreach ($orgs as $org):
+                    $selected = (int)$v('organization_id', 0) === (int)$org->id ? 'selected' : '';
+                ?>
+                    <option value="<?= $org->id ?>" <?= $selected ?>><?= esc($org->name) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
 
         <div class="row g-3 mb-3">
             <div class="col-md-4">

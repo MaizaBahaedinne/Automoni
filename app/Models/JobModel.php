@@ -12,7 +12,7 @@ class JobModel extends Model
     protected $useSoftDeletes = true;
     protected $useTimestamps  = true;
     protected $allowedFields  = [
-        'company_id', 'user_id', 'title', 'slug', 'description',
+        'company_id', 'organization_id', 'user_id', 'title', 'slug', 'description',
         'requirements', 'benefits', 'contract_type', 'location', 'remote',
         'salary_min', 'salary_max', 'salary_currency', 'experience_level',
         'status', 'views', 'expires_at',
