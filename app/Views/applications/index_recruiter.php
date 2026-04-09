@@ -119,7 +119,6 @@ $f            = $filters ?? [];
                     <?php if ($multiOrg): ?><th>Organisation</th><?php endif; ?>
                     <th>Date</th>
                     <th>Statut</th>
-                    <th class="text-end">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -172,21 +171,6 @@ $f            = $filters ?? [];
                     <span class="badge badge-status bg-<?= $statusColors[$app->status] ?? 'secondary' ?>">
                         <?= $statusLabels[$app->status] ?? ucfirst(esc($app->status)) ?>
                     </span>
-                </td>
-                <!-- Quick-update status -->
-                <td class="text-end pe-3" onclick="event.stopPropagation()">
-                    <form action="<?= base_url('applications/' . $app->id . '/status') ?>" method="post"
-                          class="d-flex justify-content-end gap-1">
-                        <?= csrf_field() ?>
-                        <select name="status" class="form-select form-select-sm" style="width:130px;font-size:.78rem;">
-                            <?php foreach ($statusLabels as $val => $lbl): ?>
-                            <option value="<?= $val ?>"<?= $app->status === $val ? ' selected' : '' ?>><?= $lbl ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <button class="btn btn-sm btn-outline-primary px-2" title="Enregistrer">
-                            <i class="bi bi-check2"></i>
-                        </button>
-                    </form>
                 </td>
             </tr>
             <?php endforeach; ?>
