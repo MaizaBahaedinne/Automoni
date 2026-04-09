@@ -7,6 +7,7 @@ use App\Models\{
     JobPrescreeningModel, JobLanguageModel, EducationModel, InterviewModel,
     ApplicationModel, JobModel, OrganizationModel
 };
+use App\Libraries\AlertMailer;
 use CodeIgniter\HTTP\RedirectResponse;
 
 class ApplicationController extends BaseController
@@ -214,14 +215,14 @@ class ApplicationController extends BaseController
         $recruiterId = (int) session()->get('user_id');
         $userRole    = session()->get('user_role');
 
-        $db  = \Config\Database::connect();
-        $app = $db->table('applications')
-            ->select('applications.id, jobs.user_id AS job_recruiter_id')
+        $db     = \Config\Database::connect();
+        $appRow = $db->table('applications')
+            ->select('applications.id, applications.user_id, jobs.user_id AS job_recruiter_id, jobs.title AS job_title')
             ->join('jobs', 'jobs.id = applications.job_id')
             ->where('applications.id', $appId)
             ->get()->getRowObject();
 
-        if (!$app || ((int) $app->job_recruiter_id !== $recruiterId && $userRole !== 'admin')) {
+        if (!$appRow || ((int) $appRow->job_recruiter_id !== $recruiterId && $userRole !== 'admin')) {
             return redirect()->to('dashboard')->with('error', 'Accès non autorisé.');
         }
 
@@ -261,7 +262,20 @@ class ApplicationController extends BaseController
         }
 
         // Also mark the application as shortlisted
-        model(\App\Models\ApplicationModel::class)->update($appId, ['status' => 'shortlisted']);
+        model(ApplicationModel::class)->update($appId, ['status' => 'shortlisted']);
+
+        // Notify the candidate by email
+        $db        = \Config\Database::connect();
+        $candidate = $db->table('users')
+            ->select('first_name, last_name, email')
+            ->where('id', $appRow->user_id)
+            ->get()->getRowObject();
+
+        if ($candidate) {
+            $interview     = $interviewModel->getByApplication($appId);
+            $recruiterName = session()->get('user_name') ?? 'Le recruteur';
+            (new AlertMailer())->sendInterviewNotification($candidate, $interview, $appRow->job_title, $recruiterName);
+        }
 
         return redirect()->to(base_url('applications/' . $appId))
                          ->with('success', 'Entretien planifié avec succès.');
