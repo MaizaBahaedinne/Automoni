@@ -214,6 +214,9 @@ class ApplicationController extends BaseController
             $interviewModel->insert($data);
         }
 
+        // Also mark the application as shortlisted
+        model(\App\Models\ApplicationModel::class)->update($appId, ['status' => 'shortlisted']);
+
         return redirect()->to(base_url('applications/' . $appId))
                          ->with('success', 'Entretien planifié avec succès.');
     }
