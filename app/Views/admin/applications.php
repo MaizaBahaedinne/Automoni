@@ -64,6 +64,45 @@ $total = $counts['total'];
         <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#purgeFModal">
             <i class="bi bi-trash3-fill me-1"></i>Purger les candidatures
         </button>
+        <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#purgeInterviewsFModal">
+            <i class="bi bi-calendar-x me-1"></i>Purger les entretiens
+        </button>
+    </div>
+</div>
+
+<!-- ── Purge interviews modal ─────────────────────────────────────────────── -->
+<div class="modal fade" id="purgeInterviewsFModal" tabindex="-1" aria-labelledby="purgeIntLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-warning fw-bold" id="purgeIntLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Purger tous les entretiens
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning mb-3">
+                    <strong>⚠ Action irréversible</strong> — cette opération supprime <strong>tous</strong> les entretiens planifiés, terminés et annulés.
+                </div>
+                <p class="text-muted" style="font-size:.9rem;">
+                    Les candidatures et offres d'emploi ne seront pas affectées.
+                </p>
+                <form action="<?= base_url('admin/interviews/purge') ?>" method="post" id="purgeIntForm">
+                    <?= csrf_field() ?>
+                    <label class="form-label fw-semibold" style="font-size:.85rem;">
+                        Tapez <code>PURGE</code> pour confirmer :
+                    </label>
+                    <input type="text" id="purgeIntConfirmInput" class="form-control form-control-sm mb-3"
+                           placeholder="PURGE" autocomplete="off">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" id="purgeIntSubmitBtn" class="btn btn-sm btn-warning" disabled>
+                            <i class="bi bi-calendar-x me-1"></i>Confirmer la purge
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -108,6 +147,9 @@ $total = $counts['total'];
 <script>
 document.getElementById('purgeConfirmInput').addEventListener('input', function () {
     document.getElementById('purgeSubmitBtn').disabled = this.value.trim() !== 'PURGE';
+});
+document.getElementById('purgeIntConfirmInput').addEventListener('input', function () {
+    document.getElementById('purgeIntSubmitBtn').disabled = this.value.trim() !== 'PURGE';
 });
 </script>
 
