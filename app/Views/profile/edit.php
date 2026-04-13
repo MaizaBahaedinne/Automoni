@@ -1,33 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
-<style>
-.cv-sec-head {
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: #1a1a2e;
-    border-bottom: 2px solid #1a1a2e;
-    padding-bottom: 2px;
-    margin: 14px 0 5px;
-}
-#cv-preview {
-    font-family: 'Calibri', 'Arial', sans-serif;
-    font-size: 11.5px;
-    line-height: 1.55;
-    color: #111;
-}
-@media print {
-    #forms-col, nav, header, .navbar, footer { display: none !important; }
-    #cv-col { width: 100% !important; max-height: none !important; display: block !important; }
-    #cv-preview { box-shadow: none !important; }
-}
-</style>
-
-<div class="row g-0">
-<!-- ═════════════════ LEFT : Formulaires ═════════════════ -->
-<div class="col-12 col-lg-7 border-end" id="forms-col" style="padding:1.25rem 1.75rem;">
+<div style="padding:1.25rem 1.75rem;">
         <div class="d-flex align-items-center gap-2 mb-4">
             <a href="<?= base_url('profile') ?>" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i><?= lang('App.btn_back') ?>
@@ -1204,8 +1178,6 @@
             </div>
         </div>
 
-</div><!-- end #forms-col -->
-
 <!-- ══ Education Edit Modal ════════════════════════════════════════════════ -->
 <div class="modal fade" id="eduEditModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -1502,118 +1474,6 @@
   </div>
 </div>
 
-<!-- ═════════════════ RIGHT : Aperçu CV ATS ═════════════════ -->
-<div class="col-lg-5 d-none d-lg-block" id="cv-col" style="background:#e9ecef;">
-  <div style="position:sticky;top:68px;max-height:calc(100vh - 68px);overflow-y:auto;padding:1.25rem;">
-
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <span class="fw-bold small text-secondary"><i class="bi bi-eye me-1"></i>Aperçu CV &mdash; ATS</span>
-      <button onclick="window.print()" class="btn btn-sm btn-outline-secondary py-0 px-2">
-        <i class="bi bi-printer me-1"></i>PDF
-      </button>
-    </div>
-
-    <!-- A4 simulation -->
-    <div id="cv-preview" class="bg-white shadow-sm mx-auto" style="padding:32px 40px;max-width:210mm;min-height:200px;">
-
-      <!-- ① En-tête -->
-      <div style="border-bottom:3px solid #1a1a2e;padding-bottom:10px;margin-bottom:12px;">
-        <div id="cv-name" style="font-size:20px;font-weight:900;text-transform:uppercase;color:#1a1a2e;letter-spacing:1px;line-height:1.2;">
-          <?= esc(strtoupper(trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')))) ?>
-        </div>
-        <div id="cv-headline" style="font-size:12px;color:#555;font-style:italic;margin-top:3px;">
-          <?= esc($profile?->headline ?? '') ?>
-        </div>
-      </div>
-
-      <!-- ② Contacts -->
-      <div id="cv-contacts" style="display:flex;flex-wrap:wrap;gap:7px 18px;font-size:10px;color:#444;padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid #e4e4e4;">
-        <?php if (!empty($user?->email)): ?>
-        <span id="cv-c-email">✉ <?= esc($user->email) ?></span>
-        <?php endif; ?>
-        <span id="cv-c-phone"<?= empty($profile?->phone) ? ' style="display:none"' : '' ?>>
-          ☎ <?= esc(trim(($profile?->phone_code ?? '') . ' ' . ($profile?->phone ?? ''))) ?>
-        </span>
-        <span id="cv-c-loc"<?= (empty($profile?->city) && empty($profile?->country)) ? ' style="display:none"' : '' ?>>
-          ⦿ <?= esc(implode(', ', array_filter([$profile?->city ?? '', $profile?->country ?? '']))) ?>
-        </span>
-        <?php if (!empty($profile?->linkedin)): ?>
-        <span id="cv-c-li">🔗 LinkedIn</span>
-        <?php endif; ?>
-      </div>
-
-      <!-- ③ Profil -->
-      <div id="cv-sec-about"<?= empty($profile?->summary) ? ' style="display:none"' : '' ?>>
-        <div class="cv-sec-head">PROFIL PROFESSIONNEL</div>
-        <p id="cv-summary" style="margin:5px 0 0;font-size:10.5px;"><?= esc($profile?->summary ?? '') ?></p>
-      </div>
-
-      <!-- ④ Compétences -->
-      <?php $cvSkills = implode(' · ', array_filter(array_map('trim', array_column((array)$skills, 'skill_name')))); ?>
-      <div id="cv-sec-skills"<?= empty($cvSkills) ? ' style="display:none"' : '' ?>>
-        <div class="cv-sec-head">COMPÉTENCES</div>
-        <p id="cv-skills-text" style="margin:5px 0 0;font-size:10.5px;"><?= esc($cvSkills) ?></p>
-      </div>
-
-      <!-- ⑤ Expériences -->
-      <?php if (!empty($experiences)): ?>
-      <div>
-        <div class="cv-sec-head">EXPÉRIENCES PROFESSIONNELLES</div>
-        <?php foreach ($experiences as $exp): ?>
-        <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f2f2f2;">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;">
-            <strong style="font-size:12px;"><?= esc($exp->title ?? '') ?></strong>
-            <span style="font-size:10px;color:#666;white-space:nowrap;">
-              <?= $exp->start_date ? date('M Y', strtotime($exp->start_date)) : '' ?>
-              — <?= $exp->is_current ? 'Présent' : ($exp->end_date ? date('M Y', strtotime($exp->end_date)) : 'Présent') ?>
-            </span>
-          </div>
-          <div style="font-size:11px;color:#444;font-style:italic;">
-            <?= esc($exp->company) ?>
-            <?php if (!empty($exp->contract)): ?> &middot; <?= esc($exp->contract) ?><?php endif; ?>
-            <?php if (!empty($exp->location)): ?> &middot; <?= esc($exp->location) ?><?php endif; ?>
-          </div>
-          <?php if (!empty($exp->description)): ?>
-          <p style="margin:4px 0 0;font-size:10px;color:#222;"><?= nl2br(esc($exp->description)) ?></p>
-          <?php endif; ?>
-          <?php if (!empty($exp->skills_gained)): ?>
-          <div style="margin-top:3px;font-size:10px;color:#666;"><em>Compétences :</em> <?= esc($exp->skills_gained) ?></div>
-          <?php endif; ?>
-        </div>
-        <?php endforeach; ?>
-      </div>
-      <?php endif; ?>
-
-      <!-- ⑥ Formations -->
-      <?php if (!empty($education)): ?>
-      <div>
-        <div class="cv-sec-head">FORMATIONS</div>
-        <?php foreach ($education as $edu): ?>
-        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f2f2f2;">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;">
-            <strong style="font-size:12px;">
-              <?= esc($edu->degree) ?>
-              <?php if (isset($edu->niveau) && !empty($edu->niveau)): ?>
-                <span style="font-weight:400;font-size:10px;color:#666;">(<?= esc($edu->niveau) ?>)</span>
-              <?php endif; ?>
-              <?php if (!empty($edu->field)): ?> &mdash; <span style="font-weight:400;"><?= esc($edu->field) ?></span><?php endif; ?>
-            </strong>
-            <span style="font-size:10px;color:#666;white-space:nowrap;">
-              <?= !empty($edu->start_year) ? $edu->start_year : '' ?>
-              <?= !empty($edu->end_year) ? ' – ' . $edu->end_year : '' ?>
-            </span>
-          </div>
-          <div style="font-size:11px;color:#444;font-style:italic;"><?= esc($edu->institution) ?></div>
-        </div>
-        <?php endforeach; ?>
-      </div>
-      <?php endif; ?>
-
-    </div><!-- end #cv-preview -->
-  </div>
-</div><!-- end #cv-col -->
-
-</div><!-- end row g-0 -->
 
 <?php
 // ── LinkedIn Import Preview Modal ─────────────────────────────────────────────
@@ -1915,67 +1775,6 @@ if (expIsCurrent) {
     })();
 })();
 
-// ── Live ATS CV Preview ────────────────────────────────────────────────────
-(function () {
-    function val(sel) {
-        const el = document.querySelector(sel);
-        return el ? el.value.trim() : '';
-    }
-
-    function cvUpdate() {
-        // Headline
-        const headline = val('[name=headline]');
-        const cvHeadline = document.getElementById('cv-headline');
-        if (cvHeadline) cvHeadline.textContent = headline;
-
-        // Summary
-        const summary = val('[name=summary]');
-        const cvSummary  = document.getElementById('cv-summary');
-        const cvSecAbout = document.getElementById('cv-sec-about');
-        if (cvSummary)  cvSummary.textContent     = summary;
-        if (cvSecAbout) cvSecAbout.style.display   = summary ? '' : 'none';
-
-        // Skills
-        const skills = val('[name=skills]');
-        const cvSkillsText = document.getElementById('cv-skills-text');
-        const cvSecSkills  = document.getElementById('cv-sec-skills');
-        if (cvSkillsText) cvSkillsText.textContent = skills.split(',').map(s => s.trim()).filter(Boolean).join(' · ');
-        if (cvSecSkills)  cvSecSkills.style.display = skills ? '' : 'none';
-
-        // Phone
-        const pc = val('#phoneCodeSelect');
-        const pn = val('#phoneNumber');
-        const cvPhone = document.getElementById('cv-c-phone');
-        if (cvPhone) {
-            cvPhone.style.display = pn ? '' : 'none';
-            cvPhone.textContent   = '✆ ' + (pc + ' ' + pn).trim();
-        }
-
-        // Location
-        const city    = val('[name=city]');
-        const country = document.querySelector('[name=country]');
-        const countryVal = country ? country.options[country.selectedIndex]?.text : '';
-        const cvLoc   = document.getElementById('cv-c-loc');
-        if (cvLoc) {
-            const loc = [city, countryVal].filter(Boolean).join(', ');
-            cvLoc.style.display = loc ? '' : 'none';
-            cvLoc.textContent   = '⊿ ' + loc;
-        }
-
-        // LinkedIn
-        const linkedin = val('[name=linkedin]');
-        const cvLi = document.getElementById('cv-c-li');
-        if (cvLi) cvLi.style.display = linkedin ? '' : 'none';
-    }
-
-    // Attach to all basic-info form elements
-    document.querySelectorAll('#basicInfoForm input, #basicInfoForm select, #basicInfoForm textarea').forEach(el => {
-        el.addEventListener('input',  cvUpdate);
-        el.addEventListener('change', cvUpdate);
-    });
-
-    cvUpdate(); // initial render
-})();
 </script>
 
 <script>
