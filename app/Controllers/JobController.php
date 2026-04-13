@@ -154,9 +154,12 @@ class JobController extends BaseController
         if (!$company) {
             return redirect()->to('/organizations/create')->with('error', 'Créez d\'abord une organisation pour publier des offres.');
         }
+        $orgs = model(\App\Models\OrganizationModel::class)->getManagedByUser($userId);
+
         return view('jobs/create', [
             'title'   => 'Publier une offre',
             'company' => $company,
+            'orgs'    => $orgs,
             'isEdit'  => false,
         ]);
     }
@@ -185,6 +188,8 @@ class JobController extends BaseController
             return redirect()->to('/organizations/create')->with('error', 'Créez d\'abord une organisation pour publier des offres.');
         }
 
+        $orgId = (int) $this->request->getPost('organization_id') ?: null;
+
         $data = array_merge(
             $this->request->getPost([
                 'title', 'description', 'mission_context', 'requirements', 'benefits',
@@ -195,6 +200,7 @@ class JobController extends BaseController
                 'recruitment_notes', 'visibility_level',
             ]),
             [
+                'organization_id'  => $orgId,
                 'company_id'       => $company->id,
                 'user_id'          => $userId,
                 'status'           => 'active',
@@ -229,9 +235,13 @@ class JobController extends BaseController
             'skill_name'
         ));
 
+        $userId  = (int) session()->get('user_id');
+        $orgs    = model(\App\Models\OrganizationModel::class)->getManagedByUser($userId);
+
         return view('jobs/create', [
             'title'       => 'Modifier l\'offre',
-            'company'     => model(CompanyModel::class)->getByUserId(session()->get('user_id')),
+            'company'     => model(CompanyModel::class)->getByUserId($userId),
+            'orgs'        => $orgs,
             'job'         => $job,
             'skillsList'  => $skillsList,
             'languages'   => model(JobLanguageModel::class)->getByJob($id),
@@ -255,6 +265,8 @@ class JobController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+        $orgId = (int) $this->request->getPost('organization_id') ?: null;
+
         $data = array_merge(
             $this->request->getPost([
                 'title', 'description', 'mission_context', 'requirements', 'benefits',
@@ -265,6 +277,7 @@ class JobController extends BaseController
                 'recruitment_notes', 'visibility_level',
             ]),
             [
+                'organization_id'       => $orgId,
                 'salary_public'         => (int) ($this->request->getPost('salary_public')         ?? 0),
                 'salary_variable'       => (int) ($this->request->getPost('salary_variable')       ?? 0),
                 'salary_bonus_pct'      => $this->request->getPost('salary_bonus_pct') ?: null,
@@ -394,12 +407,18 @@ class JobController extends BaseController
             return redirect()->back()->with('error', 'Invalid status.');
         }
 
+        $rejectionReason = strip_tags(trim($this->request->getPost('rejection_reason') ?? ''));
+        if ($status === 'rejected' && $rejectionReason === '') {
+            return redirect()->to(base_url('applications/' . $appId))->with('error', 'Veuillez indiquer un motif de refus.');
+        }
+
         $appModel->update($appId, [
-            'status'        => $status,
-            'recruiter_note' => strip_tags($this->request->getPost('recruiter_note') ?? ''),
+            'status'           => $status,
+            'recruiter_note'   => strip_tags($this->request->getPost('recruiter_note') ?? ''),
+            'rejection_reason' => $status === 'rejected' ? mb_substr($rejectionReason, 0, 1000) : null,
         ]);
 
-        return redirect()->back()->with('success', 'Application status updated.');
+        return redirect()->to(base_url('applications/' . $appId))->with('success', 'Statut mis à jour avec succès.');
     }
 
     public function saveApplicationNote(int $appId): RedirectResponse
@@ -420,7 +439,7 @@ class JobController extends BaseController
             'recruiter_note' => strip_tags($this->request->getPost('note') ?? ''),
         ]);
 
-        return redirect()->back()->with('success', 'Note enregistrée.');
+        return redirect()->to(base_url('applications/' . $appId))->with('success', 'Note enregistrée.');
     }
 
     // ─── Private Helpers ─────────────────────────────────────────────────

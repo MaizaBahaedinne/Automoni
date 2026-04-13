@@ -117,13 +117,17 @@ class OrganizationMemberController extends BaseController
 
     /**
      * DELETE /organizations/:id/members/:userId
-     * Remove member (owner only)
+     * Remove member from org (owner only — protects against removing owners)
      */
     public function remove(int $id, int $userId)
     {
-        // Check permission
         if (!$this->memberModel->hasPermission($id, $this->userId, 'owner')) {
             return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        }
+
+        // Prevent self-removal
+        if ($userId === $this->userId) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Vous ne pouvez pas vous retirer vous-même.']);
         }
 
         if (!$this->memberModel->isMember($id, $userId)) {
@@ -132,9 +136,33 @@ class OrganizationMemberController extends BaseController
 
         $this->memberModel->removeMember($id, $userId);
 
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Membre retiré de l\'organisation.']);
+    }
+
+    /**
+     * POST /organizations/:id/members/:userId/toggle
+     * Toggle is_active for a member (owner only)
+     */
+    public function toggleStatus(int $id, int $userId)
+    {
+        if (!$this->memberModel->hasPermission($id, $this->userId, 'owner')) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        }
+
+        if ($userId === $this->userId) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Vous ne pouvez pas modifier votre propre statut.']);
+        }
+
+        $newState = $this->memberModel->toggleActive($id, $userId);
+
+        if ($newState === null) {
+            return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Member not found']);
+        }
+
         return $this->response->setJSON([
-            'status' => 'success',
-            'message' => 'Member removed',
+            'status'    => 'success',
+            'is_active' => $newState,
+            'message'   => $newState ? 'Membre réactivé.' : 'Membre désactivé.',
         ]);
     }
 

@@ -490,11 +490,75 @@ $arabicFont = $isRtl ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;
         <div class="nav-actions" id="navActions">
 
             <?php if (session()->get('logged_in')): ?>
-                <!-- Notifications (placeholder — module à venir) -->
-                <button class="nav-notif-btn" title="Notifications" disabled>
-                    <i class="bi bi-bell"></i>
-                    <!-- <span class="nav-notif-badge"></span> -->
-                </button>
+                <?php
+                // Notification bell — load unread count for logged-in user
+                $_notifCount = 0;
+                try {
+                    $_notifCount = model(\App\Models\NotificationModel::class)
+                                       ->getUnreadCount((int) session()->get('user_id'));
+                } catch (\Throwable $_e) { /* table may not exist yet */ }
+                $_recentNotifs = [];
+                if ($_notifCount > 0) {
+                    try {
+                        $_recentNotifs = model(\App\Models\NotificationModel::class)
+                                             ->getRecent((int) session()->get('user_id'), 5);
+                    } catch (\Throwable $_e) {}
+                }
+                ?>
+                <div class="dropdown">
+                    <button class="nav-notif-btn" title="Notifications"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell<?= $_notifCount > 0 ? '-fill' : '' ?>"></i>
+                        <?php if ($_notifCount > 0): ?>
+                        <span class="nav-notif-badge"></span>
+                        <?php endif; ?>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-0"
+                         style="min-width:320px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow-lg);">
+                        <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                            <span class="fw-bold" style="font-size:.85rem;">Notifications</span>
+                            <?php if ($_notifCount > 0): ?>
+                            <span class="badge bg-danger rounded-pill"><?= $_notifCount ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (empty($_recentNotifs) && $_notifCount === 0): ?>
+                        <div class="text-center text-muted py-4" style="font-size:.82rem;">
+                            <i class="bi bi-bell-slash d-block mb-1" style="font-size:1.4rem;opacity:.4;"></i>
+                            Aucune notification
+                        </div>
+                        <?php else: ?>
+                        <?php foreach ($_recentNotifs as $_n): ?>
+                        <a href="<?= base_url('notifications/' . $_n->id . '/read') ?>"
+                           onclick="event.preventDefault(); document.getElementById('notifForm<?= $_n->id ?>').submit();"
+                           class="d-flex gap-2 px-3 py-2 text-decoration-none border-bottom <?= $_n->is_read ? '' : 'bg-brand-light' ?>"
+                           style="<?= $_n->is_read ? 'background:#fff;' : 'background:#eef2ff;' ?>color:inherit;">
+                            <form id="notifForm<?= $_n->id ?>" action="<?= base_url('notifications/' . $_n->id . '/read') ?>"
+                                  method="post" class="d-none"><?= csrf_field() ?></form>
+                            <div style="width:32px;height:32px;border-radius:50%;background:var(--brand-light);
+                                        display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+                                <i class="bi bi-<?= $_n->type === 'interview' ? 'calendar-check' : 'bell' ?>"
+                                   style="font-size:.8rem;color:var(--brand-dark);"></i>
+                            </div>
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="fw-semibold text-truncate" style="font-size:.8rem;"><?= esc($_n->title) ?></div>
+                                <?php if (!empty($_n->body)): ?>
+                                <div class="text-muted text-truncate" style="font-size:.75rem;"><?= esc($_n->body) ?></div>
+                                <?php endif; ?>
+                                <div class="text-muted" style="font-size:.7rem;"><?= date('d/m/Y H:i', strtotime($_n->created_at)) ?></div>
+                            </div>
+                            <?php if (!$_n->is_read): ?>
+                            <div style="width:7px;height:7px;background:var(--brand);border-radius:50%;flex-shrink:0;margin-top:6px;"></div>
+                            <?php endif; ?>
+                        </a>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                        <a href="<?= base_url('notifications') ?>"
+                           class="d-block text-center py-2 text-decoration-none"
+                           style="font-size:.78rem;color:var(--brand-dark);font-weight:600;">
+                            Voir toutes les notifications
+                        </a>
+                    </div>
+                </div>
                 <div class="dropdown">
                     <a class="user-btn dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="user-avatar">

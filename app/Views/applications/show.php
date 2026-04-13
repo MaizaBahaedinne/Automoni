@@ -2,45 +2,348 @@
 <?= $this->section('content') ?>
 
 <?php
-$statusColors = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
-$statusLabel  = ['pending'=>'En attente','reviewed'=>'En cours','shortlisted'=>'Shortlisté','rejected'=>'Refusé','hired'=>'Recruté'];
+$statusColors  = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
+$statusIcons   = ['pending'=>'bi-hourglass-split','reviewed'=>'bi-eye','shortlisted'=>'bi-star-fill','rejected'=>'bi-x-circle-fill','hired'=>'bi-check-circle-fill'];
+$statusLabel   = ['pending'=>'En attente','reviewed'=>'En cours d\'examen','shortlisted'=>'Shortlisté','rejected'=>'Refusé','hired'=>'Recruté'];
 $_syms  = ['EUR'=>'€','USD'=>'$','GBP'=>'£'];
 $_sym   = $_syms[$app->salary_currency ?? ''] ?? ($app->salary_currency ?? '');
 $_pmap  = ['annual'=>'/an','monthly'=>'/mois','daily'=>'/jour','hourly'=>'/h'];
 $_plbl  = $_pmap[$app->salary_period ?? 'annual'] ?? '/an';
 $scoreColor = $matchScore >= 75 ? '#22c55e' : ($matchScore >= 50 ? '#f59e0b' : ($matchScore >= 25 ? '#f97316' : '#ef4444'));
 $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($matchScore >= 25 ? 'Moyen' : 'Faible'));
+$curStatus  = $app->status ?? 'pending';
 ?>
 
-<!-- Top bar -->
-<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
-    <a href="<?= base_url('dashboard') ?>" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Dashboard
-    </a>
-    <nav aria-label="breadcrumb" class="flex-grow-1">
-        <ol class="breadcrumb mb-0 small">
-            <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Dashboard</a></li>
-            <li class="breadcrumb-item active">Candidature #<?= $app->id ?></li>
-        </ol>
-    </nav>
+<style>
+.app-status-btn{
+    display:inline-flex;align-items:center;gap:.4rem;
+    padding:.45rem 1rem;border-radius:50px;font-size:.8rem;font-weight:600;
+    border:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.app-status-btn:not(.active){background:#f1f5f9;color:#64748b;border-color:#e2e8f0;}
+.app-status-btn:not(.active):hover{background:#e2e8f0;color:#334155;}
+.app-status-btn.active-warning  {background:#fef9c3;color:#854d0e;border-color:#fde68a;}
+.app-status-btn.active-info     {background:#e0f2fe;color:#075985;border-color:#bae6fd;}
+.app-status-btn.active-success  {background:#d1fae5;color:#065f46;border-color:#6ee7b7;}
+.app-status-btn.active-danger   {background:#fee2e2;color:#991b1b;border-color:#fca5a5;}
+.app-status-btn.active-primary  {background:var(--brand-light);color:var(--brand-dark);border-color:var(--brand);}
+.section-divider{
+    display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;
+    font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+</style>
 
-    <!-- Status update form inline -->
-    <form action="<?= base_url('applications/' . $app->id . '/status') ?>" method="post" class="d-flex gap-2 align-items-center">
-        <?= csrf_field() ?>
-        <select name="status" class="form-select form-select-sm" style="width:160px;">
-            <?php foreach (['pending','reviewed','shortlisted','rejected','hired'] as $s): ?>
-                <option value="<?= $s ?>" <?= $app->status === $s ? 'selected' : '' ?>><?= $statusLabel[$s] ?></option>
-            <?php endforeach; ?>
-        </select>
-        <button class="btn btn-primary btn-sm"><i class="bi bi-check2 me-1"></i>Mettre à jour</button>
-    </form>
+<!-- ── Page header ─────────────────────────────────────────────────────────── -->
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="<?= base_url('dashboard') ?>" class="btn btn-sm btn-outline-secondary" title="Retour au dashboard">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div class="flex-grow-1">
+        <h2 class="fw-bold mb-0" style="font-size:1.3rem;">
+            <i class="bi bi-person-lines-fill me-2" style="color:var(--brand-dark);"></i>
+            <?= esc($app->first_name) ?> <?= esc($app->last_name) ?>
+        </h2>
+        <p class="text-muted mb-0" style="font-size:.8rem;">
+            Candidature pour <strong><?= esc($app->job_title) ?></strong>
+            · <?= esc($app->company_name) ?>
+            · Postulée le <?= !empty($app->applied_at) ? date('d/m/Y', strtotime($app->applied_at)) : '—' ?>
+        </p>
+    </div>
 </div>
 
+<!-- Flash messages -->
+<?php if ($error = session()->getFlashdata('error')): ?>
+<div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-exclamation-triangle-fill"></i><?= esc($error) ?>
+</div>
+<?php endif; ?>
+<?php if ($success = session()->getFlashdata('success')): ?>
+<div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-check-circle-fill"></i><?= esc($success) ?>
+</div>
+<?php endif; ?>
+
+<?php
+// Pre-compute interview values for modal pre-fill
+$_iv = $interview ?? null;
+$_ivDatetime = '';
+if ($_iv && !empty($_iv->scheduled_at)) {
+    // Convert "2026-04-09 14:30:00" → "2026-04-09T14:30" for datetime-local input
+    $_ivDatetime = substr(str_replace(' ', 'T', $_iv->scheduled_at), 0, 16);
+}
+?>
+
+<!-- ─── Interview modal ────────────────────────────────────────────────────── -->
+<div class="modal fade" id="interviewModal" tabindex="-1" aria-labelledby="interviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius:var(--radius);">
+            <form action="<?= base_url('applications/' . $app->id . '/interview') ?>" method="post">
+                <?= csrf_field() ?>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="interviewModalLabel">
+                        <i class="bi bi-calendar-check me-2" style="color:var(--brand-dark);"></i>
+                        <?= $_iv ? 'Modifier l\'entretien' : 'Planifier un entretien' ?>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+
+                    <!-- Type: onsite / remote -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Type d'entretien</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="interview_type" id="typeOnsite"
+                                       value="onsite" onchange="toggleInterviewType('onsite')"
+                                    <?= (!$_iv || $_iv->type === 'onsite') ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="typeOnsite">
+                                    <i class="bi bi-building me-1"></i>Présentiel
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="interview_type" id="typeRemote"
+                                       value="remote" onchange="toggleInterviewType('remote')"
+                                    <?= ($_iv && $_iv->type === 'remote') ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="typeRemote">
+                                    <i class="bi bi-camera-video me-1"></i>Visioconférence
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date & time -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-7">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">Date et heure</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_at"
+                                   value="<?= esc($_ivDatetime) ?>" required>
+                        </div>
+                        <div class="col-sm-5">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">Durée</label>
+                            <select class="form-select" name="duration_min" required>
+                                <?php foreach ([30,45,60,90,120] as $dur): ?>
+                                <option value="<?= $dur ?>"<?= ($_iv && (int)$_iv->duration_min === $dur) ? ' selected' : ($dur === 60 && !$_iv ? ' selected' : '') ?>>
+                                    <?= $dur ?> min
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Location / link -->
+                    <div class="mb-3" id="locationWrapper">
+                        <label class="form-label fw-semibold" id="locationLabel" style="font-size:.85rem;">
+                            <i class="bi bi-geo-alt me-1"></i>Lieu (adresse)
+                        </label>
+                        <input type="text" class="form-control" name="location" id="locationInput"
+                               placeholder="Ex: 15 rue de la Paix, Paris"
+                               value="<?= esc($_iv->location ?? '') ?>"
+                               maxlength="500">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">
+                            <i class="bi bi-chat-left-text me-1"></i>Notes / instructions (optionnel)
+                        </label>
+                        <textarea class="form-control" name="notes" rows="3" maxlength="2000"
+                                  placeholder="Instructions de connexion, documents à apporter…"><?= esc($_iv->notes ?? '') ?></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-calendar-check me-1"></i><?= $_iv ? 'Mettre à jour' : 'Planifier' ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<?php if ($_iv): ?>
+<!-- ─── Scheduled interview banner ────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4" style="border-left:4px solid #22c55e !important;">
+    <div class="card-body p-3 d-flex align-items-start gap-3">
+        <div style="width:40px;height:40px;border-radius:10px;background:#d1fae5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-calendar-check-fill" style="color:#065f46;font-size:1.1rem;"></i>
+        </div>
+        <div class="flex-grow-1">
+            <p class="fw-bold mb-1" style="font-size:.88rem;">Entretien planifié</p>
+            <p class="text-muted mb-0" style="font-size:.82rem;">
+                <i class="bi bi-<?= $_iv->type === 'remote' ? 'camera-video' : 'building' ?> me-1"></i>
+                <?= $_iv->type === 'remote' ? 'Visioconférence' : 'Présentiel' ?>
+                &nbsp;·&nbsp;
+                <i class="bi bi-clock me-1"></i>
+                <?= date('d', strtotime($_iv->scheduled_at)) . ' ' . lang('App.months.' . date('n', strtotime($_iv->scheduled_at))) . ' ' . date('Y', strtotime($_iv->scheduled_at)) . ' ' . lang('App.at_time') . ' ' . date('H:i', strtotime($_iv->scheduled_at)) ?>
+                &nbsp;·&nbsp;
+                <?= (int)$_iv->duration_min ?> min
+                <?php if (!empty($_iv->location)): ?>
+                &nbsp;·&nbsp;<i class="bi bi-<?= $_iv->type === 'remote' ? 'link-45deg' : 'geo-alt' ?> me-1"></i><?= esc($_iv->location) ?>
+                <?php endif; ?>
+            </p>
+            <?php if (!empty($_iv->notes)): ?>
+            <p class="text-muted mb-0 mt-1" style="font-size:.8rem;"><i class="bi bi-chat-left-text me-1"></i><?= esc($_iv->notes) ?></p>
+            <?php endif; ?>
+        </div>
+        <button type="button" class="btn btn-outline-success btn-sm"
+                onclick="new bootstrap.Modal(document.getElementById('interviewModal')).show()">
+            <i class="bi bi-pencil me-1"></i>Modifier
+        </button>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- ── Status update panel ──────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4" style="border-top:3px solid var(--brand) !important;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-sliders2" style="color:var(--brand-dark);font-size:1rem;"></i>
+            <span class="fw-bold" style="font-size:.9rem;">Décision du recruteur</span>
+            <span class="badge bg-<?= $statusColors[$curStatus] ?? 'secondary' ?> ms-auto px-3">
+                <i class="bi <?= $statusIcons[$curStatus] ?? 'bi-circle' ?> me-1"></i>
+                <?= $statusLabel[$curStatus] ?? ucfirst($curStatus) ?>
+            </span>
+        </div>
+
+        <form action="<?= base_url('applications/' . $app->id . '/status') ?>" method="post" id="statusForm">
+            <?= csrf_field() ?>
+            <input type="hidden" name="status" id="statusInput" value="<?= esc($curStatus) ?>">
+
+            <!-- Visual status picker -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <?php
+                $btnColorMap = ['pending'=>'warning','reviewed'=>'info','shortlisted'=>'success','rejected'=>'danger','hired'=>'primary'];
+                foreach (['pending','reviewed','shortlisted','rejected','hired'] as $s):
+                    $isActive = $curStatus === $s;
+                    $cls = $isActive ? 'active active-' . $btnColorMap[$s] : '';
+                ?>
+                <button type="button"
+                        class="app-status-btn <?= $cls ?>"
+                        data-status="<?= $s ?>"
+                        onclick="pickStatus('<?= $s ?>')">
+                    <i class="bi <?= $statusIcons[$s] ?>"></i>
+                    <?= $statusLabel[$s] ?>
+                </button>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Rejection reason (shown only when "rejected" is picked) -->
+            <?php
+            $presetReasons = [
+                'Profil ne correspondant pas aux exigences du poste',
+                "Niveau d'expérience insuffisant",
+                'Compétences techniques requises non maîtrisées',
+                'Prétentions salariales hors budget',
+                'Poste pourvu en interne',
+                'Offre annulée',
+            ];
+            $savedReason  = $app->rejection_reason ?? '';
+            $isPreset     = in_array($savedReason, $presetReasons, true);
+            $selectValue  = $isPreset ? $savedReason : ($savedReason !== '' ? '__other__' : '');
+            $otherVisible = ($selectValue === '__other__');
+            ?>
+            <div id="rejectionBlock" style="<?= $curStatus === 'rejected' ? '' : 'display:none;' ?>">
+                <label class="form-label fw-semibold text-danger mb-1" style="font-size:.82rem;">
+                    <i class="bi bi-chat-square-text me-1"></i>Motif de refus
+                </label>
+
+                <select id="rejectionSelect" class="form-select mb-2" style="font-size:.875rem;"
+                        onchange="toggleOtherReason(this.value)">
+                    <option value="">— Sélectionner un motif —</option>
+                    <?php foreach ($presetReasons as $pr): ?>
+                        <option value="<?= esc($pr) ?>"<?= $selectValue === $pr ? ' selected' : '' ?>><?= esc($pr) ?></option>
+                    <?php endforeach; ?>
+                    <option value="__other__"<?= $otherVisible ? ' selected' : '' ?>>Autre (préciser…)</option>
+                </select>
+
+                <!-- Hidden field always submitted — kept in sync by JS -->
+                <input type="hidden" name="rejection_reason" id="rejectionReason"
+                       value="<?= esc($savedReason) ?>">
+
+                <!-- Free-text shown only when "Autre" is selected -->
+                <textarea id="rejectionOtherText" class="form-control" rows="2"
+                          style="font-size:.875rem;<?= $otherVisible ? '' : 'display:none;' ?>"
+                          placeholder="Précisez le motif de refus…"
+                          oninput="document.getElementById('rejectionReason').value = this.value"
+                ><?= $otherVisible ? esc($savedReason) : '' ?></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end mt-3">
+                <button class="btn btn-primary">
+                    <i class="bi bi-check2-circle me-1"></i>Enregistrer la décision
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const statusColors = {
+    pending:     'warning',
+    reviewed:    'info',
+    shortlisted: 'success',
+    rejected:    'danger',
+    hired:       'primary',
+};
+function pickStatus(val) {
+    document.getElementById('statusInput').value = val;
+    // Toggle rejection block
+    const block = document.getElementById('rejectionBlock');
+    const show  = val === 'rejected';
+    block.style.display = show ? '' : 'none';
+    document.getElementById('rejectionReason').required = show;
+    // Open interview modal when shortlisted is chosen
+    if (val === 'shortlisted') {
+        new bootstrap.Modal(document.getElementById('interviewModal')).show();
+    }
+    // Update button styles
+    document.querySelectorAll('.app-status-btn').forEach(btn => {
+        const s  = btn.dataset.status;
+        const col = statusColors[s];
+        btn.classList.remove('active', 'active-' + col);
+        if (s === val) btn.classList.add('active', 'active-' + col);
+    });
+}
+function toggleOtherReason(val) {
+    const otherBlock = document.getElementById('rejectionOtherText');
+    const hidden     = document.getElementById('rejectionReason');
+    if (val === '__other__') {
+        otherBlock.style.display = '';
+        hidden.value = otherBlock.value;
+    } else {
+        otherBlock.style.display = 'none';
+        hidden.value = val;
+    }
+}
+function toggleInterviewType(type) {
+    const lbl   = document.getElementById('locationLabel');
+    const input = document.getElementById('locationInput');
+    if (type === 'remote') {
+        lbl.innerHTML   = '<i class="bi bi-link-45deg me-1"></i>Lien de connexion';
+        input.placeholder = 'Ex: https://meet.google.com/xyz';
+    } else {
+        lbl.innerHTML   = '<i class="bi bi-geo-alt me-1"></i>Lieu (adresse)';
+        input.placeholder = 'Ex: 15 rue de la Paix, Paris';
+    }
+}
+// Init location label on load
+(function () {
+    const checked = document.querySelector('input[name="interview_type"]:checked');
+    if (checked) toggleInterviewType(checked.value);
+})();
+pickStatus(document.getElementById('statusInput').value);
+</script>
+
 <!-- Split layout -->
-<div class="row g-4" style="min-height:80vh;">
+<div class="row g-4">
 
     <!-- ─── LEFT: Candidate ──────────────────────────────────────────────── -->
     <div class="col-lg-7">
+
+        <div class="section-divider"><i class="bi bi-person-fill"></i>Profil du candidat</div>
 
         <!-- Candidate header card -->
         <div class="card border-0 shadow-sm mb-3">
@@ -70,10 +373,6 @@ $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($m
                             <?php endif; ?>
                         </div>
                     </div>
-                    <!-- Status badge -->
-                    <span class="badge bg-<?= $statusColors[$app->status] ?? 'secondary' ?> fs-6 px-3 py-2">
-                        <?= $statusLabel[$app->status] ?? ucfirst($app->status) ?>
-                    </span>
                 </div>
 
                 <!-- External links -->
@@ -284,7 +583,12 @@ $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($m
                     <div class="d-flex gap-3">
                         <?php if (!empty($exp->org_logo)): ?>
                             <img src="<?= base_url('uploads/' . esc($exp->org_logo)) ?>"
-                                 style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;border:1px solid var(--border);" alt="">
+                                 style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;border:1px solid var(--border);"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="">
+                            <div style="display:none;width:36px;height:36px;border-radius:6px;background:var(--brand-light);
+                                        align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-building" style="color:var(--brand);font-size:.9rem;"></i>
+                            </div>
                         <?php else: ?>
                             <div style="width:36px;height:36px;border-radius:6px;background:var(--brand-light);
                                         display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -360,13 +664,20 @@ $scoreLabel = $matchScore >= 75 ? 'Excellent' : ($matchScore >= 50 ? 'Bon' : ($m
     <div class="col-lg-5">
         <div style="position:sticky;top:1.5rem;">
 
+            <div class="section-divider"><i class="bi bi-briefcase-fill"></i>Offre d'emploi</div>
+
             <!-- Job header card -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <?php if (!empty($app->company_logo)): ?>
                             <img src="<?= base_url('uploads/logos/' . esc($app->company_logo)) ?>"
-                                 style="width:52px;height:52px;object-fit:cover;border-radius:10px;" alt="">
+                                 style="width:52px;height:52px;object-fit:cover;border-radius:10px;"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="">
+                            <div style="display:none;width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--brand-dark),#7c3aed);
+                                        color:#fff;font-size:1.2rem;font-weight:800;align-items:center;justify-content:center;">
+                                <?= strtoupper(substr($app->company_name ?? 'J', 0, 1)) ?>
+                            </div>
                         <?php else: ?>
                             <div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--brand-dark),#7c3aed);
                                         color:#fff;font-size:1.2rem;font-weight:800;display:flex;align-items:center;justify-content:center;">

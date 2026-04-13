@@ -356,6 +356,8 @@ return [
     'msg_success'             => 'Profile updated successfully!',
     'msg_error'               => 'An error occurred.',
     'placeholder_eg'          => 'e.g.',
+    'at_time' => 'at',
+
     // ── Months ───────────────────────────────────────────────────────────────
     'months' => [
         1  => 'Jan', 2  => 'Feb', 3  => 'Mar',  4  => 'Apr',

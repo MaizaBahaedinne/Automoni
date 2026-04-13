@@ -151,10 +151,19 @@ class OrganizationModel extends Model
      */
     public function getManagedByUser(int $userId)
     {
-        return $this->select('organizations.*')
-                    ->join('organization_members as om', 'om.organization_id = organizations.id')
-                    ->where('om.user_id', $userId)
-                    ->where('om.role IN ("owner", "manager")', null, false)
-                    ->findAll();
+        $sql = "
+            SELECT DISTINCT o.*
+            FROM organizations o
+            JOIN organization_members om ON om.organization_id = o.id
+            WHERE om.user_id = ?
+              AND om.role IN ('owner', 'manager')
+              AND om.is_active = 1
+              AND o.deleted_at IS NULL
+            ORDER BY o.name ASC
+        ";
+
+        $query = $this->db->query($sql, [$userId]);
+
+        return $query ? $query->getResultObject() : [];
     }
 }

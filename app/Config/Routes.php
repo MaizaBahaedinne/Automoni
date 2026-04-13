@@ -144,9 +144,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('organizations/(:num)/members',                    'OrganizationMemberController::add/$1');
     $routes->post('organizations/(:num)/members/(:num)/role',        'OrganizationMemberController::updateRole/$1/$2');
     $routes->delete('organizations/(:num)/members/(:num)',           'OrganizationMemberController::remove/$1/$2');
+    $routes->post  ('organizations/(:num)/members/(:num)/toggle',    'OrganizationMemberController::toggleStatus/$1/$2');
 
     // Admin role switcher (any authenticated user whose real role is admin)
     $routes->get('admin/switch-role/(:segment)', 'AuthController::switchRole/$1');
+
+    // Notifications
+    $routes->get ('notifications',              'NotificationController::index');
+    $routes->post('notifications/(:num)/read',  'NotificationController::markRead/$1');
 });
 
 // ─── Protected — recruiters only ──────────────────────────────────────────────
@@ -167,9 +172,11 @@ $routes->group('', ['filter' => 'role:recruiter,admin'], static function ($route
     $routes->post('jobs/delete/(:num)',   'JobController::delete/$1');
 
     // Application management
-    $routes->get ('applications/(:num)',        'ApplicationController::show/$1');
-    $routes->post('applications/(:num)/status', 'JobController::updateApplicationStatus/$1');
-    $routes->post('applications/(:num)/note',   'JobController::saveApplicationNote/$1');
+    $routes->get ('applications',                  'ApplicationController::indexRecruiter');
+    $routes->get ('applications/(:num)',           'ApplicationController::show/$1');
+    $routes->post('applications/(:num)/status',    'JobController::updateApplicationStatus/$1');
+    $routes->post('applications/(:num)/note',      'JobController::saveApplicationNote/$1');
+    $routes->post('applications/(:num)/interview', 'ApplicationController::scheduleInterview/$1');
 });
 
 // ─── Protected — admin only ───────────────────────────────────────────────────
@@ -183,6 +190,7 @@ $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
     $routes->get ('admin/applications',                    'AdminApplicationController::index');
     $routes->post('admin/applications/purge',              'AdminApplicationController::purge');
     $routes->post('admin/applications/(:num)/status',      'AdminApplicationController::updateStatus/$1');
+    $routes->post('admin/interviews/purge',                'ApplicationController::purgeInterviews');
 });
 
 // ─── DEBUG (temp) ─────────────────────────────────────────────────────────────

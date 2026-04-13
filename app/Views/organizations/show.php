@@ -230,6 +230,62 @@ $platformLabels = [
             </div>
         <?php endif; ?>
 
+        <!-- Job offers -->
+        <?php $org_jobs = $org_jobs ?? []; ?>
+        <div class="info-card">
+            <div class="info-card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-briefcase" style="color:var(--brand)"></i>&nbsp;Offres d'emploi
+                    <?php if (!empty($org_jobs)): ?>
+                        <span class="badge ms-1" style="background:var(--brand-light);color:var(--brand-dark);font-size:.7rem;"><?= count($org_jobs) ?></span>
+                    <?php endif; ?>
+                </span>
+                <?php if ($can_edit): ?>
+                    <a href="<?= base_url('jobs/create') ?>" class="btn btn-outline-primary btn-sm px-2 py-0" style="font-size:.75rem;">
+                        <i class="bi bi-plus-lg"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <?php if (empty($org_jobs)): ?>
+                <div class="info-card-body text-muted" style="font-size:.875rem;">
+                    Aucune offre active pour le moment.
+                </div>
+            <?php else: ?>
+                <div class="p-0">
+                    <?php
+                    $contractLabels = ['CDI'=>'CDI','CDD'=>'CDD','Freelance'=>'Freelance','Internship'=>'Stage','PartTime'=>'Temps partiel'];
+                    $remoteLabels   = ['onsite'=>'Sur site','remote'=>'Télétravail','hybrid'=>'Hybride'];
+                    ?>
+                    <?php foreach ($org_jobs as $jb): ?>
+                        <a href="<?= base_url('jobs/' . esc($jb->slug)) ?>"
+                           class="d-flex align-items-start gap-3 px-3 py-3 text-decoration-none text-dark sidebar-link"
+                           style="border-bottom:1px solid var(--border);">
+                            <div class="flex-grow-1" style="min-width:0;">
+                                <div class="fw-semibold lh-sm mb-1" style="font-size:.9rem;"><?= esc($jb->title) ?></div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span class="badge" style="background:var(--brand-light);color:var(--brand-dark);font-size:.65rem;">
+                                        <?= esc($contractLabels[$jb->contract_type] ?? $jb->contract_type) ?>
+                                    </span>
+                                    <?php if (!empty($jb->remote)): ?>
+                                    <span class="badge bg-light text-muted border" style="font-size:.65rem;">
+                                        <?= esc($remoteLabels[$jb->remote] ?? $jb->remote) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($jb->location)): ?>
+                                    <span class="text-muted" style="font-size:.72rem;">
+                                        <i class="bi bi-geo-alt me-1"></i><?= esc($jb->location) ?>
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 text-muted" style="font-size:.72rem;white-space:nowrap;">
+                                <?= !empty($jb->created_at) ? date('d M Y', strtotime($jb->created_at)) : '' ?>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
     </div>
 
     <!-- Right sidebar -->
@@ -317,7 +373,10 @@ $platformLabels = [
                 <?php if (!empty($members)): ?>
                     <div class="p-0">
                         <?php foreach ($members as $member): ?>
-                            <div class="d-flex align-items-center gap-2 px-3 py-2" style="border-bottom:1px solid var(--border);">
+                            <?php $inactive = isset($member->is_active) && !$member->is_active; ?>
+                            <div class="d-flex align-items-center gap-2 px-3 py-2 org-member-row<?= $inactive ? ' opacity-50' : '' ?>"
+                                 id="member-row-<?= (int)$member->user_id ?>"
+                                 style="border-bottom:1px solid var(--border);">
                                 <?php if (!empty($member->avatar)): ?>
                                     <img src="<?= base_url(esc($member->avatar)) ?>" alt="" class="member-avatar">
                                 <?php else: ?>
@@ -329,6 +388,27 @@ $platformLabels = [
                                 </div>
                                 <?php if (!empty($member->role)): ?>
                                     <span class="badge flex-shrink-0" style="background:var(--brand-light);color:var(--brand-dark);font-size:.65rem;"><?= esc($member->role) ?></span>
+                                <?php endif; ?>
+                                <?php if ($inactive): ?>
+                                    <span class="badge bg-secondary flex-shrink-0" style="font-size:.65rem;">inactif</span>
+                                <?php endif; ?>
+                                <?php if ($can_manage && $member->user_id !== session()->get('user_id')): ?>
+                                <div class="d-flex gap-1 flex-shrink-0 ms-1">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-<?= $inactive ? 'success' : 'warning' ?> py-0 px-1"
+                                            style="font-size:.7rem;"
+                                            title="<?= $inactive ? 'Réactiver' : 'Désactiver' ?>"
+                                            onclick="toggleMember(<?= (int)$member->user_id ?>, this)">
+                                        <i class="bi bi-<?= $inactive ? 'person-check' : 'person-dash' ?>"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger py-0 px-1"
+                                            style="font-size:.7rem;"
+                                            title="Retirer de l'organisation"
+                                            onclick="removeMember(<?= (int)$member->user_id ?>, '<?= esc($member->first_name . ' ' . $member->last_name) ?>')">
+                                        <i class="bi bi-person-x"></i>
+                                    </button>
+                                </div>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
@@ -488,6 +568,66 @@ $platformLabels = [
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 })();
+</script>
+<?php endif; ?>
+
+<?php if ($can_manage): ?>
+<script>
+const ORG_ID   = <?= (int) $organization->id ?>;
+const CSRF_N   = '<?= csrf_token() ?>';
+const CSRF_H   = '<?= csrf_hash() ?>';
+const BASE_URL = '<?= base_url() ?>';
+
+function orgFetch(url, method, onSuccess) {
+    fetch(url, {
+        method,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: CSRF_N + '=' + encodeURIComponent(CSRF_H),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') { onSuccess(data); }
+        else { alert(data.message || 'Erreur'); }
+    })
+    .catch(() => alert('Erreur réseau.'));
+}
+
+function toggleMember(userId, btn) {
+    orgFetch(BASE_URL + 'organizations/' + ORG_ID + '/members/' + userId + '/toggle', 'POST', function(data) {
+        const row = document.getElementById('member-row-' + userId);
+        if (!row) return;
+        const active = data.is_active;
+        row.classList.toggle('opacity-50', !active);
+        // Update badge
+        let badge = row.querySelector('.badge.bg-secondary');
+        if (!active) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge bg-secondary flex-shrink-0';
+                badge.style.fontSize = '.65rem';
+                badge.textContent = 'inactif';
+                row.querySelector('.d-flex.gap-1').before(badge);
+            }
+        } else {
+            if (badge) badge.remove();
+        }
+        // Swap button
+        btn.className = 'btn btn-sm btn-outline-' + (active ? 'warning' : 'success') + ' py-0 px-1';
+        btn.title     = active ? 'Désactiver' : 'Réactiver';
+        btn.querySelector('i').className = 'bi bi-' + (active ? 'person-dash' : 'person-check');
+    });
+}
+
+function removeMember(userId, name) {
+    if (!confirm('Retirer ' + name + ' de l\'organisation ?')) return;
+    orgFetch(BASE_URL + 'organizations/' + ORG_ID + '/members/' + userId, 'DELETE', function() {
+        const row = document.getElementById('member-row-' + userId);
+        if (row) row.remove();
+    });
+}
 </script>
 <?php endif; ?>
 
